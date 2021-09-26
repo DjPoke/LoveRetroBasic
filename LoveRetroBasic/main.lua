@@ -987,7 +987,7 @@ function love.update(dt)
 							hardspr[i].scale = 0
 						end
 						execStep = true
-						appState = RUN_MODE
+						appState = RUN_MODE -- exécuter le code source basic
 					end
 					--
 					return
@@ -1013,7 +1013,7 @@ function love.update(dt)
 							hardspr[i].scale = 0
 						end
 						execStep = true
-						appState = RUN_MODE
+						appState = RUN_MODE -- exécuter le code source basic en mode 'debug'
 					end
 					--
 					return
@@ -1064,7 +1064,7 @@ function love.update(dt)
 					s, e = RemoveComments(s)
 					-- exécution de la commande
 					if e == OK then
-						err, value = GetError(Exec(Parser(Lexer(s))), ProgramCounter)
+						err, value = GetError(Exec(Parser(Lexer(RemoveLabels(s, ProgramCounter)))), ProgramCounter)
 					else
 						err = GetError(e, ProgramCounter)
 					end

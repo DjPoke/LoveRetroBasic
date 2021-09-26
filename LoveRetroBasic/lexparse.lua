@@ -103,7 +103,7 @@ function Parser(t)
 	-- assembler le symbole $ avec certains mots consécutifs
 	t = Assemble2(t, "word", "string", "word")
 	
-	-- trouver les erreurs de syntaxe liées aux mots clés mélangés au symboles !, %, $
+	-- trouver les erreurs de syntaxe liées aux mots clés mélangés aux symboles !, %, $
 	for i = 1, #t do
 		if t[i].typ == "word" then
 			for j = 1, #t[i].sym do
@@ -139,16 +139,7 @@ function Parser(t)
 			end
 		end
 	end
-	
-	-- trouver un éventuel label en début de ligne
-	if #t >= 2 then
-		if t[1].typ == "word" and t[2].typ == "colon" then
-			t[2].sym = t[1].sym
-			t[2].typ = "label"
-			table.remove(t, 1)
-		end
-	end
-	
+		
 	return t
 end
 

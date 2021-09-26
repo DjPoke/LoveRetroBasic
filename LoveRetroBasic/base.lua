@@ -218,15 +218,18 @@ function ScanLabels()
 					-- détection d'erreurs
 					if l == 1 then return ERR_SYNTAX_ERROR, i end
 					if l > 9 then return ERR_SYNTAX_ERROR, i end
+					
 					for j = 1, l - 1 do
 						local c = string.lower(string.sub(s, j, j))
 						if (c < "a" or c > "z") and (c < "0" or c > "9") and c ~= "-" and c ~= "_" and c ~= "@" then
 							return ERR_SYNTAX_ERROR, i
 						end
 					end
+					
 					if string.sub(s, 1, 1) >= "0" and string.sub(s, 1, 1) <= "9" then
 						return ERR_SYNTAX_ERROR, i
 					end
+					
 					-- label correct trouvé
 					labCount = labCount + 1
 					labels[labCount] = string.sub(s, 1, l - 1)
@@ -250,6 +253,18 @@ function ScanLabels()
 	end
 	
 	return OK, nil
+end
+
+function RemoveLabels(s, l)
+	for i = 1, labCount do
+		if labPC[i] == l then
+			-- supprimer l'éventuel label de la ligne
+			s = string.sub(s, #labels[i] + 1)
+			break
+		end
+	end
+	
+	return s
 end
 
 -- exécuter une seule commande
@@ -290,12 +305,7 @@ end
 function Exec(t, l)
 	-- retourner si la table est vide
 	if t == nil or #t == 0 then return OK end
-	
-	-- supprimer les labels
-	if t[1].typ == "label" then
-		table.remove(t[1], 1)
-	end
-	
+		
 	-- retourner si la table est vide
 	if t == nil or #t == 0 then return OK end
 	
@@ -690,7 +700,7 @@ function EvalFloat(s)
 	if s == nil or s == "" then return nil, ERR_SYNTAX_ERROR end
 	
 	-- analyser l'expression
-	local t = Parser(Lexer(s))
+	local t = Parser(Lexer(RemoveLabels(s, ProgramCounter)))
 	
 	s = ""
 
@@ -922,7 +932,7 @@ function EvalString(s, assign)
 	-- évaluer la chaîne dans le cadre d'une assignation de valeur à une variable ?
 	if assign == nil then assign = false end
 
-	t = Parser(Lexer(s))
+	t = Parser(Lexer(RemoveLabels(s, ProgramCounter)))
 	s = ""
 	
 	-- ne pas attendre le prochain symbole d'assemblage des chaînes
