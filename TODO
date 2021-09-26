@@ -22,5 +22,5 @@ FONCTIONS A AJOUTER :
 - Générer éventuellement des interruptions virtuelles toutes les X frames
 
 - Disques virtuels : donner la possibilité de copier tout le contenu d'un éventuel dossier RBDisk
-					 détecté à côté du fichier love exécutable vers le bac à sable.
+                     détecté à côté du fichier love exécutable vers le bac à sable.
 - Disques virtuels : donner la possibilité de changer de disque du projet courant.
