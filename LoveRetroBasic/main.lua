@@ -283,6 +283,7 @@ ram = {}
 for i = 0, MAX_RAM - 1 do
 	ram[i] = ""
 end
+
 ramLine = 0 -- offset de stockage de lignes de code en RAM
 
 -- ============================================

@@ -620,6 +620,14 @@ function Exec(t, l)
 				e = AssignToVar(var, varType, param)
 				if e ~= OK then return e end
 			end
+		elseif i > #t and action ~= "" and param == "" then
+			if startAction == "command" then
+				e = ExecOne(cs, lst)
+				if e ~= OK then return e end
+			elseif startAction == "assign" then
+				e = AssignToVar(var, varType, param)
+				if e ~= OK then return e end
+			end
 		end
 	end
 
@@ -1270,6 +1278,7 @@ function EndProgram()
 	
 	-- effacer le message éventuel
 	msg = nil
+	
 	-- effacer le message d'erreur si c'est 'ready'
 	if err == "Ready" then err = nil end
 	
