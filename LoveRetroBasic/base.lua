@@ -642,15 +642,15 @@ function EvalParam(param, typ)
 	elseif typ == VAR_FLOAT then
 		l, e = EvalFloat(param)
 		return tostring(l), e
-	elseif typ == VAR_STRING then
-		l, e = EvalString(param)
-		return tostring(l), e
 	elseif typ == VAR_NUM then
 		-- tous les paramètres numériques sont possibles
 		local l, e = EvalFloat(param)
 		if e ~= OK then
 			l, e = EvalInteger(param)
 		end
+		return tostring(l), e
+	elseif typ == VAR_STRING then
+		l, e = EvalString(param)
 		return tostring(l), e
 	elseif typ == VAR_POLY then
 		-- tous les paramètres sont possibles
@@ -663,6 +663,12 @@ function EvalParam(param, typ)
 			l = tostring(l)
 		end
 		return l, e
+	elseif typ == VAR_LABEL then
+		return param, OK
+	-- TODO:
+	--elseif typ == VAR_CONDITION then
+	--elseif typ == VAR_VAR then
+	--elseif typ == VAR_CONSTANT then
 	end
 	
 	return nil, ERR_SYNTAX_ERROR
