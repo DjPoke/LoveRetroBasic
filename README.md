@@ -1,5 +1,6 @@
 # LoveRetroBasic
 Bonjour, je suis DjPoke.
+
 Afin de m'occuper, je programme actuellement un petit ordinateur virtuel qui permettra à terme de programmer ses propres jeux.
 
 LoveRetroBasic est (ou en tout cas devrait devenir) une ordinateur virtuel programmé avec Löve/Lua.
