@@ -1,0 +1,26 @@
+BUGS :
+------
+- Commande dans une commande : chr$(asc(65)) problème de parenthèses mal comptabilisées
+- Bug : Val() ???
+- PRINT : print sgn(0.0) ne fonctionne pas
+
+- PRINT : le point-virgule en fin de ligne ne marche pas
+- PRINT : combiner les chaînes et les nombres avec point virgule donne pour résultat zéro
+
+FONCTIONS A AJOUTER :
+---------------------
+- Ajouter la gestion des mots secondaires et tertiaires (THEN, TO STEP)
+- Ajouter l'évaluation des conditions (pour IF et autres)
+
+- Boucles : WHILE/WEND, REPEAT/UNTIL, FOR/TO/STEP/NEXT,  
+- Conditions : IF THEN/ELSE/ENDIF, SELECT/CASE/ENDSELECT
+(empiler numéro et type d'instruction dans une pile dédiée afin de vérifier au dépilement si il n'y a pas d'erreur)
+
+- Musique et son : Porter le source de mon tracker dans LoveRetroBasic
+- Musique et son : SOUND num (Noise Editor -> vibrato et trémolo ? bruits ?)
+
+- Générer éventuellement des interruptions virtuelles toutes les X frames
+
+- Disques virtuels : donner la possibilité de copier tout le contenu d'un éventuel dossier RBDisk
+					 détecté à côté du fichier love exécutable vers le bac à sable.
+- Disques virtuels : donner la possibilité de changer de disque du projet courant.
