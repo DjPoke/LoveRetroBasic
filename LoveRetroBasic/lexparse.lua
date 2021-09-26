@@ -1,7 +1,7 @@
 -- tokenizer simplifié
 function Lexer(s)
 	-- retourner nil si la chaine est vide ou une chaine d'espaces
-	if Trim(s) == "" then return "" end
+	if s == nil or Trim(s) == "" then return "" end
 	
 	-- recherche de symboles par priorité
 	local tokens = {

@@ -184,7 +184,7 @@ function RemoveComments(s)
 	-- trouver le premier point-virgule
 	pos = string.find(s, "'")
 	
-	-- retourner la chaîne sans le point virgule
+	-- retourner la chaîne sans l'apostrophe
 	if pos ~= nil then
 		if pos > 1 then
 			if string.sub(s, pos - 1, pos - 1) ~= " " then
