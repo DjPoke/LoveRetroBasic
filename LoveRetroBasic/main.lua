@@ -1067,7 +1067,7 @@ function love.update(dt)
 					s, e = RemoveComments(s)
 					-- exécution de la commande
 					if e == OK then
-						err, value = GetError(Exec(Parser(Lexer(RemoveLabels(s, ProgramCounter)))), ProgramCounter)
+						err, value = GetError(Exec(Parser(Lexer(RemoveLabels(s)))), ProgramCounter)
 					else
 						err = GetError(e, ProgramCounter)
 					end

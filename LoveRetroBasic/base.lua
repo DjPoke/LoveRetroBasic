@@ -257,9 +257,9 @@ end
 
 function RemoveLabels(s, l)
 	for i = 1, labCount do
-		if labPC[i] == l then
+		if labels[i] .. ":" == string.sub(s, 1, #labels[i] + 1) then
 			-- supprimer l'éventuel label de la ligne
-			s = string.sub(s, #labels[i] + 1)
+			s = Trim(string.sub(s, #labels[i] + 2))
 			break
 		end
 	end
@@ -661,7 +661,7 @@ function EvalParam(param, typ)
 		return tostring(l), e
 	elseif typ == VAR_STRING then
 		l, e = EvalString(param)
-		return tostring(l), e
+		return l, e
 	elseif typ == VAR_POLY then
 		-- tous les paramètres sont possibles
 		local l, e = EvalString(param)
@@ -674,7 +674,8 @@ function EvalParam(param, typ)
 		end
 		return l, e
 	elseif typ == VAR_LABEL then
-		return param, OK
+		l, e = EvalLabel(param)
+		return l, e
 	-- TODO:
 	--elseif typ == VAR_CONDITION then
 	--elseif typ == VAR_VAR then
@@ -700,7 +701,7 @@ function EvalFloat(s)
 	if s == nil or s == "" then return nil, ERR_SYNTAX_ERROR end
 	
 	-- analyser l'expression
-	local t = Parser(Lexer(RemoveLabels(s, ProgramCounter)))
+	local t = Parser(Lexer(RemoveLabels(s)))
 	
 	s = ""
 
@@ -932,7 +933,7 @@ function EvalString(s, assign)
 	-- évaluer la chaîne dans le cadre d'une assignation de valeur à une variable ?
 	if assign == nil then assign = false end
 
-	t = Parser(Lexer(RemoveLabels(s, ProgramCounter)))
+	t = Parser(Lexer(RemoveLabels(s)))
 	s = ""
 	
 	-- ne pas attendre le prochain symbole d'assemblage des chaînes
@@ -1049,6 +1050,12 @@ function EvalString(s, assign)
 		return nil, ERR_SYNTAX_ERROR
 	end
 	
+	return s, OK
+end
+
+function EvalLabel(s)
+	if s == nil or s == "" then return nil, ERR_SYNTAX_ERROR end
+
 	return s, OK
 end
 

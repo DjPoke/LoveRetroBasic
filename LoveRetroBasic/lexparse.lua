@@ -1,6 +1,6 @@
 -- tokenizer simplifié
 function Lexer(s)
-	-- retourner nil si la chaine est vide ou une chaine d'espaces
+	-- retourner nil si la chaîne est vide ou une chaîne d'espaces
 	if s == nil or Trim(s) == "" then return "" end
 	
 	-- recherche de symboles par priorité
@@ -209,7 +209,7 @@ function Assemble2(t, typ1, typ2, newtyp)
 	return t2
 end
 
--- formatter les chaînes de caractères constantes
+-- formater les chaînes de caractères constantes
 function GetConstantStrings(t2)
 	local t = {}
 	
