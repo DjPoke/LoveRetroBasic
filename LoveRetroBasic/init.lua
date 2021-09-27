@@ -141,7 +141,8 @@ function Reset()
 		hardspr[i] = {x = 0, y = 0, img = 0, hotspot = 0, scale = 0, transp = 0, on = false}
 	end
 	
-	gameVBL = 60
+	-- reset du VBL
+	gameVBL = DEFAULT_VBL
 	VBL = false
 	
 	-- mettre le curseur texte en haut à gauche

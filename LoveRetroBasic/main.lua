@@ -42,6 +42,9 @@ PRINT_NOT_CLIPPED_NO_SCROLL = 3
 DEFAULT_PEN = 6
 DEFAULT_PAPER = 11
 
+-- ralentir le jeu par défaut (en FPS)
+DEFAULT_VBL = 1
+
 -- ===================================================
 -- = définir la liste des instructions de RetroBasic =
 -- ===================================================
@@ -350,7 +353,7 @@ end
 -- =============================
 -- = définir la vitesse du jeu =
 -- =============================
-gameVBL = 60
+gameVBL = DEFAULT_VBL -- coefficient pour ralentir le jeu
 VBL = false
 
 -- ==================================

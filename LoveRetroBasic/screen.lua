@@ -413,8 +413,7 @@ function EnableSprite(spr, e)
 end
 
 -- attendre que l'affichage soit fait
-function WaitVBL(v)
-	gameVBL = v
+function WaitVBL()
 	VBL = true
 	
 	return OK
