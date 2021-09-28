@@ -322,24 +322,34 @@ function DrawSprite(spr)
 	w = sprImgSize[img].w
 	h = sprImgSize[img].h
 	
+	-- calculer le facteur d'échelle
 	local scale = ss + 1
 	
+	-- point chaud centré sur x
 	if hardspr[spr].hotspot == 1 or hardspr[spr].hotspot == 4 or hardspr[spr].hotspot == 7 then
-		x = x - (math.floor(w / 2) * scale) + 1
+		x = x - ((w / 2) * scale)
 	end
 
+	-- point chaud à droite
 	if hardspr[spr].hotspot == 2 or hardspr[spr].hotspot == 5 or hardspr[spr].hotspot == 8 then
-		x = x - w + 1
+		x = x - (w * scale)
 	end
 
+	-- point chaud centré sur y
 	if hardspr[spr].hotspot == 3 or hardspr[spr].hotspot == 4 or hardspr[spr].hotspot == 5 then
-		y = y - (math.floor(h / 2) * scale) + 1
+		y = y - ((h / 2) * scale)
 	end
 
+	-- point chaud en bas
 	if hardspr[spr].hotspot == 6 or hardspr[spr].hotspot == 7 or hardspr[spr].hotspot == 8 then
-		y = y - h + 1
+		y = y - (h * scale)
 	end
+	
+	-- arrondir les coordonnées du sprite
+	x = math.floor(x + 0.5)
+	y = math.floor(y + 0.5)
 
+	-- dessiner le sprite
 	for ys = 0, h - 1 do
 		for xs = 0, w - 1 do
 			local xptemp = x + (xs * scale)

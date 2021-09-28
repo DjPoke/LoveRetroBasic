@@ -15,7 +15,6 @@ end
 
 -- commande 'BORDER'
 cmd["BORDER"].fn = function(lst)
-	dbg = lst[1]
 	v, e = EvalInteger(lst[1])
 	
 	if e ~= OK then return ERR_SYNTAX_ERROR end

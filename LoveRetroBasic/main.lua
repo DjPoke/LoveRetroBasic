@@ -347,7 +347,7 @@ sprImgPage = 0
 -- ================================================
 hardspr = {}
 for i = 0, MAX_HARD_SPRITES - 1 do
-	hardspr[i] = {x = 0, y = 0, img = 0, hotspot = 0, scale = 0, transp = 0, on = false}
+	hardspr[i] = {x = 0.0, y = 0.0, img = 0, hotspot = 0, scale = 0, transp = 0, on = false}
 end
 
 -- =============================
@@ -983,8 +983,8 @@ function love.update(dt)
 						Locate(1, 1)
 						kb_buffer = ""
 						for i = 0, MAX_HARD_SPRITES - 1 do
-							hardspr[i].x = 0
-							hardspr[i].y = 0
+							hardspr[i].x = 0.0
+							hardspr[i].y = 0.0
 							hardspr[i].img = 0
 							hardspr[i].hotspot = 0
 							hardspr[i].scale = 0
@@ -1009,8 +1009,8 @@ function love.update(dt)
 						Locate(1, 1)
 						kb_buffer = ""
 						for i = 0, MAX_HARD_SPRITES - 1 do
-							hardspr[i].x = 0
-							hardspr[i].y = 0
+							hardspr[i].x = 0.0
+							hardspr[i].y = 0.0
 							hardspr[i].img = 0
 							hardspr[i].hotspot = 0
 							hardspr[i].scale = 0
