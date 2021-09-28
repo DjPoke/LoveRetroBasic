@@ -337,7 +337,7 @@ function SetEditorTextColor(ln)
 		pen = DEFAULT_PEN		
 	end
 
-	-- commentaire trouvé ?
+	-- commentaire trouvé ? on remplace la couleur
 	local com = ScanComments(s)
 	
 	if com ~= nil then
@@ -359,8 +359,56 @@ function SetEditorTextColor(ln)
 		pen = DEFAULT_PEN		
 	end
 
-	-- commande trouvée
-	--DEFAULT_INSTRUCTIONS_PEN
+	-- commande trouvée ? on remplace la couleur
+	local g = 0 -- guillemets trouvés
+	local word = "" -- mot trouvé
+	local flag = false -- drapeau pour si un mot est terminé
+	local wpos = 0
+	
+	for i = 1, #s do
+		-- récupérer le caractère en cours
+		local c = string.lower(string.sub(s, i, i))
+		
+		-- si c'est un guillemet, on le comptabilise
+		if c == "\"" then
+			g = g + 1
+			
+			-- si un mot était avant le guillemet, et qu'il n'est
+			-- pas inclus dans une chaîne de caractères, alors,
+			-- déclancher son coloriage
+			if #word > 0 and g % 2 == 0 then
+				wpos = i - #word
+				flag = true
+			end
+		elseif c >= "a" and c <= "z" then
+			word = word .. string.sub(s, i, i)
+
+			if i == #s and g % 2 == 0 then
+				wpos = i - #word + 1
+				flag = true
+			end
+		elseif #word > 0 and g % 2 == 0 then
+			wpos = i - #word
+			flag = true
+		end
+		
+		-- colorier un mot clé
+		if flag then
+			for j = 1, #commands do
+				if string.upper(word) == commands[j] then
+					local pos = cursor[1]
+					cursor[1] = wpos
+					pen = DEFAULT_INSTRUCTIONS_PEN
+					PrintString2(word)
+					pen = DEFAULT_PEN
+					cursor[1] = pos
+				end
+			end
+			
+			flag = false
+			word = ""
+		end
+	end
 
 	-- rétablir la position du curseur texte
 	cursor[1] = xSafe
