@@ -83,7 +83,7 @@ for i = 1, #commands do
 	cmd[commands[i]] = {fn = nil, ret = 0, pmin = 0, pmax = 0, ptype = VAR_INTEGER, word2 = "", word3 = "", wmin = 1, wmax = 1}
 end
 
--- définir les instructions BASIC qui retournent une valeur
+-- définir le type de valeur retournée pour chaque instruction BASIC
 cmd["ABS"].ret = VAR_NUM
 cmd["ASC"].ret = VAR_INTEGER
 cmd["BIN$"].ret = VAR_STRING
@@ -100,7 +100,7 @@ cmd["INPUT"].ret = VAR_STRING
 cmd["SGN"].ret = VAR_NUM
 cmd["VAL"].ret = VAR_NUM
 
--- définir les paramètres d'entrée pour les instructions BASIC
+-- définir le nombre minimal et maximal de paramètres d'entrée pour les instructions BASIC
 cmd["ABS"].pmin, cmd["ABS"].pmax = 1, 1
 cmd["ASC"].pmin, cmd["ASC"].pmax = 1, 1
 cmd["BIN$"].pmin, cmd["BIN$"].pmax = 1, 1
@@ -141,7 +141,7 @@ cmd["UNTIL"].pmin, cmd["UNTIL"].pmax = 1, 1
 cmd["VAL"].pmin, cmd["VAL"].pmax = 1, 1
 cmd["WHILE"].pmin, cmd["WHILE"].pmax = 1, 1
 
--- définir le type de paramètres d'entrée pour les instructions BASIC
+-- définir le type de valeur du paramètre en entrée pour chaque instruction BASIC
 cmd["ABS"].ptype = VAR_NUM
 cmd["ASC"].ptype = VAR_STRING
 cmd["ELSEIF"].ptype = VAR_CONDITION

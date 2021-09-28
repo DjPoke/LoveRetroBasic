@@ -592,6 +592,8 @@ end
 
 -- commande 'VAL'
 cmd["VAL"].fn = function(lst)
+	if lst[1] == nil or lst[1] == "" then return OK, 0 end
+
 	return OK, Val(lst[1])
 end
 

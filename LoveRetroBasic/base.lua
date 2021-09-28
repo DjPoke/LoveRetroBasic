@@ -99,20 +99,28 @@ end
 function Val(s)
 	local retv = nil
 	
-	-- chercher un code hexa ou binaire
+	-- chercher un code hexa
 	if #s > 1 then
-		if string.lower(string.sub(s, 1, 1)) == "$" or string.lower(string.sub(s, 1, 1)) == "#" then
-			local v = string.lower(string.sub(s, 2))
+		if string.sub(s, 1, 1) == "&" and string.sub(s, 2, 2) ~= "x" then
+			local v = string.sub(s, 2)
 
 			retv = tonumber("0x" .. v)
 			
+			-- remplacer nil par zéro
+			if retv == nil then retv = 0 end
+			
 			return retv
-		elseif string.lower(string.sub(s, 1, 1)) == "%" then
-			local v = string.lower(string.sub(s, 2))
+		end
+	end
+	
+	-- chercher un code binaire
+	if #s > 2 then
+		if string.lower(string.sub(s, 1, 2)) == "&x" then
+			local v = string.sub(s, 3)
 
 			for i = 1, #v do
 				if (string.sub(v, i, i) < "0" or string.sub(v, i, i) > "1") then
-					return nil
+					return 0
 				end
 			end
 			
@@ -129,8 +137,12 @@ function Val(s)
 			return retv
 		end
 	end
-	
+
+	-- calculer la valeur décimale du résultat
 	retv = tonumber(s)
+	
+	-- remplacer nil par zéro
+	if retv == nil then retv = 0 end
 	
 	return retv
 end
@@ -368,9 +380,6 @@ function Exec(t, l)
 	-- retourner si la table est vide
 	if t == nil or #t == 0 then return OK end
 		
-	-- retourner si la table est vide
-	if t == nil or #t == 0 then return OK end
-	
 	-- retourner si le nombre de parenthèses est impair
 	local b, ob, cb = 0, 0, 0
 	for i = 1, #t do
@@ -626,11 +635,11 @@ function Exec(t, l)
 				if cmd[c].ptype == VAR_STRING then
 					p, e = EvalString(p)
 					if e ~= OK then return nil, e end
-					
+
 					local lst = {p}
 					local e, ch = ExecOne(c, lst)
 					if e ~= OK then return nil, e end
-					
+
 					param = param .. ch
 				elseif cmd[c].ptype == VAR_FLOAT then
 					if tostring(Val(p)) ~= p then
