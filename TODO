@@ -1,14 +1,17 @@
 BUGS :
 ------
-- Commande dans une commande : chr$(asc(65)) problème de parenthèses mal comptabilisées
-- Bug : Val() ???
+- Commande dans une commande : a = chr$(asc(65)) problème de parenthèses mal comptabilisées
 - PRINT : print sgn(0.0) ne fonctionne pas
-
+- PRINT : print val("125") ne fonctionne pas
 - PRINT : le point-virgule en fin de ligne ne marche pas
 - PRINT : combiner les chaînes et les nombres avec point virgule donne pour résultat zéro
 
 FONCTIONS A AJOUTER :
 ---------------------
+- Cliquer sur le menu d'en haut doit allumer le verbe d'action sélectionné.
+- Sauvegarder les sprites doit informer l'utilisateur, de même que si l'utilisateur quitte
+l'éditeur de sprites sans sauvegarder.
+
 - Ajouter la gestion des mots secondaires et tertiaires (THEN, TO STEP)
 - Ajouter l'évaluation des conditions (pour IF et autres)
 
