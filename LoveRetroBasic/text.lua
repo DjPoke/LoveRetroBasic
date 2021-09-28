@@ -153,6 +153,20 @@ function PrintString(s)
 end
 
 -- afficher un ou plusieurs caractères à l'écran avec la couleur du stylo texte
+-- version de la routine qui ne descend pas à la ligne
+function PrintString2(s)
+	-- annuler si la chaîne est vide
+	if s == nil then
+		return
+	end
+	
+	for i = 1, #s do
+		chr = string.sub(s, i, i)
+		PrintChar(Asc(chr), PRINT_NOT_CLIPPED)
+	end
+end
+
+-- afficher un ou plusieurs caractères à l'écran avec la couleur du stylo texte
 -- et passe à la ligne suivante
 function PrintStringN(s)
 	PrintString(s)
@@ -272,4 +286,86 @@ function AppendTextToRam(s)
 	end
 
 	ShowCursor(true)
+end
+
+-- colorier la ligne courante de l'éditeur
+function SetEditorTextColor(ln)
+	-- ajouter l'offset de l'éditeur
+	ln = ln + editorOffsetY
+	
+	-- récupérer la position courante du curseur
+	local xSafe = cursor[1]
+	local ySafe = cursor[2]
+
+	-- rétablir le stylo par défaut
+	pen = DEFAULT_PEN
+
+	-- récupérer la ligne courante
+	local s = ram[ln]
+	
+	-- exit si la chaine est vide
+	if s == nil then
+		-- rétablir la position du curseur texte
+		cursor[1] = xSafe
+		cursor[2] = ySafe
+
+		-- rétablir le stylo par défaut
+		pen = DEFAULT_PEN		
+	end
+	
+	-- repositionner le curseur texte en début de ligne
+	cursor[1] = 1
+		
+	-- label trouvé ? on remplace la couleur
+	local lab = ScanCurrentLabels(s)
+
+	if lab ~= nil then
+		pen = DEFAULT_LABELS_PEN
+		PrintString2(lab .. ":")
+		pen = DEFAULT_PEN
+		s = string.sub(s, #lab + 2)
+		cursor[1] = #lab + 2
+	end
+
+	-- exit si la chaine est vide
+	if s == nil then
+		-- rétablir la position du curseur texte
+		cursor[1] = xSafe
+		cursor[2] = ySafe
+
+		-- rétablir le stylo par défaut
+		pen = DEFAULT_PEN		
+	end
+
+	-- commentaire trouvé ?
+	local com = ScanComments(s)
+	
+	if com ~= nil then
+		local pos = cursor[1]
+		cursor[1] = cursor[1] + #s - #com
+		pen = DEFAULT_COMMENTS_PEN
+		PrintString2(com)
+		pen = DEFAULT_PEN
+		cursor[1] = pos
+	end
+		
+	-- exit si la chaine est vide
+	if s == nil then
+		-- rétablir la position du curseur texte
+		cursor[1] = xSafe
+		cursor[2] = ySafe
+
+		-- rétablir le stylo par défaut
+		pen = DEFAULT_PEN		
+	end
+
+	-- commande trouvée
+	--DEFAULT_INSTRUCTIONS_PEN
+
+	-- rétablir la position du curseur texte
+	cursor[1] = xSafe
+	cursor[2] = ySafe
+
+	-- rétablir le stylo par défaut
+	pen = DEFAULT_PEN		
 end

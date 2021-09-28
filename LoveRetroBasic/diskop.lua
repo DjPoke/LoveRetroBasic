@@ -77,6 +77,8 @@ function LoadProject(filename)
 		for j = 1, #ram[ramLine + i - 1] do
 			PrintChar(Asc(string.sub(ram[ramLine + i - 1], j, j)), PRINT_NOT_CLIPPED)
 		end
+		
+		SetEditorTextColor(ramLine + i - 1)
 	end
 
 	if lim == 25 then
@@ -86,6 +88,8 @@ function LoadProject(filename)
 		Locate(1, lim + 1)
 		ramLine = memLim + 1
 	end
+	
+	ShowCursor(true)
 end
 
 -- charger le fichier de sprites

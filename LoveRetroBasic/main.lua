@@ -40,7 +40,10 @@ PRINT_NOT_CLIPPED_NO_SCROLL = 3
 
 -- constantes couleurs de l'éditeur
 DEFAULT_PEN = 6
-DEFAULT_PAPER = 11
+DEFAULT_LABELS_PEN = 10
+DEFAULT_COMMENTS_PEN = 9
+DEFAULT_INSTRUCTIONS_PEN = 3
+DEFAULT_PAPER = 43
 
 -- ralentir le jeu par défaut (en FPS)
 DEFAULT_VBL = 1
@@ -902,8 +905,13 @@ function love.update(dt)
 
 	-- en mode édition...
 	if appState == EDIT_MODE then
-		-- récupérer les dernier textes saisis
-		AppendTextToRam(kb_buffer)
+		local newTextEntered = false
+		
+		if kb_buffer ~= nil and kb_buffer ~= "" then
+			-- récupérer les dernier textes saisis
+			AppendTextToRam(kb_buffer)
+			newTextEntered = true
+		end
 		
 		-- récupérer les clics sur le menu outils
 		if GetMouseClicLeft() then
@@ -1045,6 +1053,11 @@ function love.update(dt)
 					return					
 				end
 			end
+		end
+		
+		if newTextEntered then
+			-- colorier la ligne courante de code source
+			SetEditorTextColor(ramLine)
 		end
 	end
 	

@@ -181,11 +181,16 @@ function RemoveComments(s)
 	-- retourner nil si la chaîne est vide
 	if s == nil then return nil, OK end
 	
-	-- trouver le premier point-virgule
-	pos = string.find(s, "'")
+	-- trouver la première apostrophe
+	local pos = string.find(s, "'")
 	
-	-- retourner la chaîne sans l'apostrophe
 	if pos ~= nil then
+		-- compter les guillemets précédents
+		local sg = string.sub(s, 1, pos - 1)
+		local _, count = string.gsub(sg, "\"", "")
+		if count % 2 == 1 then return s, OK end
+	
+		-- retourner la chaîne sans l'apostrophe
 		if pos > 1 then
 			if string.sub(s, pos - 1, pos - 1) ~= " " then
 				return nil, ERR_SYNTAX_ERROR
@@ -198,6 +203,27 @@ function RemoveComments(s)
 	end
 	
 	return s, OK
+end
+
+-- trouver les commentaires d'une ligne de code
+function ScanComments(s)
+	-- retourner nil si la ligne est vide
+	if s == nil or s == "" then return nil end
+		
+	-- trouver la première apostrophe
+	local pos = string.find(s, "'")
+	
+	if pos ~= nil then
+		-- compter les guillemets précédents
+		local sg = string.sub(s, 1, pos - 1)
+		local _, count = string.gsub(sg, "\"", "")
+		if count % 2 == 1 then return nil end
+
+		-- retourner la chaîne sans l'apostrophe
+		return string.sub(s, pos)
+	end
+	
+	return nil
 end
 
 -- scanner tous les labels présents dans le code
@@ -255,7 +281,43 @@ function ScanLabels()
 	return OK, nil
 end
 
-function RemoveLabels(s, l)
+-- scanner le label éventuellement présent sur une ligne de code
+function ScanCurrentLabels(s)
+	-- rechercher un label éventuel
+	if s ~= nil then
+		s = RemoveComments(s)
+		
+		if s ~= nil then
+			local l = string.find(s, ":")
+			if l ~= nil then
+				-- détection d'erreurs
+				if l == 1 then return nil end
+				if l > 9 then return nil end
+				
+				for j = 1, l - 1 do
+					local c = string.lower(string.sub(s, j, j))
+					if (c < "a" or c > "z") and (c < "0" or c > "9") and c ~= "-" and c ~= "_" and c ~= "@" then
+						return nil
+					end
+				end
+				
+				if string.sub(s, 1, 1) >= "0" and string.sub(s, 1, 1) <= "9" then
+					return nil
+				end
+				
+				-- label correct trouvé
+				return string.sub(s, 1, l - 1)
+			end
+		end
+	end
+	
+	return nil
+end
+
+function RemoveLabels(s)
+	-- retourner nil si la ligne est vide
+	if s == nil or s == "" then return nil end
+
 	for i = 1, labCount do
 		if labels[i] .. ":" == string.sub(s, 1, #labels[i] + 1) then
 			-- supprimer l'éventuel label de la ligne

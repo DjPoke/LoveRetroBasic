@@ -99,6 +99,8 @@ function RedrawEditor()
 		else
 			return
 		end
+		
+		SetEditorTextColor(y)
 	end
 
 	cursor[1] = xc
