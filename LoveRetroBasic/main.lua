@@ -144,6 +144,7 @@ cmd["WHILE"].pmin, cmd["WHILE"].pmax = 1, 1
 -- définir le type de valeur du paramètre en entrée pour chaque instruction BASIC
 cmd["ABS"].ptype = VAR_NUM
 cmd["ASC"].ptype = VAR_STRING
+cmd["CHR$"].ptype = VAR_NUM
 cmd["ELSEIF"].ptype = VAR_CONDITION
 cmd["FOR"].ptype = VAR_INTEGER
 cmd["GOSUB"].ptype = VAR_LABEL

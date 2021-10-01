@@ -38,7 +38,7 @@ cmd["CHR$"].fn = function(lst)
 	if v < 0 or v > 255 then
 		return ERR_OVERFLOW, nil
 	end
-	
+
 	return OK, "\"" .. Chr(v) .. "\""
 end
 

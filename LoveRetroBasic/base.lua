@@ -76,21 +76,20 @@ end
 function Trim(s, c)
 	if s == nil then return nil end
 	if c == nil then c = " " end
-	if #c > 1 then c = string.sub(c, 1, 1) end
-	
-	for i = 1,#s do
-		if string.sub(s, i, i) ~= c then
-			s = string.sub(s, i)
-			break
-		end
-	end
 
-	for i = #s,1,-1 do
-		if string.sub(s, i, i) ~= c then
-			s = string.sub(s, 1, i)
-			break
+	-- supprimer côté gauche
+	while string.sub(s, 1, 1) == c and #s > 0 do
+		s = string.sub(s, 2)
+	end
+	
+	if #s > 0 then
+		-- supprimer côté droit
+		while string.sub(s, #s, #s) == c and #s > 0 do
+			s = string.sub(s, 1, #s - 1)
 		end
 	end
+	
+	if s == nil then s = "" end
 	
 	return s
 end
@@ -98,7 +97,7 @@ end
 -- convertir la chaîne numérique en nombre
 function Val(s)
 	local retv = nil
-	
+
 	-- chercher un code hexa
 	if #s > 1 then
 		if string.sub(s, 1, 1) == "&" and string.sub(s, 2, 2) ~= "x" then
@@ -377,7 +376,7 @@ function ExecOne(cs, lst, comma)
 	elseif cmd[cs].pmax >= 0 and #lst == cmd[cs].pmax and comma then
 		return ERR_SYNTAX_ERROR, nil
 	end
-
+		
 	return cmd[cs].fn(lst)
 end
 
@@ -682,6 +681,7 @@ function Exec(t, l)
 				local c, p, e
 				c, p, i, e = GetFunction(t, i)
 				if e ~= OK then return nil, e end
+				
 
 				-- quel est le type de paramètres requis par la commande ?
 				if cmd[c].ptype == VAR_STRING then
@@ -739,23 +739,17 @@ function Exec(t, l)
 		end
 		
 		i = i + 1
-
+		
 		-- dernière action à faire sur cette ligne de code
-		if i > #t and action ~= "" and param ~= "" then
+		if i > #t and action ~= "" then
 			if startAction == "command" then
-				local p, e = EvalParam(param, cmd[cs].ptype)
-				if e ~= OK then return e end
-				table.insert(lst, p)
+				if param ~= "" then
+					local p, e = EvalParam(param, cmd[cs].ptype)
+					if e ~= OK then return e end
+					table.insert(lst, p)
+				end
 				
 				e = ExecOne(cs, lst)
-				if e ~= OK then return e end
-			elseif startAction == "assign" then
-				e = AssignToVar(var, varType, param)
-				if e ~= OK then return e end
-			end
-		elseif i > #t and action ~= "" and param == "" then			
-			if startAction == "command" then
-				e = ExecOne(cs, lst, comma)
 				if e ~= OK then return e end
 			elseif startAction == "assign" then
 				e = AssignToVar(var, varType, param)
@@ -790,12 +784,18 @@ function EvalParam(param, typ)
 	elseif typ == VAR_POLY then
 		-- tous les paramètres sont possibles
 		local l, e = EvalString(param)
-		if e ~= OK then
+		if e ~= OK and e == ERR_TYPE_MISMATCH then
 			l, e = EvalFloat(param)
 			if e ~= OK then
 				l, e = EvalInteger(param)
+				-- impossible d'évaluer le paramètre
+				if e ~= OK then
+					return nil, e
+				end
 			end
 			l = tostring(l)
+		elseif e ~= OK then
+			return nil, e
 		end
 		return l, e
 	elseif typ == VAR_LABEL then
@@ -824,11 +824,15 @@ end
 -- évaluer une expression float
 function EvalFloat(s)
 	if s == nil or s == "" then return nil, ERR_SYNTAX_ERROR end
-	
+
 	-- analyser l'expression
 	local t = Parser(Lexer(RemoveLabels(s)))
-	
 	s = ""
+	
+	-- vérifier si c'est un simple nombre
+	if #t == 1 and t[1].typ == "number" then
+		return Val(t[1].sym), OK
+	end
 
 	i = 1
 	while i <= #t do
@@ -841,17 +845,17 @@ function EvalFloat(s)
 			local c, p, e
 			c, p, i, e = GetFunction(t, i)
 			if e ~= OK then return nil, e end
-				
+
 			-- quel est le type de paramètres requis par la commande ?
 			if cmd[c].ptype == VAR_STRING then
 				p, e = EvalString(p)
 				if e ~= OK then return nil, e end
-				
+
 				-- remplacer par la valeur
 				local lst = {p}
 				local e, value = cmd[c].fn(lst)
 				if e ~= OK then return nil, e end
-				
+
 				s = s .. tostring(value)
 			elseif cmd[c].ptype == VAR_FLOAT then
 				if tostring(Val(p)) ~= p then
@@ -870,7 +874,6 @@ function EvalFloat(s)
 					p, e = EvalInteger(p)
 					if e ~= OK then return nil, e end
 				end
-				
 				-- remplacer par la valeur
 				local lst = {tostring(p)}
 				local e, value = cmd[c].fn(lst)
@@ -893,7 +896,15 @@ function EvalFloat(s)
 
 				s = s .. tostring(value)
 			end
-		else
+		elseif t[i].typ == "number" then
+			s = s .. t[i].sym
+		elseif t[i].typ == "plus" then
+			s = s .. t[i].sym
+		elseif t[i].typ == "minus" then
+			s = s .. t[i].sym
+		elseif t[i].typ == "mult" then
+			s = s .. t[i].sym
+		elseif t[i].typ == "div" then
 			s = s .. t[i].sym
 		end
 		
@@ -914,8 +925,8 @@ function EvalFloat(s)
 	for i in string.gfind(s, "%)") do
 		p2 = p2 + 1
 	end
-	
-	-- erreur si leur nombre est impair
+
+	-- erreur si le nombre est impair
 	if p1 ~= p2 then return nil, ERR_SYNTAX_ERROR end
 
 	-- compter le nombre de niveaux de parenthèses
@@ -1053,16 +1064,16 @@ function EvalFloat(s)
 	return v, OK
 end
 
--- évaluer une expression chaine de caractères
+-- évaluer une expression chaîne de caractères
 function EvalString(s, assign)
 	if s == nil or s == "" then return "", OK end
-	
+
 	-- évaluer la chaîne dans le cadre d'une assignation de valeur à une variable ?
 	if assign == nil then assign = false end
 
 	t = Parser(Lexer(RemoveLabels(s)))
 	s = ""
-	
+
 	-- ne pas attendre le prochain symbole d'assemblage des chaînes
 	local waitsym = false
 	
@@ -1133,7 +1144,7 @@ function EvalString(s, assign)
 					s = s .. ch
 					
 					waitsym = true
-				elseif cmd[c].ptype == VAR_FLOAT then
+				elseif cmd[c].ptype == VAR_NUM then
 					p, e = EvalFloat(p)
 					if e ~= OK then
 						p, e = EvalInteger(p)
@@ -1143,7 +1154,7 @@ function EvalString(s, assign)
 					local lst = {tostring(p)}
 					local e, ch = ExecOne(c, lst)
 					if e ~= OK then return nil, e end
-					
+
 					s = s .. ch
 					
 					waitsym = true
@@ -1151,8 +1162,12 @@ function EvalString(s, assign)
 			elseif t[i].typ == "whitespace" then
 				-- ne rien faire
 			else
-				return nil, ERR_SYNTAX_ERROR
+				return nil, ERR_TYPE_MISMATCH
 			end
+		elseif a == ";" and t[i].typ == "plus"  then
+			return nil, ERR_SYNTAX_ERROR
+		elseif a == "+" and t[i].typ == "semicolon" then
+			return nil, ERR_SYNTAX_ERROR
 		elseif a == ";" and t[i].typ == "semicolon"  then
 			waitsym = false
 		elseif a == "+" and t[i].typ == "plus" then
@@ -1162,8 +1177,6 @@ function EvalString(s, assign)
 				a = ";"
 			elseif t[i].typ == "plus" then
 				a = "+"
-			else
-				return nil, ERR_SYNTAX_ERROR
 			end
 			
 			waitsym = false
@@ -1197,20 +1210,21 @@ end
 function GetFunction(t, i)
 	-- si les parenthèses sont manquantes
 	if i == #t or i + 1 == #t then return nil, nil, nil, ERR_SYNTAX_ERROR end
-	
+
 	local c = t[i].sym
 	local p = ""
-	
+
 	if t[i + 1].typ ~= "openbracket" then return nil, nil, nil, ERR_SYNTAX_ERROR end
 	
 	local flag = false
-	local ob = 0
-	local cb = 0
-	
+	local ob = 0 -- nombre de parenthèses ouvertes
+	local cb = 0 -- nombre de parenthèses fermées
+
+	-- chercher l'indice des paramètres et les paramètres en question
 	for j = i + 2, #t do
 		if t[j].typ == "closebracket" and ob == cb then
 			flag = true
-			i = j
+			i = j - 1
 			break
 		elseif t[j].typ == "closebracket" then
 			cb = cb + 1
@@ -1222,11 +1236,11 @@ function GetFunction(t, i)
 			p = p .. t[j].sym
 		end
 	end
-
+	
 	-- trouver les erreurs
 	if ob ~= cb then return nil, nil, nil, ERR_SYNTAX_ERROR end
 	if not flag then return nil, nil, nil, ERR_SYNTAX_ERROR end
-	
+
 	return c, p, i, OK
 end
 
