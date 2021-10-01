@@ -139,7 +139,7 @@ function Parser(t)
 			end
 		end
 	end
-		
+
 	return t
 end
 
@@ -226,7 +226,7 @@ function GetConstantStrings(t2)
 			else
 				assembly = false
 				s = s .. t2[i].sym
-				table.insert(t, {sym = s, typ = "cstr"})
+				table.insert(t, {sym = s, typ = "poly"})
 				s = ""
 			end
 		elseif t2[i].typ ~= "quote" then

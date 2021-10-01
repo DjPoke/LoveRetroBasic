@@ -26,11 +26,11 @@ VAR_INTEGER = 1
 VAR_FLOAT = 2
 VAR_NUM = 3 -- types numériques confondus
 VAR_STRING = 4
-VAR_POLY = 5 -- types numériques ou chaine confondus
+VAR_POLY = 5 -- types numériques ou chaîne confondus
 VAR_LABEL = 6
 VAR_CONDITION = 7 -- true ou false, comparaison
 VAR_VAR = 8 -- un nom de variable
-VAR_CONSTANT = 9 -- une constante (numérique ou chaine de caractères)
+VAR_CONSTANT = 9 -- une constante (numérique ou chaîne de caractères)
 
 -- constantes du scrolling de l'éditeur
 PRINT_NO_FLAGS = 0

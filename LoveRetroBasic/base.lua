@@ -254,16 +254,25 @@ function ScanLabels()
 				local l = string.find(s, ":")
 				if l ~= nil then
 					-- détection d'erreurs
-					if l == 1 then return ERR_SYNTAX_ERROR, i end
-					if l > 9 then return ERR_SYNTAX_ERROR, i end
+					if l == 1 then goto continue end
+					if l > 9 then goto continue end
 					
+					-- vérifier la syntaxe de l'éventuel label trouvé
 					for j = 1, l - 1 do
 						local c = string.lower(string.sub(s, j, j))
 						if (c < "a" or c > "z") and (c < "0" or c > "9") and c ~= "-" and c ~= "_" and c ~= "@" then
-							return ERR_SYNTAX_ERROR, i
+							goto continue
 						end
 					end
 					
+					-- vérifier que le label ne soit pas un mot clé
+					for j = 1, #commands do
+						if commands[j] == string.upper(string.sub(s, 1, l - 1)) then
+							goto continue							
+						end
+					end
+					
+					-- vérifier que le label ne commence pas par un chiffre
 					if string.sub(s, 1, 1) >= "0" and string.sub(s, 1, 1) <= "9" then
 						return ERR_SYNTAX_ERROR, i
 					end
@@ -272,6 +281,9 @@ function ScanLabels()
 					labCount = labCount + 1
 					labels[labCount] = string.sub(s, 1, l - 1)
 					labPC[labCount] = i
+					
+					-- saut ici si label non trouvé
+					::continue::
 				end
 			end
 		end
@@ -303,22 +315,34 @@ function ScanCurrentLabels(s)
 			local l = string.find(s, ":")
 			if l ~= nil then
 				-- détection d'erreurs
-				if l == 1 then return nil end
-				if l > 9 then return nil end
+				if l == 1 then goto continue end
+				if l > 9 then goto continue end
 				
+				-- vérifier la syntaxe des labels
 				for j = 1, l - 1 do
 					local c = string.lower(string.sub(s, j, j))
 					if (c < "a" or c > "z") and (c < "0" or c > "9") and c ~= "-" and c ~= "_" and c ~= "@" then
-						return nil
+						goto continue
+					end
+				end
+					
+				-- vérifier que le label ne soit pas un mot clé
+				for j = 1, #commands do
+					if commands[j] == string.upper(string.sub(s, 1, l - 1)) then
+						goto continue							
 					end
 				end
 				
+				-- le label ne doit pas commencer par un nombre
 				if string.sub(s, 1, 1) >= "0" and string.sub(s, 1, 1) <= "9" then
 					return nil
+				else
+					-- label correct trouvé
+					return string.sub(s, 1, l - 1)
 				end
-				
-				-- label correct trouvé
-				return string.sub(s, 1, l - 1)
+					
+				-- saut ici si label non trouvé
+				::continue::
 			end
 		end
 	end
@@ -414,7 +438,7 @@ function Exec(t, l)
 			elseif t[i].typ == "command" then
 				-- une commande a été trouvée
 				startAction = "command"
-				action = "cmdcheckspace"
+				action = "find_whitespace" -- on recherche ensuite un symbole 'espace'
 				cs = t[i].sym
 				-- erreur si une fonction est trouvée en tant que commande, sans assignation à une variable
 				if cmd[cs].ret > 0 then
@@ -452,7 +476,7 @@ function Exec(t, l)
 
 				-- chercher ensuite le signe égal pour une assignation
 				startAction = "assign"
-				action = "cmdcheckequal"
+				action = "find_equal"
 				param = ""
 			elseif t[i].typ == "float"  then
 				-- une variable float a peut-être été trouvée,
@@ -486,7 +510,7 @@ function Exec(t, l)
 
 				-- chercher ensuite le signe égal pour une assignation
 				startAction = "assign"
-				action = "cmdcheckequal"
+				action = "find_equal"
 				param = ""
 			elseif t[i].typ == "string" then
 				-- une variable string a peut-être été trouvée,
@@ -520,18 +544,19 @@ function Exec(t, l)
 				
 				-- chercher ensuite le signe égal pour une assignation
 				startAction = "assign"
-				action = "cmdcheckequal"
+				action = "find_equal"
 				param = ""
 			end
-		elseif action == "cmdcheckspace" then
+		elseif action == "find_whitespace" then
 			if t[i].typ == "whitespace" then
-				action = "getfirstparam"
+				-- on a trouvé un espace après une commande
+				action = "find_first_parameter" -- on cherche maintenant le 1er paramètre éventuel
 				param = ""
 			else
-				-- gestion des paramètres 'chaîne de caractère'
+				-- gestion des paramètres 'chaîne de caractère' tout de suite après la commande
 				if cmd[cs].ptype == VAR_POLY or cmd[cs].ptype == VAR_STRING then
-					if t[i].typ == "cstr" then
-						action = "getfirstparam"
+					if t[i].typ == "poly" then
+						action = "find_first_parameter"
 						param = t[i].sym
 					else
 						return ERR_SYNTAX_ERROR
@@ -540,16 +565,13 @@ function Exec(t, l)
 					return ERR_SYNTAX_ERROR
 				end
 			end
-		elseif action == "getfirstparam" then
+		elseif action == "find_first_parameter" then
 			if t[i].typ ~= "comma" and t[i].typ ~= "whitespace" and t[i].typ ~= "colon" then
 				-- assemblage du premier paramètre
 				param = param .. t[i].sym
-			elseif t[i].typ == "comma" and param == "" then
-				-- il y a une virgule sans paramètre qui le précède
-				return ERR_SYNTAX_ERROR
 			elseif t[i].typ == "comma" then
 				-- on rencontre une virgule, on va chercher le paramètres suivant
-				action = "getparam"
+				action = "find_next_parameter"
 				local p, e = EvalParam(param, cmd[cs].ptype)
 				if e ~= OK then return e end
 				table.insert(lst, p)
@@ -569,7 +591,7 @@ function Exec(t, l)
 				-- assemblage du premier paramètre
 				param = param .. t[i].sym
 			end
-		elseif action == "getparam" then
+		elseif action == "find_next_parameter" then
 			if t[i].typ ~= "comma" and t[i].typ ~= "whitespace" and t[i].typ ~= "colon" then
 				param = param .. t[i].sym
 			elseif t[i].typ == "comma" then
@@ -588,14 +610,14 @@ function Exec(t, l)
 				if e ~= OK then return e end
 				cs = ""
 			end
-		elseif action == "cmdcheckequal" then
+		elseif action == "find_equal" then
 			if t[i].typ ~= "whitespace" and t[i].typ ~= "equal" then
 				return ERR_SYNTAX_ERROR
 			elseif t[i].typ == "equal" then
-				action = "cmdcheckexpression"
+				action = "find_expression"
 				param = ""
 			end
-		elseif action == "cmdcheckexpression" then
+		elseif action == "find_expression" then
 			if t[i].typ == "colon" then
 				e = AssignToVar(var, varType, param)
 				if e ~= OK then return e end
@@ -613,7 +635,7 @@ function Exec(t, l)
 				if varType == VAR_INTEGER or varType == VAR_FLOAT then
 					param = param .. t[i].sym
 				end
-			elseif t[i].typ == "string" or t[i].typ == "cstr" then
+			elseif t[i].typ == "string" or t[i].typ == "poly" then
 				if varType == VAR_STRING then
 					param = param .. t[i].sym
 				end
@@ -1020,7 +1042,7 @@ function EvalString(s, assign)
 	local i = 1
 	while i <= #t do
 		if not waitsym then
-			if t[i].typ == "cstr" then
+			if t[i].typ == "poly" then
 				s = s .. string.sub(t[i].sym, 2, -2)
 
 				waitsym = true
