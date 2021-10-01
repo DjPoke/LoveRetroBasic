@@ -555,6 +555,20 @@ function Exec(t, l)
 				-- on a trouvé un espace après une commande
 				action = "find_first_parameter" -- on cherche maintenant le 1er paramètre éventuel
 				param = ""
+			elseif t[i].typ == "colon" then
+				-- on rencontre deux points, la commande s'arrête à ce paramètre
+				action = ""
+				if param ~= nil and param ~= "" then
+					local p, e = EvalParam(param, cmd[cs].ptype)
+					if e ~= OK then return e end
+					table.insert(lst, p)
+					param = ""
+				end
+
+				e = ExecOne(cs, lst)
+				if e ~= OK then return e end
+				cs = ""
+				lst = {}
 			else
 				-- gestion des paramètres 'chaîne de caractère' tout de suite après la commande
 				if cmd[cs].ptype == VAR_POLY or cmd[cs].ptype == VAR_STRING then
