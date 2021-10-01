@@ -376,7 +376,7 @@ function SetEditorTextColor(ln)
 			-- si un mot était avant le guillemet, et qu'il n'est
 			-- pas inclus dans une chaîne de caractères, alors,
 			-- déclencher son coloriage
-			if #word > 0 and g % 2 == 0 then
+			if #word > 0 and g % 2 == 1 then
 				wpos = i - #word
 				flag = true
 			end

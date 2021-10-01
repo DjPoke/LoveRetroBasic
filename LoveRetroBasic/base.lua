@@ -366,14 +366,16 @@ function RemoveLabels(s)
 end
 
 -- exécuter une seule commande
-function ExecOne(cs, lst)
+function ExecOne(cs, lst, comma)
 	-- erreurs sur le nombre de paramètres ?
 	if cmd[cs].pmin == 0 and cmd[cs].pmax == 0 and #lst > 0 then
 		return ERR_SYNTAX_ERROR, nil
 	elseif cmd[cs].pmin >= 0 and #lst < cmd[cs].pmin then
 		return ERR_OPERAND_MISSING, nil
-	elseif cmd[cs].pmax >= 0 and #lst > cmd[cs].pmax then			
+	elseif cmd[cs].pmax >= 0 and #lst > cmd[cs].pmax then
 		return ERR_TOO_MANY_OPERANDS, nil
+	elseif cmd[cs].pmax >= 0 and #lst == cmd[cs].pmax and comma then
+		return ERR_SYNTAX_ERROR, nil
 	end
 
 	return cmd[cs].fn(lst)
@@ -424,6 +426,7 @@ function Exec(t, l)
 	local c = 0
 	local startAction = ""
 	local action = ""
+	local comma = false
 	local cs = ""
 	local param = ""
 	local lst = {}
@@ -570,12 +573,17 @@ function Exec(t, l)
 				-- assemblage du premier paramètre
 				param = param .. t[i].sym
 			elseif t[i].typ == "comma" then
+				-- on rencontre une virgule sans paramètre
+				if param == nil or param == "" then
+					return ERR_OPERAND_MISSING
+				end
 				-- on rencontre une virgule, on va chercher le paramètres suivant
 				action = "find_next_parameter"
 				local p, e = EvalParam(param, cmd[cs].ptype)
 				if e ~= OK then return e end
 				table.insert(lst, p)
-				param = ""				
+				param = ""
+				comma = true
 			elseif t[i].typ == "colon" then
 				-- on rencontre deux points, la commande s'arrête à ce paramètre
 				action = ""
@@ -587,6 +595,7 @@ function Exec(t, l)
 				e = ExecOne(cs, lst)
 				if e ~= OK then return e end
 				cs = ""
+				lst = {}
 			else
 				-- assemblage du premier paramètre
 				param = param .. t[i].sym
@@ -595,10 +604,16 @@ function Exec(t, l)
 			if t[i].typ ~= "comma" and t[i].typ ~= "whitespace" and t[i].typ ~= "colon" then
 				param = param .. t[i].sym
 			elseif t[i].typ == "comma" then
+				-- on rencontre une virgule sans paramètre
+				if param == nil or param == "" then
+					return ERR_OPERAND_MISSING
+				end
+				-- on rencontre une virgule, on va chercher le paramètres suivant
 				local p, e = EvalParam(param, cmd[cs].ptype)
 				if e ~= OK then return e end
 				table.insert(lst, p)
-				param = ""				
+				param = ""
+				comma = true
 			else
 				action = ""
 				local p, e = EvalParam(param, cmd[cs].ptype)
@@ -609,6 +624,7 @@ function Exec(t, l)
 				e = ExecOne(cs, lst)
 				if e ~= OK then return e end
 				cs = ""
+				lst = {}
 			end
 		elseif action == "find_equal" then
 			if t[i].typ ~= "whitespace" and t[i].typ ~= "equal" then
@@ -723,15 +739,17 @@ function Exec(t, l)
 				e = AssignToVar(var, varType, param)
 				if e ~= OK then return e end
 			end
-		elseif i > #t and action ~= "" and param == "" then
+		elseif i > #t and action ~= "" and param == "" then			
 			if startAction == "command" then
-				e = ExecOne(cs, lst)
+				e = ExecOne(cs, lst, comma)
 				if e ~= OK then return e end
 			elseif startAction == "assign" then
 				e = AssignToVar(var, varType, param)
 				if e ~= OK then return e end
 			end
 		end
+		
+		comma = false
 	end
 
 	return OK
