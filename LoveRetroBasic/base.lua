@@ -977,9 +977,11 @@ function EvalFloat(s)
 			isVar = true
 		elseif (c == "_" or c == "!" or c == "%") and (isVar == nil or isVar)  then
 			isVar = true
+		elseif c == "&" and (isVar == nil or isVar)  then
+			isVar = false
 		end
 	end
-
+	
 	if isVar then
 		-- gestion des erreurs
 		if s == "!" or s == "%" then return nil, ERR_SYNTAX_ERROR end

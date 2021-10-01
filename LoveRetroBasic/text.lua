@@ -303,7 +303,7 @@ function SetEditorTextColor(ln)
 	-- récupérer la ligne courante
 	local s = ram[ln]
 	
-	-- exit si la chaine est vide
+	-- exit si la chaîne est vide
 	if s == nil then
 		-- rétablir la position du curseur texte
 		cursor[1] = xSafe
@@ -327,7 +327,7 @@ function SetEditorTextColor(ln)
 		cursor[1] = #lab + 2
 	end
 
-	-- exit si la chaine est vide
+	-- exit si la chaîne est vide
 	if s == nil then
 		-- rétablir la position du curseur texte
 		cursor[1] = xSafe
@@ -349,7 +349,7 @@ function SetEditorTextColor(ln)
 		cursor[1] = pos
 	end
 		
-	-- exit si la chaine est vide
+	-- exit si la chaîne est vide
 	if s == nil then
 		-- rétablir la position du curseur texte
 		cursor[1] = xSafe
@@ -360,9 +360,9 @@ function SetEditorTextColor(ln)
 	end
 
 	-- commande trouvée ? on remplace la couleur
-	local g = 0 -- guillemets trouvés
+	local g = 0 -- nombre de guillemets trouvés
 	local word = "" -- mot trouvé
-	local flag = false -- drapeau pour si un mot est terminé
+	local flag = false -- drapeau pour si un mot est complet
 	local wpos = 0
 	
 	for i = 1, #s do
@@ -375,7 +375,7 @@ function SetEditorTextColor(ln)
 			
 			-- si un mot était avant le guillemet, et qu'il n'est
 			-- pas inclus dans une chaîne de caractères, alors,
-			-- déclancher son coloriage
+			-- déclencher son coloriage
 			if #word > 0 and g % 2 == 0 then
 				wpos = i - #word
 				flag = true
