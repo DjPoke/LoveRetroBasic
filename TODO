@@ -1,7 +1,8 @@
 BUGS :
 ------
-- Commande dans une commande : a = chr$(asc(65)) problème de parenthèses mal comptabilisées
-- PRINT : print sgn(0.0) ne fonctionne pas
+- a = asc(chr$(65))
+- a$ = chr$(asc("a"))
+- PRINT : print sgn(0.0) et autres floats non positifs ne fonctionne pas
 - PRINT : print val("125") ne fonctionne pas
 - PRINT : le point-virgule en fin de ligne ne marche pas
 - PRINT : combiner les chaînes et les nombres avec point virgule donne pour résultat zéro
