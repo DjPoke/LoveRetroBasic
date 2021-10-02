@@ -675,6 +675,10 @@ function Exec(t, l)
 				if varType == VAR_INTEGER or varType == VAR_FLOAT then
 					param = param .. t[i].sym
 				end
+			elseif t[i].typ == "openbracket" or t[i].typ == "closebracket" then
+				if varType == VAR_INTEGER or varType == VAR_FLOAT then
+					param = param .. t[i].sym
+				end
 			elseif t[i].typ == "command" then
 				-- vérifier que la commande retourne bien le même type que la variable assignée
 				if varType == VAR_STRING and cmd[t[i].sym].ret ~= VAR_STRING then return nil, ERR_TYPE_MISMATCH end
@@ -932,10 +936,10 @@ function EvalFloat(s)
 		p2 = p2 + 1
 	end
 
-	-- erreur si le nombre est impair
+	-- erreur si le nombre de parenthèses est impair
 	if p1 ~= p2 then return nil, ERR_SYNTAX_ERROR end
 
-	-- compter le nombre de niveaux de parenthèses
+	-- compter le nombre de niveaux de parenthèses (profondeur)
 	p1 = 0
 	p2 = 0
 	
@@ -1001,25 +1005,25 @@ function EvalFloat(s)
 		end
 	end
 			
-	-- recalculer les morceaux d'expression
+	-- recalculer les morceaux d'expression dans l'ordre des priorités d'opérations
 	s, e = Calc(s, "*")	
 	if e ~= OK then return nil, e end
 
 	s, e = Calc(s, "/")	
 	if e ~= OK then return nil, e end
 
-	s, e = Calc(s, "+")	
-	if e ~= OK then return nil, e end
-
 	s, e = Calc(s, "-")	
 	if e ~= OK then return nil, e end
 
+	s, e = Calc(s, "+")	
+	if e ~= OK then return nil, e end
+
+	-- scanner pour trouver un nombre ou une variable
 	local isVar = nil
 	
 	for i = 1, #s do
 		local c = string.upper(string.sub(s, i, i))
 			
-		-- scanner pour trouver un nombre ou une variable
 		if c == "." and (isVar == nil or not isVar)  then
 			isVar = false
 		elseif (c >= "A" and c <= "Z") and (isVar == nil or isVar)  then
@@ -1271,8 +1275,12 @@ function Calc(s, op)
 	local p1 = 1
 	local p2 = #s
 
+	-- trouver le 1er opérateur dans la chaîne 's'
 	local pos = string.find(s, op)
-
+	
+	print(s, op, pos)
+	
+	-- si l'opérateur existe et est bien positionné
 	while pos ~= nil and pos > 1 do
 		p1 = pos - 1
 		p2 = pos + 1
@@ -1305,7 +1313,7 @@ function Calc(s, op)
 		end
 		
 		if p1 < 1 then p1 = 1 end
-
+		
 		while p2 <= #s do
 			local c = string.upper(string.sub(s, p2, p2))
 			
