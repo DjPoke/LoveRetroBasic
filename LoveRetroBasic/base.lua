@@ -841,8 +841,8 @@ function EvalFloat(s)
 			s = t[1].sym
 		end
 	end
-	
-	i = 1
+
+	local i = 1
 	while i <= #t do
 		-- pour chaque commande présente dans l'expression...
 		if t[i].typ == "err" then
@@ -885,6 +885,7 @@ function EvalFloat(s)
 					p, e = EvalInteger(p)
 					if e ~= OK then return nil, e end
 				end
+				
 				-- remplacer par la valeur
 				local lst = {tostring(p)}
 				local e, value = cmd[c].fn(lst)
@@ -907,18 +908,29 @@ function EvalFloat(s)
 
 				s = s .. tostring(value)
 			end
+			
+			i = i + 1
+		-- assembler avec des nombres et opérateurs
+		elseif t[i].typ == "number" then
+			s = s .. t[i].sym
+		elseif t[i].typ == "plus" then
+			s = s .. t[i].sym
+		elseif t[i].typ == "minus" then
+			s = s .. t[i].sym
+		elseif t[i].typ == "mult" then
+			s = s .. t[i].sym
+		elseif t[i].typ == "div" then
+			s = s .. t[i].sym
+		elseif t[i].typ == "openbracket" then
+			s = s .. t[i].sym
+		elseif t[i].typ == "closebracket" then
+			s = s .. t[i].sym
+		-- symbole non autorisé ? erreur de syntaxe !
+		elseif t[i].typ ~= "poly" then
+			return nil, ERR_SYNTAX_ERROR
 		end
 		
 		i = i + 1
-	end
-	
-	-- assembler l'expression numérique si nécessaire
-	if #s == 0 then
-		s = ""
-		
-		for i = 1, #t do
-			s = s .. t[i].sym
-		end
 	end
 	
 	-- valeur de retour
@@ -1221,7 +1233,7 @@ end
 
 -- récupérer une commande-fonction et ses paramètres
 function GetFunction(t, i)
-	-- si les parenthèses sont manquantes
+	-- si les parenthèses ou la 1ère parenthèse sont manquantes
 	if i == #t or i + 1 == #t then return nil, nil, nil, ERR_SYNTAX_ERROR end
 
 	local c = t[i].sym
@@ -1277,8 +1289,6 @@ function Calc(s, op)
 
 	-- trouver le 1er opérateur dans la chaîne 's'
 	local pos = string.find(s, op)
-	
-	print(s, op, pos)
 	
 	-- si l'opérateur existe et est bien positionné
 	while pos ~= nil and pos > 1 do
