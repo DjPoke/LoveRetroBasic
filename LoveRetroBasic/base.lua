@@ -434,10 +434,13 @@ function Exec(t, l)
 	local varType = nil
 	
 	while i <= #t do
+		-- détecter les erreurs
+		if t[i].typ == "err" then
+			return ERR_SYNTAX_ERROR
+		end
+		
 		if action == "" then
-			if t[i].typ == "err" then
-				return ERR_SYNTAX_ERROR
-			elseif t[i].typ == "command" then
+			if t[i].typ == "command" then
 				-- une commande a été trouvée
 				startAction = "command"
 				action = "find_whitespace" -- on recherche ensuite un symbole 'espace'
@@ -838,7 +841,10 @@ function EvalFloat(s)
 	i = 1
 	while i <= #t do
 		-- pour chaque commande présente dans l'expression...
-		if t[i].typ == "command" then
+		if t[i].typ == "err" then
+			-- détecter les erreurs
+			return nil, ERR_SYNTAX_ERROR
+		elseif t[i].typ == "command" then
 			-- vérifier que la commande ne retourne pas une chaîne de caractères
 			if cmd[t[i].sym].ret == VAR_STRING then return nil, ERR_TYPE_MISMATCH end
 
@@ -1062,7 +1068,7 @@ function EvalString(s, assign)
 	-- évaluer la chaîne dans le cadre d'une assignation de valeur à une variable ?
 	if assign == nil then assign = false end
 
-	t = Parser(Lexer(RemoveLabels(s)))
+	local t = Parser(Lexer(RemoveLabels(s)))
 	s = ""
 	
 	-- ne pas attendre le prochain symbole d'assemblage des chaînes
@@ -1077,7 +1083,10 @@ function EvalString(s, assign)
 	-- assembler les valeurs
 	local i = 1
 	while i <= #t do
-		if not waitsym then
+		if t[i].typ == "err" then
+			-- détecter les erreurs
+			return nil, ERR_SYNTAX_ERROR
+		elseif not waitsym then
 			if t[i].typ == "poly" then
 				s = s .. string.sub(t[i].sym, 2, -2)
 
