@@ -449,15 +449,15 @@ function Exec(t, l)
 			elseif t[i].typ == "integer" or t[i].typ == "word"  then
 				-- une variable integer a peut-être été trouvée,
 				-- il faut voir si elle existe en vram ou la créer sinon
-				for i = 1, #vram do
-					if vram[i][1] == string.upper(t[i].sym) then
-						var = t[i].sym
-						varVal = vram[i][2]
+				for j = 1, #vram do
+					if vram[j][1] == string.upper(t[i].sym) then
+						var = t[j].sym
+						varVal = vram[j][2]
 						varType = VAR_INTEGER
 						break
-					elseif i == #vram then
+					elseif j == #vram then
 						if #vram < MAX_RAM then
-							var = t[i].sym
+							var = t[j].sym
 							varVal = 0
 							varType = VAR_INTEGER
 							table.insert(vram, {string.upper(var), varVal, varType})
@@ -483,15 +483,15 @@ function Exec(t, l)
 			elseif t[i].typ == "float"  then
 				-- une variable float a peut-être été trouvée,
 				-- il faut voir si elle existe en vram ou la créer sinon
-				for i = 1, #vram do
-					if vram[i][1] == string.upper(t[i].sym) then
-						var = t[i].sym
-						varVal = vram[i][2]
+				for j = 1, #vram do
+					if vram[j][1] == string.upper(t[i].sym) then
+						var = t[j].sym
+						varVal = vram[j][2]
 						varType = VAR_FLOAT
 						break
-					elseif i == #vram then
+					elseif j == #vram then
 						if #vram < MAX_RAM then
-							var = t[i].sym
+							var = t[j].sym
 							varVal = 0.0
 							varType = VAR_FLOAT
 							table.insert(vram, {string.upper(var), varVal, varType})
@@ -517,13 +517,13 @@ function Exec(t, l)
 			elseif t[i].typ == "string" then
 				-- une variable string a peut-être été trouvée,
 				-- il faut voir si elle existe en vram ou la créer sinon
-				for i = 1, #vram do
-					if vram[i][1] == string.upper(t[i].sym) then
-						var = t[i].sym
-						varVal = vram[i][2]
+				for j = 1, #vram do
+					if vram[j][1] == string.upper(t[i].sym) then
+						var = t[j].sym
+						varVal = vram[j][2]
 						varType = VAR_STRING
 						break
-					elseif i == #vram then
+					elseif j == #vram then
 						if #vram < MAX_RAM then
 							var = t[i].sym
 							varVal = ""
@@ -681,14 +681,12 @@ function Exec(t, l)
 				local c, p, e
 				c, p, i, e = GetFunction(t, i)
 				if e ~= OK then return nil, e end
-				
 
 				-- quel est le type de paramètres requis par la commande ?
 				if cmd[c].ptype == VAR_STRING then
 					p, e = EvalString(p)
 					if e ~= OK then return nil, e end
-
-					local lst = {p}
+					local lst = {Trim(p, "\"")}
 					local e, ch = ExecOne(c, lst)
 					if e ~= OK then return nil, e end
 
@@ -729,12 +727,11 @@ function Exec(t, l)
 					if e ~= OK then return nil, e end
 					
 					param = param .. ch
-				end				
-
+				end
 			elseif t[i].typ == "number" then
 				param = param .. t[i].sym
 			else
-				return ERR_SYNTAX_ERROR
+				--TODO return ERR_SYNTAX_ERROR
 			end
 		end
 		
@@ -830,8 +827,12 @@ function EvalFloat(s)
 	s = ""
 	
 	-- vérifier si c'est un simple nombre
-	if #t == 1 and t[1].typ == "number" then
-		return Val(t[1].sym), OK
+	if #t == 1 then
+		if t[1].typ == "number" then
+			return Val(t[1].sym), OK
+		elseif t[1].typ == "word" then
+			s = t[1].sym
+		end
 	end
 
 	i = 1
