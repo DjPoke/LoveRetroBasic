@@ -837,7 +837,7 @@ function EvalFloat(s)
 			s = t[1].sym
 		end
 	end
-
+	
 	i = 1
 	while i <= #t do
 		-- pour chaque commande présente dans l'expression...
@@ -908,6 +908,15 @@ function EvalFloat(s)
 		i = i + 1
 	end
 	
+	-- assembler l'expression numérique si nécessaire
+	if #s == 0 then
+		s = ""
+		
+		for i = 1, #t do
+			s = s .. t[i].sym
+		end
+	end
+	
 	-- valeur de retour
 	local v = 0
 
@@ -929,7 +938,7 @@ function EvalFloat(s)
 	-- compter le nombre de niveaux de parenthèses
 	p1 = 0
 	p2 = 0
-
+	
 	for i = 1, #s do
 		c = string.sub(s, i, i)
 

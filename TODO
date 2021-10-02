@@ -1,6 +1,7 @@
 BUGS :
 ------
-- PRINT : ne fait pas les opérations sur les expressions numériques
+- PRINT : ne fait pas correctement les opérations, 125-1+2 donne 122 (-2 au lieu de +2)
+- PRINT : ne fait pas les opérations sur les expressions numériques avec les commandes
 - PRINT : le point-virgule en fin de ligne ne marche pas
 - PRINT : combiner les chaînes et les nombres avec point virgule n'affiche que le nombre
 
