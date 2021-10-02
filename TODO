@@ -2,7 +2,6 @@ BUGS :
 ------
 - a = asc(chr$(65))
 - a$ = chr$(asc("a"))
-- PRINT : print asc(chr$(65))
 - PRINT : le point-virgule en fin de ligne ne marche pas
 - PRINT : combiner les chaînes et les nombres avec point virgule n'affiche que le nombre
 

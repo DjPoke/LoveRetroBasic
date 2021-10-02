@@ -376,7 +376,7 @@ function ExecOne(cs, lst, comma)
 	elseif cmd[cs].pmax >= 0 and #lst == cmd[cs].pmax and comma then
 		return ERR_SYNTAX_ERROR, nil
 	end
-		
+			
 	return cmd[cs].fn(lst)
 end
 
@@ -852,7 +852,7 @@ function EvalFloat(s)
 				if e ~= OK then return nil, e end
 
 				-- remplacer par la valeur
-				local lst = {p}
+				local lst = {Trim(p, "\"")}
 				local e, value = cmd[c].fn(lst)
 				if e ~= OK then return nil, e end
 
@@ -896,16 +896,6 @@ function EvalFloat(s)
 
 				s = s .. tostring(value)
 			end
-		elseif t[i].typ == "number" then
-			s = s .. t[i].sym
-		elseif t[i].typ == "plus" then
-			s = s .. t[i].sym
-		elseif t[i].typ == "minus" then
-			s = s .. t[i].sym
-		elseif t[i].typ == "mult" then
-			s = s .. t[i].sym
-		elseif t[i].typ == "div" then
-			s = s .. t[i].sym
 		end
 		
 		i = i + 1
@@ -1073,7 +1063,7 @@ function EvalString(s, assign)
 
 	t = Parser(Lexer(RemoveLabels(s)))
 	s = ""
-
+	
 	-- ne pas attendre le prochain symbole d'assemblage des chaînes
 	local waitsym = false
 	
@@ -1104,7 +1094,7 @@ function EvalString(s, assign)
 			elseif t[i].typ == "command" then
 				-- vérifier que la commande retourne bien une chaîne de caractères
 				if cmd[t[i].sym].ret ~= VAR_STRING then return nil, ERR_TYPE_MISMATCH end
-				
+
 				-- récupérer la commande et ses paramètres
 				local c, p, e
 				c, p, i, e = GetFunction(t, i)
@@ -1114,7 +1104,7 @@ function EvalString(s, assign)
 				if cmd[c].ptype == VAR_STRING then
 					p, e = EvalString(p)
 					if e ~= OK then return nil, e end
-					
+
 					local lst = {p}
 					local e, ch = ExecOne(c, lst)
 					if e ~= OK then return nil, e end
@@ -1136,7 +1126,7 @@ function EvalString(s, assign)
 				elseif cmd[c].ptype == VAR_INTEGER then
 					p, e = EvalInteger(p)
 					if e ~= OK then return nil, e end
-					
+
 					local lst = {tostring(p)}
 					local e, ch = ExecOne(c, lst)
 					if e ~= OK then return nil, e end
@@ -1150,7 +1140,7 @@ function EvalString(s, assign)
 						p, e = EvalInteger(p)
 					end
 					if e ~= OK then return nil, e end
-					
+
 					local lst = {tostring(p)}
 					local e, ch = ExecOne(c, lst)
 					if e ~= OK then return nil, e end
