@@ -1,5 +1,6 @@
 BUGS :
 ------
+- PRINT : ne fait pas les opérations sur les expressions numériques
 - PRINT : le point-virgule en fin de ligne ne marche pas
 - PRINT : combiner les chaînes et les nombres avec point virgule n'affiche que le nombre
 

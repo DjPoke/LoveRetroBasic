@@ -55,8 +55,8 @@ end
 
 -- analyseur syntaxique simplifié
 function Parser(t)
-	-- trouver et assembler toutes les chaînes de caractères
-	t = GetConstantStrings(t)
+	-- trouver et assembler toutes les expressions constantes
+	t = GetConstantExpression(t)
 	
 	-- supprimer les remarques
 	i = 1
@@ -209,45 +209,31 @@ function Assemble2(t, typ1, typ2, newtyp)
 	return t2
 end
 
--- formater les chaînes de caractères constantes
-function GetConstantStrings(t2)
+-- formater les expressions constantes
+function GetConstantExpression(t2)
 	local t = {}
-	
 	local assembly = false
-	local waitAssembler = false
 	local s = ""
 	
 	for i = 1, #t2 do
-		if t2[i].typ == "quote" and not waitAssembler then
-			-- début de morceau de chaîne trouvé
+		if t2[i].typ ~= "quote" and not assembly then
+			table.insert(t, t2[i])
+		elseif t2[i].typ == "quote" then
 			if not assembly then
 				assembly = true
 				s = t2[i].sym
 			else
-				-- fin de morceau de chaîne trouvé
 				assembly = false
-				waitAssembler = true -- attendre un éventuel plus
 				s = s .. t2[i].sym
 				table.insert(t, {sym = s, typ = "poly"})
 				s = ""
 			end
-		elseif (t2[i].typ == "plus" or t2[i].typ == "semicolon") and waitAssembler then
-			-- plus attendu et trouvé, on l'ajoute
-			table.insert(t, {sym = t2[i].sym, typ = t2[i].typ})
-			waitAssembler = false
-		elseif waitAssembler then
-			-- guillemets mal assemblés, plus manquant là où il le faut
-			table.insert(t, {sym = s, typ = "err"})
-			break
-		elseif t2[i].typ ~= "quote" and t2[i].typ ~= "plus" and not assembly then
-			table.insert(t, t2[i])
-		elseif t2[i].typ ~= "quote" and t2[i].typ ~= "plus" and assembly then
+		elseif t2[i].typ ~= "quote" then
 			s = s .. t2[i].sym
 		end
 	end
-
-	-- nombre de guillemets impair... erreur
-	if assembly then table.insert(t, {sym = s, typ = "err"}) end
 	
+	if assembly then table.insert(t, {sym = s, typ = "err"}) end
+
 	return t
 end
