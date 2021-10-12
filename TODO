@@ -1,5 +1,6 @@
 BUGS :
 ------
+- PRINT : n'affiche plus les variables integer et float (syntax error)
 - PRINT : le point-virgule en fin de ligne ne marche pas
 - PRINT : combiner les chaînes et les nombres avec point virgule n'affiche que le nombre
 
