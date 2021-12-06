@@ -2,7 +2,6 @@ BUGS :
 ------
 - PRINT : le point-virgule en fin de ligne ne fonctionne pas
 - PRINT : combiner les chaînes et les nombres avec point virgule ne fonctionne pas
-- BIN$  : ne fonctionne pas
 - STR$  : pas entièrement fonctionnel
 
 FONCTIONS A AJOUTER :

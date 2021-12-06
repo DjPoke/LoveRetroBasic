@@ -166,7 +166,8 @@ function Bin(b)
 	
 	for i = 1, #s do
 		local nibble = string.sub(s, i, i)
-		local v = Val("$" .. nibble)
+		local v = Val("&" .. nibble)
+		print(v)
 		r = r .. a[v + 1]
 	end
 	
