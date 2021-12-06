@@ -1,8 +1,9 @@
 BUGS :
 ------
-- PRINT : n'affiche plus les variables integer et float (syntax error)
-- PRINT : le point-virgule en fin de ligne ne marche pas
-- PRINT : combiner les chaînes et les nombres avec point virgule n'affiche que le nombre
+- PRINT : le point-virgule en fin de ligne ne fonctionne pas
+- PRINT : combiner les chaînes et les nombres avec point virgule ne fonctionne pas
+- BIN$  : ne fonctionne pas
+- STR$  : pas entièrement fonctionnel
 
 FONCTIONS A AJOUTER :
 ---------------------

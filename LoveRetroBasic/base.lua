@@ -558,7 +558,7 @@ function Exec(t, l)
 				action = "find_first_parameter" -- on cherche maintenant le 1er paramètre éventuel
 				param = ""
 			elseif t[i].typ == "colon" then
-				-- on rencontre deux points, la commande s'arrête à ce paramètre
+				-- on rencontre deux points après une commande, la commande s'arrête à ce paramètre
 				action = ""
 				if param ~= nil and param ~= "" then
 					local p, e = EvalParam(param, cmd[cs].ptype)
@@ -572,6 +572,8 @@ function Exec(t, l)
 				cs = ""
 				lst = {}
 			else
+				-- on cherche un espace après une commande mais on trouve ni espace ni deux-points
+				--
 				-- gestion des paramètres 'chaîne de caractère' tout de suite après la commande
 				if cmd[cs].ptype == VAR_POLY or cmd[cs].ptype == VAR_STRING then
 					if t[i].typ == "poly" then
@@ -837,8 +839,6 @@ function EvalFloat(s)
 	if #t == 1 then
 		if t[1].typ == "number" then
 			return Val(t[1].sym), OK
-		elseif t[1].typ == "word" then
-			s = t[1].sym
 		end
 	end
 
@@ -913,6 +913,15 @@ function EvalFloat(s)
 		-- assembler avec des nombres et opérateurs
 		elseif t[i].typ == "number" then
 			s = s .. t[i].sym
+		elseif t[i].typ == "float" then
+			-- variable float trouvée
+			s = s .. t[i].sym
+		elseif t[i].typ == "integer" then
+			-- variable integer trouvée
+			s = s .. t[i].sym
+		elseif t[i].typ == "word" then
+			-- variable sans type trouvée
+			s = s .. t[i].sym
 		elseif t[i].typ == "plus" then
 			s = s .. t[i].sym
 		elseif t[i].typ == "minus" then
@@ -925,14 +934,14 @@ function EvalFloat(s)
 			s = s .. t[i].sym
 		elseif t[i].typ == "closebracket" then
 			s = s .. t[i].sym
-		-- symbole non autorisé ? erreur de syntaxe !
 		elseif t[i].typ ~= "poly" then
+			-- symbole non autorisé ? erreur de syntaxe !
 			return nil, ERR_SYNTAX_ERROR
 		end
-		
+				
 		i = i + 1
 	end
-	
+
 	-- valeur de retour
 	local v = 0
 

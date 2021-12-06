@@ -69,7 +69,7 @@ commands = {
 			"OVAL",
 			"PAPER", "PEN", "PLOT", "PLOTR", "PRINT",
 			"RECT", "REPEAT", "RETURN",
-			"SELECT", "SGN", "SPRITEIMG", "SPRITEOFF", "SPRITEON", "SPRITEPOS", "SPRITESCALE", "SPRITETRANSP", "STOPMUSIC",
+			"SELECT", "SGN", "SPRITEIMG", "SPRITEOFF", "SPRITEON", "SPRITEPOS", "SPRITESCALE", "SPRITETRANSP", "STOPMUSIC","STR$",
 			"UNTIL",
 			"VAL",
 			"WAITVBL", "WEND", "WHILE"
@@ -98,6 +98,7 @@ cmd["HEX$"].ret = VAR_STRING
 cmd["INKEY$"].ret = VAR_STRING
 cmd["INPUT"].ret = VAR_STRING
 cmd["SGN"].ret = VAR_NUM
+cmd["STR$"].ret = VAR_STRING
 cmd["VAL"].ret = VAR_NUM
 
 -- définir le nombre minimal et maximal de paramètres d'entrée pour les instructions BASIC
@@ -137,6 +138,7 @@ cmd["SPRITEON"].pmin, cmd["SPRITEON"].pmax = 1, 1
 cmd["SPRITEPOS"].pmin, cmd["SPRITEPOS"].pmax = 3, 3
 cmd["SPRITESCALE"].pmin, cmd["SPRITESCALE"].pmax = 2, 2
 cmd["SPRITETRANSP"].pmin, cmd["SPRITETRANSP"].pmax = 2, 2
+cmd["STR$"].pmin, cmd["STR$"].pmax = 1, 1
 cmd["UNTIL"].pmin, cmd["UNTIL"].pmax = 1, 1
 cmd["VAL"].pmin, cmd["VAL"].pmax = 1, 1
 cmd["WHILE"].pmin, cmd["WHILE"].pmax = 1, 1
@@ -155,6 +157,7 @@ cmd["SELECT"].ptype = VAR_VAR
 cmd["CASE"].ptype = VAR_CONSTANT
 cmd["SGN"].ptype = VAR_NUM
 cmd["UNTIL"].ptype = VAR_CONDITION
+cmd["STR$"].ptype = VAR_NUM
 cmd["VAL"].ptype = VAR_STRING
 cmd["WHILE"].ptype = VAR_CONDITION
 

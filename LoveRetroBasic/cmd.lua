@@ -585,6 +585,13 @@ cmd["STOPMUSIC"].fn = function(lst)
 	return OK
 end
 
+-- commande 'STR$'
+cmd["STR$"].fn = function(lst)
+	if lst[1] == "" then return OK, "" end
+
+	return OK, "\"" .. tostring(lst[1]) .. "\""
+end
+
 -- commande 'UNTIL'
 cmd["UNTIL"].fn = function(lst)
 	return OK
