@@ -1562,8 +1562,6 @@ end
 function RedrawSpritesLine()
 	SetCanvas(true)
 
-	SetGraphicPenColor(1)
-
 	for y = 0, SPRITE_LINE_HEIGHT - 1 do
 		for x = 0, SPRITE_LINE_WIDTH - 1 do
 			local j = (sprImgPage * (SPRITE_LINE_WIDTH * SPRITE_LINE_HEIGHT)) + x + (y * SPRITE_LINE_WIDTH)

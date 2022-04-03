@@ -1,19 +1,38 @@
--- créer les couleurs de la palette ayant les teintes modifiées
+-- créer les couleurs de la palette
 function CreatePalette()
-	for x = 0, 15 do
-		scnPal[x + 16][0] = math.floor(scnPal[x][0] * 0.75)
-		scnPal[x + 16][1] = math.floor(scnPal[x][1] * 0.75)
-		scnPal[x + 16][2] = math.floor(scnPal[x][2] * 0.75)
+	-- calculer les teintes assombries
+	for x = 0, 7 do
+		scnPal[x + 8][0] = math.floor(scnPal[x][0] * 0.75)
+		scnPal[x + 8][1] = math.floor(scnPal[x][1] * 0.75)
+		scnPal[x + 8][2] = math.floor(scnPal[x][2] * 0.75)
 
-		scnPal[x + 32][0] = math.floor(scnPal[x][0] * 0.5)
-		scnPal[x + 32][1] = math.floor(scnPal[x][1] * 0.5)
-		scnPal[x + 32][2] = math.floor(scnPal[x][2] * 0.5)
+		scnPal[x + 16][0] = math.floor(scnPal[x][0] * 0.5)
+		scnPal[x + 16][1] = math.floor(scnPal[x][1] * 0.5)
+		scnPal[x + 16][2] = math.floor(scnPal[x][2] * 0.5)
 
-		scnPal[x + 48][0] = math.floor(scnPal[x][0] * 0.25)
-		scnPal[x + 48][1] = math.floor(scnPal[x][1] * 0.25)
-		scnPal[x + 48][2] = math.floor(scnPal[x][2] * 0.25)
+		scnPal[x + 24][0] = math.floor(scnPal[x][0] * 0.25)
+		scnPal[x + 24][1] = math.floor(scnPal[x][1] * 0.25)
+		scnPal[x + 24][2] = math.floor(scnPal[x][2] * 0.25)
+
+		scnPal[x + 40][0] = math.floor(scnPal[x + 32][0] * 0.75)
+		scnPal[x + 40][1] = math.floor(scnPal[x + 32][1] * 0.75)
+		scnPal[x + 40][2] = math.floor(scnPal[x + 32][2] * 0.75)
+
+		scnPal[x + 48][0] = math.floor(scnPal[x + 32][0] * 0.5)
+		scnPal[x + 48][1] = math.floor(scnPal[x + 32][1] * 0.5)
+		scnPal[x + 48][2] = math.floor(scnPal[x + 32][2] * 0.5)
+
+		scnPal[x + 56][0] = math.floor(scnPal[x + 32][0] * 0.25)
+		scnPal[x + 56][1] = math.floor(scnPal[x + 32][1] * 0.25)
+		scnPal[x + 56][2] = math.floor(scnPal[x + 32][2] * 0.25)
 	end
 
+	-- calculer les variantes de noir et gris foncé
+	for x = 0, 3 do
+		scnPal[x * 8][0] = x * 16
+		scnPal[x * 8][1] = x * 16
+		scnPal[x * 8][2] = x * 16
+	end
 end
 
 -- effacer l'écran dans la couleur désirée

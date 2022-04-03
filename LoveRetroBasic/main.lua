@@ -40,10 +40,15 @@ PRINT_NOT_CLIPPED_NO_SCROLL = 3
 
 -- constantes couleurs de l'éditeur
 DEFAULT_PEN = 6
-DEFAULT_LABELS_PEN = 10
-DEFAULT_COMMENTS_PEN = 9
+DEFAULT_LABELS_PEN = 34
+DEFAULT_COMMENTS_PEN = 33
 DEFAULT_INSTRUCTIONS_PEN = 4
-DEFAULT_PAPER = 43
+DEFAULT_PAPER = 35
+EDITOR_PEN = 1
+EDITOR_PAPER = 0
+EDITOR_BORDER = 0
+EDITOR_MENU = 6
+EDITOR_UI = 4
 
 -- ralentir le jeu par défaut (en FPS)
 DEFAULT_VBL = 1
@@ -174,14 +179,14 @@ cmd["IF"].word2, cmd["IF"].wmin, cmd["IF"].wmax = "THEN", 2, 2
 -- 48 à 63	-> Palette sombre
 
 palette = {}
-palette[0] = {8, 8, 8} -- noir
+palette[0] = {0, 0, 0} -- noir
 palette[1] = {255, 255, 255} -- blanc
 palette[2] = {255, 0, 0} -- rouge
 palette[3] = {255, 64, 0} -- rouge orangé
 palette[4] = {255, 128, 0} -- orange
 palette[5] = {255, 192, 0} -- jaune orangé
 palette[6] = {255, 255, 0} -- jaune
-palette[7] = {192, 192, 192} -- gris
+palette[7] = {128, 128, 192} -- gris bleuté
 palette[8] = {192, 255, 192} -- verdâtre
 palette[9] = {0, 255, 0} -- vert
 palette[10] = {0, 255, 255} -- bleu outremer
@@ -191,18 +196,29 @@ palette[13] = {128, 0, 255} -- violet
 palette[14] = {255, 0, 255} -- fushia
 palette[15] = {255, 192, 192} -- chair
 
+-- création des couleurs de base
 scnPal = {}
-for x = 0, 15 do
+for x = 0, 7 do
 	scnPal[x] = {}
+	scnPal[x + 8] = {}
 	scnPal[x + 16] = {}
-	scnPal[x + 32] = {}
-	scnPal[x + 48] = {}
+	scnPal[x + 24] = {}
 	
+	scnPal[x + 32] = {}
+	scnPal[x + 40] = {}
+	scnPal[x + 48] = {}
+	scnPal[x + 56] = {}
+
 	for y = 0, 2 do
 		scnPal[x][y] = palette[x][y + 1]
+		scnPal[x + 8][y] = palette[x][y + 1]
 		scnPal[x + 16][y] = palette[x][y + 1]
-		scnPal[x + 32][y] = palette[x][y + 1]
-		scnPal[x + 48][y] = palette[x][y + 1]
+		scnPal[x + 24][y] = palette[x][y + 1]
+		
+		scnPal[x + 32][y] = palette[x + 8][y + 1]
+		scnPal[x + 40][y] = palette[x + 8][y + 1]
+		scnPal[x + 48][y] = palette[x + 8][y + 1]
+		scnPal[x + 56][y] = palette[x + 8][y + 1]
 	end
 end
 

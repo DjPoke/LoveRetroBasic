@@ -40,27 +40,31 @@ end
 
 function SpriteEditor()
 	-- afficher l'entête
-	SetPenColor(1)
-	SetPaperColor(0)
-	SetBorderColor(48)
+	SetPenColor(EDITOR_PEN)
+	SetPaperColor(EDITOR_PAPER)
+	SetBorderColor(EDITOR_BORDER)
 
 	ClearScreen()
 
 	Locate(1, 1)
-	SetPenColor(DEFAULT_PEN)
+	SetPenColor(EDITOR_MENU)
 	PrintStringN("SPRITE EDITOR")
 	PrintString("-------------")
 	Locate(1, 4)
-	SetPenColor(1)
+	SetPenColor(EDITOR_PEN)
 	PrintStringN("Sprite:" .. tostring(sprImgNumber))
 	PrintStringN("Page  :" .. tostring(sprImgPage))
 	Locate(1, 7)
 	PrintStringN("[C]opy [P]aste")
 	PrintString("[S]ave [ESC]")
-	Locate(1, 19)
-	SetPenColor(DEFAULT_PEN)
 	Locate(1, 21)
-	PrintString("<=S=> <=P=>")
+	SetPenColor(EDITOR_UI)
+	PrintString("<-S-> <-P->")
+	SetPenColor(EDITOR_MENU)
+	Locate(3, 21)
+	PrintString("S")
+	Locate(9, 21)
+	PrintString("P")
 	
 	-- dessiner la palette
 	for y = 0, 7 do
@@ -74,7 +78,7 @@ function SpriteEditor()
 	drawingPaper = 0
 	
 	-- dessiner les couleurs courantes
-	SetGraphicPenColor(1)
+	SetGraphicPenColor(EDITOR_UI)
 	DrawRectangle(71, 71, 18, 18, 1)
 	DrawRectangle(71, 95, 18, 18, 1)
 
@@ -91,8 +95,14 @@ end
 
 function LevelEditor()
 	-- afficher l'entête
+	SetPenColor(EDITOR_PEN)
+	SetPaperColor(EDITOR_PAPER)
+	SetBorderColor(EDITOR_BORDER)
+
 	ClearScreen()
+
 	Locate(1, 1)
+	SetPenColor(EDITOR_MENU)
 	PrintStringN("LEVEL EDITOR")
 	PrintString("------------")
 	Locate(1, 6)
@@ -100,8 +110,14 @@ end
 
 function NoiseEditor()
 	-- afficher l'entête
+	SetPenColor(EDITOR_PEN)
+	SetPaperColor(EDITOR_PAPER)
+	SetBorderColor(EDITOR_BORDER)
+
 	ClearScreen()
+
 	Locate(1, 1)
+	SetPenColor(EDITOR_MENU)
 	PrintStringN("NOISE EDITOR")
 	PrintString("------------")
 	Locate(1, 6)
@@ -109,8 +125,14 @@ end
 
 function Tracker()
 	-- afficher l'entête
+	SetPenColor(EDITOR_PEN)
+	SetPaperColor(EDITOR_PAPER)
+	SetBorderColor(EDITOR_BORDER)
+
 	ClearScreen()
+
 	Locate(1, 1)
+	SetPenColor(EDITOR_MENU)
 	PrintStringN("TRACKER")
 	PrintString("-------")
 	Locate(1, 6)
