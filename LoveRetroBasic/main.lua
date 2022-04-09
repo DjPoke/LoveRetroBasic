@@ -689,6 +689,7 @@ function love.keyreleased(key, scancode, isrepeat)
 			SetPaperColor(DEFAULT_PAPER)
 			SetBorderColor(DEFAULT_PAPER)
 			SetGraphicPenColor(DEFAULT_PEN)
+			ShowCursor(false)
 			ClearScreen()
 			RedrawEditor()
 			cursor[1] = safeCursor[1]
@@ -984,56 +985,56 @@ function love.update(dt)
 					end
 					appState = SPRITE_MODE
 					SpriteEditor()
-					--
+
 					return
 				elseif x == 2 then -- lancer l'éditeur de niveaux
 					-- remise à zéro d'un éventuel message texte
 					msg = nil
-					--
+
 					SaveProgram()
 					safeCursor[1] = cursor[1]
 					safeCursor[2] = cursor[2]
 					appState = LEVEL_MODE
 					LevelEditor()
-					--
+
 					return
 				elseif x == 4 then -- lancer l'éditeur de bruitages
 					-- remise à zéro d'un éventuel message texte
 					msg = nil
-					--
+
 					SaveProgram()
 					safeCursor[1] = cursor[1]
 					safeCursor[2] = cursor[2]
 					appState = NOISE_MODE
 					NoiseEditor()
-					--
+
 					return
 				elseif x == 6 then -- lancer le tracker musical
 					-- remise à zéro d'un éventuel message texte
 					msg = nil
-					--
+
 					SaveProgram()
 					safeCursor[1] = cursor[1]
 					safeCursor[2] = cursor[2]
 					appState = TRACKER_MODE
 					Tracker()
-					--
+
 					return
 				elseif x == 8 then -- lancer l'aide
 					-- remise à zéro d'un éventuel message texte
 					msg = nil
-					--
+
 					SaveProgram()
 					safeCursor[1] = cursor[1]
 					safeCursor[2] = cursor[2]
 					appState = HELP_MODE
 					HelpManager()
-					--
+
 					return
 				elseif x >= 10 and x <= 12 then -- executer le programme
 					-- remise à zéro d'un éventuel message texte
 					msg = nil
-					--
+
 					stepsMode = false
 					SaveProgram()
 					err = GetError(ScanLabels())
@@ -1054,12 +1055,12 @@ function love.update(dt)
 						execStep = true
 						appState = RUN_MODE -- exécuter le code source basic
 					end
-					--
+
 					return
 				elseif x >= 14 and x <= 16 then -- déboguer le programme
 					-- remise à zéro d'un éventuel message texte
 					msg = nil
-					--
+
 					stepsMode = true
 					SaveProgram()
 					err = GetError(ScanLabels())
@@ -1080,46 +1081,45 @@ function love.update(dt)
 						execStep = true
 						appState = RUN_MODE -- exécuter le code source basic en mode 'debug'
 					end
-					--
+
 					return
 				elseif x >= 18 and x <= 21 then -- sauvegarder le programme
 					-- remise à zéro d'un éventuel message texte
 					msg = nil
-					--
+
 					SaveProgram()
-					--
+
 					return
 				elseif x >= 23 and x <= 26 then -- charger le programme
 					-- remise à zéro d'un éventuel message texte
 					msg = nil
-					--
+
 					ShowCursor(false)
 					ClearScreen()
 					LoadDisc(defaultFolder .. currentFolder)
-					--
+
 					return
 				elseif x >= 28 and x <= 30 then -- importer un programme
 					-- remise à zéro d'un éventuel message texte
 					msg = nil
-					--
+
 					ShowCursor(false)
 					ClearScreen()
 					ImportProgram()
-					--
+
 					return
 				elseif x >= 32 and x <= 34 then -- exporter un programme
 					-- remise à zéro d'un éventuel message texte
 					msg = nil
-					--
+
 					ExportProgram()
-					--
+
 					return
 				elseif x == 39 then
 					--
 					SaveProgram()
-					--
 					QuitProgram()					
-					--
+
 					return					
 				end
 			end

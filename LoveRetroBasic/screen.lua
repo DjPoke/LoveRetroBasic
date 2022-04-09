@@ -343,22 +343,22 @@ function DrawSprite(spr)
 	
 	-- point chaud centré sur x
 	if hardspr[spr].hotspot == 1 or hardspr[spr].hotspot == 4 or hardspr[spr].hotspot == 7 then
-		x = x - ((w / 2) * scale)
+		x = x - ((SPRITE_WIDTH / 2) * scale)
 	end
 
 	-- point chaud à droite
 	if hardspr[spr].hotspot == 2 or hardspr[spr].hotspot == 5 or hardspr[spr].hotspot == 8 then
-		x = x - (w * scale)
+		x = x - (SPRITE_WIDTH * scale)
 	end
 
 	-- point chaud centré sur y
 	if hardspr[spr].hotspot == 3 or hardspr[spr].hotspot == 4 or hardspr[spr].hotspot == 5 then
-		y = y - ((h / 2) * scale)
+		y = y - ((SPRITE_HEIGHT / 2) * scale)
 	end
 
 	-- point chaud en bas
 	if hardspr[spr].hotspot == 6 or hardspr[spr].hotspot == 7 or hardspr[spr].hotspot == 8 then
-		y = y - (h * scale)
+		y = y - (SPRITE_HEIGHT * scale)
 	end
 	
 	-- arrondir les coordonnées du sprite
@@ -366,15 +366,15 @@ function DrawSprite(spr)
 	y = math.floor(y + 0.5)
 
 	-- dessiner le sprite
-	for ys = 0, h - 1 do
-		for xs = 0, w - 1 do
+	for ys = 0, SPRITE_HEIGHT - 1 do
+		for xs = 0, SPRITE_WIDTH - 1 do
 			local xptemp = x + (xs * scale)
 			local yptemp = y + (ys * scale)
 			
 			for yp = yptemp, yptemp + scale - 1 do
 				for xp = xptemp, xptemp + scale - 1 do			
 					if xp >= 0 and xp <= 319 and yp >= 0 and yp <= 199 then
-						col = spram[(img * MAX_SPRITE_SIZE) + xs + (ys * w)]
+						col = spram[(img * MAX_SPRITE_SIZE) + xs + (ys * SPRITE_WIDTH)]
 				
 						if col ~= bit.band(tc, 63) then
 							love.graphics.setColor(scnPal[col][0] / 255, scnPal[col][1] / 255, scnPal[col][2] / 255, 1)
