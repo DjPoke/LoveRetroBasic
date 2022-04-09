@@ -41,7 +41,7 @@ function GetMousePositionY()
 end
 
 -- voir si le bouton gauche est appuyé
-function GetMouseDownLeft()
+function GetLeftMouseDown()
 	if mouseSupport then
 		return mouseDown[1]
 	end
@@ -50,7 +50,7 @@ function GetMouseDownLeft()
 end
 
 -- voir si le bouton droit est appuyé
-function GetMouseDownRight()
+function GetRightMouseDown()
 	if mouseSupport then
 		return mouseDown[2]
 	end

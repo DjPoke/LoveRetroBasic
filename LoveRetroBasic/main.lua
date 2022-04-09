@@ -45,8 +45,8 @@ DEFAULT_COMMENTS_PEN = 33
 DEFAULT_INSTRUCTIONS_PEN = 4
 DEFAULT_PAPER = 35
 EDITOR_PEN = 1
-EDITOR_PAPER = 0
-EDITOR_BORDER = 0
+EDITOR_PAPER = 35
+EDITOR_BORDER = 35
 EDITOR_MENU = 6
 EDITOR_UI = 4
 
@@ -902,6 +902,10 @@ function love.keypressed(key, scancode, isrepeat)
 			RedrawCurrentSprite()
 
 			return
+		elseif key == "i" and love.keyboard.isDown("lctrl", "rctrl") then
+			-- TODO
+		elseif key == "e" and love.keyboard.isDown("lctrl", "rctrl") then
+			-- TODO
 		end
 	-- ajouter certaines touches au buffer clavier
 	elseif appState == RUN_MODE then
@@ -1109,9 +1113,7 @@ function love.update(dt)
 			-- colorier la ligne courante de code source
 			SetEditorTextColor(ramLine)
 		end
-	end
-	
-	if appState == RUN_MODE then
+	elseif appState == RUN_MODE then
 		-- exécuter les instructions de la frame
 		local i2 = IBF
 		if stepsMode then i2 = 1 end
@@ -1167,10 +1169,7 @@ function love.update(dt)
 				break
 			end
 		end
-	end
-	
-	--
-	if appState == SPRITE_MODE then
+	elseif appState == SPRITE_MODE then
 		local col = nil
 		local mx = -1
 		local my = -1
@@ -1178,8 +1177,7 @@ function love.update(dt)
 		local mpx = mouseX
 		local mpy = mouseY
 
-		if GetMouseDownLeft() then
-		
+		if GetLeftMouseDown() then
 			mx = math.floor((mpx - 128) / 8)
 			my = math.floor(mpy / 8)
 
@@ -1284,7 +1282,7 @@ function love.update(dt)
 					col = nil
 				end
 			end
-		elseif GetMouseDownRight() then
+		elseif GetRightMouseDown() then
 			mx = math.floor(((mouseX - 128) / 8))
 			my = math.floor((mouseY / 8))
 
@@ -1303,6 +1301,7 @@ function love.update(dt)
 					DrawRectangle(72, 96, 16, 16, 1)
 				end
 			end
+		-- afficher les bullers d'aide au survol
 		end
 		
 		-- dessiner dans le sprite
@@ -1318,6 +1317,7 @@ function love.update(dt)
 		end
 	end
 	
+	-- effacer le buffer clavier
 	if appState == EDIT_MODE then
 		ClearKeyboardBuffer()
 	end
@@ -1388,11 +1388,28 @@ function love.draw()
 	-- afficher la position de la souris
 	if appState == SPRITE_MODE then
 		local x = math.floor((mx - 128) / 8)
+		local xn = math.floor(mx / 8)
 		local y = math.floor(my / 8)
-		
+
+		-- afficher la position de la souris dans la barre du bas
+		-- de l'éditeur de sprites
 		if x >= 0 and x < SPRITE_WIDTH and y >= 0 and y < SPRITE_HEIGHT then
-			local st = "x,y: " .. tostring(x) .. "," .. tostring(y)
+			local st = "x,y: " .. tostring(x) .. "," .. tostring(y)			
 			PrintInfosString(st, 2, "black")
+		elseif y == 20 then
+			if xn == 17 then
+				PrintInfosString("Cut Sprite", 2, "black")
+			elseif xn == 19 then
+				PrintInfosString("Copy Sprite", 2, "black")
+			elseif xn == 21 then
+				PrintInfosString("Paste Sprite", 2, "black")
+			elseif xn == 23 then
+				PrintInfosString("Save Sprites", 2, "black")
+			elseif xn == 25 then
+				PrintInfosString("Import Sprites", 2, "black")
+			elseif xn == 27 then
+				PrintInfosString("Export Sprites", 2, "black")
+			end
 		end
 	elseif appState == RUN_MODE and stepsMode and msgLine ~= nil then
 		PrintInfosString("Line " .. msgLine .. " :", 2, "black")

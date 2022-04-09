@@ -1543,7 +1543,7 @@ end
 function RedrawEditedSprite()
 	-- dessiner la zone du sprite
 	SetGraphicPenColor(0)
-	DrawRectangle(120, 0, SPRITE_WIDTH * 8, SPRITE_HEIGHT * 8, 1)
+	DrawRectangle(128, 0, SPRITE_WIDTH * 8, SPRITE_HEIGHT * 8, 1)
 	SetGraphicPenColor(6)
 	DrawRectangle(127, 0, 1, SPRITE_HEIGHT * 8, 1)
 	DrawRectangle(127, SPRITE_HEIGHT * 8, (SPRITE_WIDTH * 8) + 2, 1, 1)
@@ -1566,7 +1566,7 @@ function RedrawSpritesLine()
 		for x = 0, SPRITE_LINE_WIDTH - 1 do
 			local j = (sprImgPage * (SPRITE_LINE_WIDTH * SPRITE_LINE_HEIGHT)) + x + (y * SPRITE_LINE_WIDTH)
 			
-			if j < MAX_SPRITES_IMAGES - 1 then
+			if j < MAX_SPRITES_IMAGES then
 				for ys = 0, SPRITE_HEIGHT - 1 do
 					for xs = 0, SPRITE_WIDTH - 1 do
 						local xp = (x * SPRITE_WIDTH) + xs
