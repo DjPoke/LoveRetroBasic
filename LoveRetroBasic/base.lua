@@ -1625,14 +1625,46 @@ end
 
 -- importer un programme
 function ImportProgram()
-	msg = "Program imported !"
-	-- TODO
+	local lnk = defaultFolder .. currentFolder
+	
+	if love.window.showMessageBox("Info", "Your program can be dropped here:\n" .. lnk .. "\n\nLink copied to clipboard !", "info", true) then
+		love.system.setClipboardText(lnk)
+	else
+		msg = "Runtime error !"
+	end
 end
 
 -- exporter un programme
 function ExportProgram()
-	msg = "Program exported !"
-	-- TODO
+	local lnk = defaultFolder .. currentFolder
+
+	if love.window.showMessageBox("Info", "Your program can be taken here:\n" .. lnk .. "\n\nLink copied to clipboard !", "info", true) then
+		love.system.setClipboardText(lnk)
+	else
+		msg = "Runtime error !"
+	end
+end
+
+-- importer une banque de sprites
+function ImportSprites()
+	local lnk = defaultFolder .. currentFolder
+	
+	if love.window.showMessageBox("Info", "Your sprite bank can be dropped here:\n" .. lnk .. "\n\nLink copied to clipboard !", "info", true) then
+		love.system.setClipboardText(lnk)
+	else
+		msg = "Runtime error !"
+	end
+end
+
+-- exporter une banque de sprites
+function ExportSprites()
+	local lnk = defaultFolder .. currentFolder
+
+	if love.window.showMessageBox("Info", "Your sprite bank be taken here:\n" .. lnk .. "\n\nLink copied to clipboard !", "info", true) then
+		love.system.setClipboardText(lnk)
+	else
+		msg = "Runtime error !"
+	end
 end
 
 -- déplacer le curseur clavier vers le haut

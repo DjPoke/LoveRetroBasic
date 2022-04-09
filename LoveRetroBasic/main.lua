@@ -903,9 +903,9 @@ function love.keypressed(key, scancode, isrepeat)
 
 			return
 		elseif key == "i" and love.keyboard.isDown("lctrl", "rctrl") then
-			-- TODO
+			ImportSprites()
 		elseif key == "e" and love.keyboard.isDown("lctrl", "rctrl") then
-			-- TODO
+			ExportSprites()
 		end
 	-- ajouter certaines touches au buffer clavier
 	elseif appState == RUN_MODE then
