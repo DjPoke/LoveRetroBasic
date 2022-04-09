@@ -92,7 +92,7 @@ function CreateSounds(ch, snd)
 	note[2] = 34.65
 	note[1] = 32.70
 
-	-- create the sounds in stereo
+	-- créer les sons en stéréo
 	coef_left = 1.0
 	coef_right = 1.0
 	if ch == 1 then
