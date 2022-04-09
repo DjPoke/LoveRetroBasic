@@ -1543,16 +1543,16 @@ end
 function RedrawEditedSprite()
 	-- dessiner la zone du sprite
 	SetGraphicPenColor(0)
-	DrawRectangle(120, 0, SPRITE_WIDTH * 9, SPRITE_HEIGHT * 9, 1)
-	SetGraphicPenColor(1)
-	DrawRectangle(120, 0, 8, sprImgSize[sprImgNumber].h * 8, 1)
-	DrawRectangle(120, sprImgSize[sprImgNumber].h * 8, (sprImgSize[sprImgNumber].w + 1) * 8, 8, 1)
-	DrawRectangle(120 + (sprImgSize[sprImgNumber].w + 1) * 8, 0, 8, (sprImgSize[sprImgNumber].h + 1) * 8, 1)
+	DrawRectangle(120, 0, SPRITE_WIDTH * 8, SPRITE_HEIGHT * 8, 1)
+	SetGraphicPenColor(6)
+	DrawRectangle(127, 0, 1, SPRITE_HEIGHT * 8, 1)
+	DrawRectangle(127, SPRITE_HEIGHT * 8, (SPRITE_WIDTH * 8) + 2, 1, 1)
+	DrawRectangle(120 + (SPRITE_WIDTH + 1) * 8, 0, 1, SPRITE_HEIGHT * 8, 1)
 
 	-- dessiner le sprite
-	for y = 0, sprImgSize[sprImgNumber].h - 1 do
-		for x = 0, sprImgSize[sprImgNumber].w - 1 do
-			SetGraphicPenColor(spram[(sprImgNumber * MAX_SPRITE_SIZE) + x + (y * sprImgSize[sprImgNumber].w)])
+	for y = 0, SPRITE_HEIGHT - 1 do
+		for x = 0, SPRITE_WIDTH - 1 do
+			SetGraphicPenColor(spram[(sprImgNumber * MAX_SPRITE_SIZE) + x + (y * SPRITE_WIDTH)])
 			DrawRectangle(128 + (x * 8), y * 8, 8, 8, 1)
 		end
 	end

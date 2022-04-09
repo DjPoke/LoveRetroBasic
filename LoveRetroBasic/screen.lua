@@ -338,9 +338,6 @@ function DrawSprite(spr)
 	local x = hardspr[spr].x
 	local y = hardspr[spr].y
 
-	w = sprImgSize[img].w
-	h = sprImgSize[img].h
-	
 	-- calculer le facteur d'échelle
 	local scale = ss + 1
 	

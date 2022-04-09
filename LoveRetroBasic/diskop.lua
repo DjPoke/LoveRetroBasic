@@ -106,7 +106,6 @@ function LoadSprites(filename)
 		spram[i] = 0
 	end
 
-	sprImgSize = {}
 	sprImgNumber = 0
 
 	-- ouvrir le fichier
@@ -121,8 +120,6 @@ function LoadSprites(filename)
 		w = Val(data[i])
 		h = Val(data[i + 1])
 
-		sprImgSize[j] = {w = w, h = h}
-		
 		i = i + 2
 		
 		for y = 0, h - 1 do
@@ -143,13 +140,11 @@ end
 function SaveSprites(filename)
 	if filename == nil then return end
 
-	if sprImgSize == nil then return end
-
 	local file = io.open(filename, "w")
 
 	for i = 0, MAX_SPRITES_IMAGES - 1 do
-		local w = sprImgSize[i].w
-		local h = sprImgSize[i].h
+		local w = SPRITE_WIDTH
+		local h = SPRITE_HEIGHT
 		file:write(tostring(w) .. Chr(LF))
 		file:write(tostring(h) .. Chr(LF))
 		for y = 0, h - 1 do

@@ -1,6 +1,6 @@
--- ==========================================
--- LoveRetroBasic, par retro-bruno, (c) 2021
--- ==========================================
+-- ==============================================
+-- LoveRetroBasic, par retro-bruno, (c) 2021-2022
+-- ==============================================
 
 -- ===============================
 -- - import de la librairie UTF8 =
@@ -284,8 +284,8 @@ IBF = 256 -- Nombre d'instructions exécutées chaque frame
 SPRITE_WIDTH = 16
 SPRITE_HEIGHT = 16
 MAX_SPRITE_SIZE = SPRITE_WIDTH * SPRITE_HEIGHT
-MAX_HARD_SPRITES = 32
-MAX_SPRITES_IMAGES = 256 -- 8 banques de 32 images de sprites
+MAX_HARD_SPRITES = 32 -- 32 images de sprites par page
+MAX_SPRITES_IMAGES = 256 -- 8 pages
 
 SPRITE_LINE_WIDTH = 16
 SPRITE_LINE_HEIGHT = 2
@@ -353,12 +353,6 @@ lstackPointer = MAX_STACK
 spram = {}
 for i = 0, MAX_SPRAM - 1 do
 	spram[i] = 0
-end
-
--- définir la taille par défaut des sprites
-sprImgSize = {}
-for i = 0, MAX_SPRITES_IMAGES - 1 do
-	sprImgSize[i] = {w = SPRITE_WIDTH, h = SPRITE_HEIGHT}
 end
 
 -- sprite sélectionné par défaut
@@ -635,7 +629,7 @@ function love.keyreleased(key, scancode, isrepeat)
 	if specialAppState and err ~= nil then
 		if key == "escape" then
 			err = nil
-			--
+
 			return
 		end
 	end
@@ -644,7 +638,7 @@ function love.keyreleased(key, scancode, isrepeat)
 	if appState == RUN_MODE or appState == READY_MODE then
 		if key == "escape" then
 			EndProgram()
-			--
+
 			return
 		end
 	end
@@ -656,13 +650,13 @@ function love.keyreleased(key, scancode, isrepeat)
 			if key == "1" then
 				helpPage = 1
 				HelpManager()
-				--
+
 				return
 			-- voir les raccourcis claviers de l'éditeur
 			elseif key == "2" then
 				helpPage = 2
 				HelpManager()
-				--
+
 				return
 			-- revenir à l'éditeur
 			elseif key == "escape" then
@@ -674,7 +668,7 @@ function love.keyreleased(key, scancode, isrepeat)
 				-- afficher le curseur
 				ShowCursor(true)
 				appState = EDIT_MODE
-				--
+
 				return
 			end
 		elseif helpPage == 1 or helpPage == 2 then
@@ -682,7 +676,7 @@ function love.keyreleased(key, scancode, isrepeat)
 			if key == "escape" then
 				helpPage = 0
 				HelpManager()
-				--
+
 				return
 			end
 		end
@@ -701,39 +695,7 @@ function love.keyreleased(key, scancode, isrepeat)
 			cursor[2] = safeCursor[2]
 			ShowCursor(true)
 			appState = EDIT_MODE
-			--
-			return
-		elseif key == "s" then
-			-- sauvegarder tous les sprites existants
-			SaveSprites(defaultFolder .. currentFolder .. "sprites.spr")
-			--
-			return
-		elseif key == "c" then
-			-- copier le sprite courant
-			clipboard[0] = sprImgSize[sprImgNumber].w
-			clipboard[1] = sprImgSize[sprImgNumber].h
-			for i = 0, (sprImgSize[sprImgNumber].w * sprImgSize[sprImgNumber].h) - 1 do
-				clipboard [i + 2] = spram[(sprImgNumber * MAX_SPRITE_SIZE) + i]
-			end
-			--
-			return
-		elseif key == "p" then
-			local w = clipboard[0]
-			local h = clipboard[1]
-			-- récupérer le sprite dans le clipboard
-			-- pour le coller
-			sprImgSize[sprImgNumber].w = w
-			sprImgSize[sprImgNumber].h = h
-			for i = 0, MAX_SPRITE_SIZE - 1 do
-				spram[(sprImgNumber * MAX_SPRITE_SIZE) + i] = 0
-			end
-			for i = 0, (w * h) - 1 do
-				spram[(sprImgNumber * MAX_SPRITE_SIZE) + i] = clipboard[i + 2]
-			end
-			-- afficher le sprite si possible
-			RedrawEditedSprite()
-			RedrawCurrentSprite()
-			--
+
 			return
 		end
 	end	
@@ -871,10 +833,78 @@ function love.keypressed(key, scancode, isrepeat)
 			cursor[1] = 1
 			ShowCursor(true)
 		end
-	end
+	elseif appState == SPRITE_MODE then	
+		if key == "s" and love.keyboard.isDown("lctrl", "rctrl") then
+			-- sauvegarder tous les sprites existants
+			SaveSprites(defaultFolder .. currentFolder .. "sprites.spr")
 
+			return
+		elseif key == "x" and love.keyboard.isDown("lctrl", "rctrl") then
+			-- copier le sprite courant dans le clipboard
+			clipboard[0] = SPRITE_WIDTH
+			clipboard[1] = SPRITE_HEIGHT
+			
+			for i = 0, (SPRITE_WIDTH * SPRITE_HEIGHT) - 1 do
+				clipboard[i + 2] = spram[(sprImgNumber * MAX_SPRITE_SIZE) + i]
+			end
+
+			-- effacer le sprite
+			for i = 0, MAX_SPRITE_SIZE - 1 do
+				spram[(sprImgNumber * MAX_SPRITE_SIZE) + i] = 0
+			end
+
+			-- afficher le sprite (vide) si possible
+			RedrawEditedSprite()
+			RedrawCurrentSprite()
+
+			return
+		elseif key == "c" and love.keyboard.isDown("lctrl", "rctrl") then
+			-- copier le sprite courant dans le clipboard
+			clipboard[0] = SPRITE_WIDTH
+			clipboard[1] = SPRITE_HEIGHT
+			
+			for i = 0, (SPRITE_WIDTH * SPRITE_HEIGHT) - 1 do
+				clipboard[i + 2] = spram[(sprImgNumber * MAX_SPRITE_SIZE) + i]
+			end
+
+			return
+		elseif key == "v" and love.keyboard.isDown("lctrl", "rctrl") then
+			-- récupérer la taille du sprite
+			local w = clipboard[0]
+			local h = clipboard[1]
+
+			-- si pas d'erreur, alors...
+			if w == SPRITE_WIDTH and h == SPRITE_HEIGHT then 
+				-- effacer le sprite sélectionné
+				for i = 0, MAX_SPRITE_SIZE - 1 do
+					spram[(sprImgNumber * MAX_SPRITE_SIZE) + i] = 0
+				end
+				
+				-- récupérer le sprite dans le clipboard
+				for i = 0, (w * h) - 1 do
+					spram[(sprImgNumber * MAX_SPRITE_SIZE) + i] = clipboard[i + 2]
+				end
+				
+				-- afficher le sprite (si possible)
+				RedrawEditedSprite()
+				RedrawCurrentSprite()
+			end
+
+			return
+		elseif key == "delete" then
+			-- effacer le sprite
+			for i = 0, MAX_SPRITE_SIZE - 1 do
+				spram[(sprImgNumber * MAX_SPRITE_SIZE) + i] = 0
+			end
+			
+			-- afficher le sprite (vide) si possible
+			RedrawEditedSprite()
+			RedrawCurrentSprite()
+
+			return
+		end
 	-- ajouter certaines touches au buffer clavier
-	if appState == RUN_MODE then
+	elseif appState == RUN_MODE then
 		if key == "return" then
 			kb_buffer = kb_buffer .. Chr(13)
 		elseif key == "backspace" then
@@ -1360,7 +1390,7 @@ function love.draw()
 		local x = math.floor((mx - 128) / 8)
 		local y = math.floor(my / 8)
 		
-		if x >= 0 and x < sprImgSize[sprImgNumber].w and y >= 0 and y < sprImgSize[sprImgNumber].h then
+		if x >= 0 and x < SPRITE_WIDTH and y >= 0 and y < SPRITE_HEIGHT then
 			local st = "x,y: " .. tostring(x) .. "," .. tostring(y)
 			PrintInfosString(st, 2, "black")
 		end

@@ -137,10 +137,6 @@ function Reset()
 		spram[i] = 0
 	end
 
-	sprImgSize = {}
-	for i = 0, MAX_SPRITES_IMAGES - 1 do
-		sprImgSize[i] = {w = SPRITE_WIDTH, h = SPRITE_HEIGHT}
-	end
 	sprImgNumber = 0
 	sprImgPage = 0
 
