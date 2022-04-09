@@ -184,6 +184,24 @@ function LoadDisc(f)
 	return OK
 end
 
+-- effacer la musique
+function ClearMusic()
+	for i = 1, 4 do
+		for j = 1, notesPerPattern do
+			for k = 1, MAX_PATTERNS do
+				pattern[i][j][k] = 0
+				vol[i][j][k] = DEFAULT_VOLUME
+			end
+		end
+	end
+	
+	for i = 1, MAX_MUSIC_LENGTH do
+		mus[i] = 1
+	end
+
+	currentPattern = 1
+end
+
 -- chargeur de musique
 function LoadMusic(filename)
 	if filename == nil then return end
@@ -232,4 +250,42 @@ function LoadMusic(filename)
 	end
 	
 	return OK
+end
+
+-- sauvegardeur de musique
+function SaveMusic(filename)
+	if filename == nil then return end
+
+	file = File.new()
+	if file:open(filename, Stream.Write) then
+		-- écrire les BPM
+		 file:writeByte(BPM)
+		-- écrire le type d'arpège et la vitesse pour chaque canal
+		for i = 1,4 do
+			file:writeByte(arpeggioType[i])
+			file:writeByte(arpeggioSpeed[i])
+		end
+		-- écrire les valeurs d'instruments
+		for i = 1,4 do
+			file:writeByte(currentSoundsType[i])
+		end
+		-- écrire la structure musicale
+		file:writeByte(musicLength)
+		for i = 1,musicLength do
+			file:writeByte(mus[i])
+		end
+		-- écrire les données des patterns
+		for i = 1,4 do
+			for j = 1,notesPerPattern do
+				for k = 1,MAX_PATTERNS do
+					file:writeByte(pattern[i][j][k])
+					file:writeByte(vol[i][j][k])
+				end
+			end
+		end
+
+		file:close()
+	else
+		msg = "Error ! Can't save the music !"
+	end
 end

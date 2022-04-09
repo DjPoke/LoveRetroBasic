@@ -208,6 +208,29 @@ function DrawFullLine(x0, y0, x1, y1)
 	SetCanvas(false)
 end
 
+-- tracer un bouton d'UI
+function DrawButton(x, y, w, h, b, c1, c2, c3)
+	-- dessiner le fond du bouton virtuel
+	memGPen = gpen
+	gpen = c1
+	DrawRectangle(x, y, w, h, true)
+
+	-- dessiner le côté foncé du cadre
+	gpen = c3
+	for i = 0, b - 1 do
+		DrawRectangle(x + i, y + i, w - (i * 2), h - (i * 2), false)
+	end
+	
+	-- dessiner le côté clair du cadre
+	gpen = c2
+	for i = 0, b - 1 do
+		DrawFullLine(x + i, y + i, w - i - 1, y + i)
+		DrawFullLine(x + i + w - 1, y + i, x + i + w - 1, y - i + h - 1)
+	end
+	
+	gpen = memGPen
+end
+
 -- faire scroller l'écran vers le haut de 1 caractère
 function ScrollScreenUp()
 	-- scroller

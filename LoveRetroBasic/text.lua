@@ -70,7 +70,7 @@ function PrintChar(c, r)
 
 	SetCanvas(true)
 
-	-- dessiner en mémoire video virtuelle
+	-- dessiner en mémoire vidéo virtuelle
 	for y = y1, y1 + 7 do
 		for x = x1, x1 + 7 do
 			if x >= 0 and x <= SCN_SIZE_WIDTH - 1 and y >= 0 and y <= SCN_SIZE_HEIGHT - 1 then
@@ -126,6 +126,49 @@ function PrintChar(c, r)
 	return OK
 end
 
+-- afficher un caractère graphique à l'écran, avec la couleur du stylo texte
+function GraphPrintChar(c, r)
+	-- retour si le caractère n'existe pas
+	if c == nil then
+		return ERR_OPERAND_MISSING
+	end
+	
+	local x1 = gcursor[1]
+	local y1 = gcursor[2]
+
+	SetCanvas(true)
+
+	-- dessiner en mémoire vidéo virtuelle
+	for y = y1, y1 + 7 do
+		for x = x1, x1 + 7 do
+			if x >= 0 and x <= SCN_SIZE_WIDTH - 1 and y >= 0 and y <= SCN_SIZE_HEIGHT - 1 then
+				if not textTransparency then
+					if sym[c][x - x1][y - y1] == nil then
+						return OK
+					elseif sym[c][x - x1][y - y1] == 1 then
+						love.graphics.setColor(scnPal[pen][0] / 255, scnPal[pen][1] / 255, scnPal[pen][2] / 255, 1)
+						love.graphics.points(x + 0.5, y + 0.5)
+					else
+						love.graphics.setColor(scnPal[paper][0] / 255, scnPal[paper][1] / 255, scnPal[paper][2] / 255, 1)
+						love.graphics.points(x + 0.5, y + 0.5)
+					end
+				else
+					if sym[c][x-x1][y-y1] == nil then
+						return OK
+					elseif sym[c][x-x1][y-y1] == 1 then
+						love.graphics.setColor(scnPal[pen][0] / 255, scnPal[pen][1] / 255, scnPal[pen][2] / 255, 1)
+						love.graphics.points(x + 0.5, y + 0.5)
+					end
+				end
+			end
+		end
+	end
+
+	SetCanvas(false)
+	
+	return OK
+end
+
 -- afficher un ou plusieurs caractères à l'écran avec la couleur du stylo texte
 function PrintString(s)
 	-- annuler si la chaîne est vide
@@ -150,6 +193,42 @@ function PrintString(s)
 			PrintChar(Asc(chr), PRINT_CLIPPED)
 		end
 	end
+end
+
+-- afficher un ou plusieurs caractères graphiques à l'écran avec la couleur du stylo texte
+function GraphPrintString(s)
+	-- annuler si la chaîne est vide
+	if s == nil then
+		return
+	end
+	
+	for i = 1, #s do
+		chr = string.sub(s, i, i)
+		if Asc(chr) == 7 then
+			Beep()
+		elseif Asc(chr) < 32 then
+			-- TODO ?
+		else
+			GraphPrintChar(Asc(chr), PRINT_CLIPPED)
+		end
+	end
+end
+
+-- afficher un texte graphique à l'écran (fonction raccourci pour les UI)
+function Text(p, x, y, c)
+	local memGraphCursor = {gcursor[1], gcursor[2]}
+	local memGPen = gpen
+	
+	gcursor[1] = x
+	gcursor[2] = y
+	
+	gpen = c
+
+	GraphPrintString()
+
+	gcursor[1] = memGraphCursor[1]
+	gcursor[2] = memGraphCursor[2]
+	gpen = memGPen
 end
 
 -- afficher un ou plusieurs caractères à l'écran avec la couleur du stylo texte

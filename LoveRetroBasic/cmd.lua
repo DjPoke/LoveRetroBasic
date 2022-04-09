@@ -195,6 +195,24 @@ cmd["GRAPHPEN"].fn = function(lst)
 	return OK
 end
 
+-- commande 'PRINT'
+cmd["GRAPHPRINT"].fn = function(lst)
+	if #lst > 0 then
+		for i = 1, #lst do
+			if type(lst[i]) ~= "string" then lst[i] = tostring(lst[i]) end
+			
+			if lst[i]:sub(1, 1) == "\"" and lst[i]:sub(-1) == "\"" then
+				lst[i] = lst[i]:sub(2, -2)
+			end
+			
+			GraphPrintString(lst[i])
+		end
+	end
+
+	return OK
+end
+
+
 -- commande 'HEX$'
 cmd["HEX$"].fn = function(lst)
 	return OK, "\"" .. Hex(lst[1]) .. "\""
@@ -246,7 +264,7 @@ cmd["LINE"].fn = function(lst)
 		
 	if e ~= OK then return ERR_SYNTAX_ERROR end
 
-	DrawFullLine(x, y, w, h, f)
+	DrawFullLine(x, y, w, h)
 	
 	return OK
 end

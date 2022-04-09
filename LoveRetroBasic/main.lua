@@ -65,7 +65,7 @@ commands = {
 			"DRAW", "DRAWR",
 			"ELSEIF", "ELSE", "ENDIF", "ENDSELECT", "END",
 			"FOR",
-			"GETBORDER", "GETLOCX", "GETLOCY", "GETPAPER", "GETPEN", "GETGRAPHPEN", "GOSUB", "GOTO", "GRAPHPEN",
+			"GETBORDER", "GETLOCX", "GETLOCY", "GETPAPER", "GETPEN", "GETGRAPHPEN", "GOSUB", "GOTO", "GRAPHPEN", "GRAPHPRINT",
 			"HEX$", "HOTSPOT",
 			"IF", "INKEY$", "INPUT",
 			"LINE", "LOCATE",
@@ -119,6 +119,7 @@ cmd["FOR"].pmin, cmd["FOR"].pmax = 2, 3
 cmd["GOSUB"].pmin, cmd["GOSUB"].pmax = 1, 1
 cmd["GOTO"].pmin, cmd["GOTO"].pmax = 1, 1
 cmd["GRAPHPEN"].pmin, cmd["GRAPHPEN"].pmax = 1, 1
+cmd["GRAPHPRINT"].pmin, cmd["GRAPHPRINT"].pmax = 0, -1
 cmd["HEX$"].pmin, cmd["HEX$"].pmax = 1, 1
 cmd["HOTSPOT"].pmin, cmd["HOTSPOT"].pmax = 2, 2
 cmd["IF"].pmin, cmd["IF"].pmax = 1, 1
@@ -156,6 +157,7 @@ cmd["ELSEIF"].ptype = VAR_CONDITION
 cmd["FOR"].ptype = VAR_INTEGER
 cmd["GOSUB"].ptype = VAR_LABEL
 cmd["GOTO"].ptype = VAR_LABEL
+cmd["GRAPHPRINT"].ptype = VAR_POLY
 cmd["IF"].ptype = VAR_CONDITION
 cmd["PRINT"].ptype = VAR_POLY
 cmd["SELECT"].ptype = VAR_VAR
@@ -482,6 +484,44 @@ DEFAULT_VOLUME = 16
 MAX_PATTERNS = 64
 MAX_MUSIC_LENGTH = 99
 
+-- boutons du tracker
+BTN_UP = 1
+BTN_DOWN = 2
+BTN_MENU_STOP = 3
+BTN_MENU_EDIT = 4
+BTN_MENU_PLAY = 5
+BTN_OCTAVE_UP = 6
+BTN_OCTAVE_DOWN = 7
+BTN_SND_SHAPE_1 = 8
+BTN_SND_SHAPE_2 = 9
+BTN_SND_SHAPE_3 = 10
+BTN_SND_SHAPE_4 = 11
+BTN_TEMPO_UP = 12
+BTN_TEMPO_DOWN = 13
+BTN_LOAD = 14
+BTN_SAVE = 15
+BTN_POS_UP = 16
+BTN_POS_DOWN = 17
+BTN_LEN_UP = 18
+BTN_LEN_DOWN = 19
+BTN_PAT_UP = 20
+BTN_PAT_DOWN = 21
+BTN_CUT_TRACK = 22
+BTN_CUT_PATTERN = 23
+BTN_COPY_TRACK = 24
+BTN_COPY_PATTERN = 25
+BTN_PASTE_TRACK = 26
+BTN_PASTE_PATTERN = 27
+BTN_SND_ARP_1 = 28
+BTN_SND_ARP_2 = 29
+BTN_SND_ARP_3 = 30
+BTN_SND_ARP_4 = 31
+NO_BUTTONS = 100
+
+-- layouts clavier
+QWERTY = 1
+AZERTY = 2
+
 -- variables
 BPM = 120
 nextNotes = (60.0 / (4 * BPM))
@@ -491,11 +531,13 @@ musicLength = 1
 currentNotesLine = 0
 currentPattern = 1
 currentTrack = 1
+currentEditLine = 1
 
 -- instruments
 instr = {}
 for i = 1, 4 do
 	instr[i] = {}
+	
 	for j = 1, 85 do
 		instr[i][j] = nil
 	end
@@ -512,18 +554,20 @@ for i = 1, 4 do
 end
 
 arpTimer = {0, 0, 0, 0}
-
+	
 pattern = {}
 vol = {}
 tVol = {}
 lastNote = {}
 arpLastNote = {}
+
 for i = 1, 4 do
 	pattern[i] = {}
 	vol[i] = {}
 	tVol[i] = 0.25
 	lastNote[i] = 0
 	arpLastNote[i] = lastNote[i]
+	
 	for j = 1, notesPerPattern do
 		pattern[i][j] = {}
 		vol[i][j] = {}
@@ -534,14 +578,86 @@ for i = 1, 4 do
 	end
 end
 
--- musique
-mus = {}
+-- clipboard pour la musique
+clipmus = {}
+for i = 1, 4 do
+	clipmus[i] = {}
+	
+	for j = 1, notesPerPattern do
+		clipmus[i][j] = {}
+		clipmus[i][j][1] = 0
+		clipmus[i][j][2] = DEFAULT_VOLUME
+	end
+end
+
+-- créer une musique vide avec 1 pattern
+mus = {} -- musique
 for i = 1, MAX_MUSIC_LENGTH do
 	mus[i] = 1
 end
 
-currentSoundsType = {3, 3, 3 ,3}
+currentShownLineStart = 1
+currentShownLineEnd = 16
+	
+currentOctave = 3
+currentPianoNote = 0
+currentArpNote = currentPianoNote
+	
+readyForNextNote = true
+	
+b1 = false
+b2 = false
+b3 = false
+
+trg = 0
+targetButton = 0
+	
+timeCounter = {0, 0, 0}
+trigger = {false, false, false}
+waitTrigger = false
+
+options = {BTN_MENU_STOP}
+	
+-- position des images de touches de piano
+piano = {}
+
+-- clavier hardware
+kb = {}
+
+-- initialize arrows keycodes
+key_right = "right"
+key_left = "left"
+key_down = "down"
+key_up = "up"
+
+key_pageup = "pageup"
+key_pagedown = "pagedown"
+	
+-- app state
+STOP = 1
+EDIT = 2
+PLAY = 3
+
+state = STOP
+
+mode = { "STOP", "EDIT", "PLAY" }
+
+-- générer des signaux carrés par défaut
+currentSoundsType = {3, 3, 3 ,3} -- pour chaque piste
+
 soundTypes = { "SIN", "TRI", "SQU", "SAW" }
+	
+musicName = nil
+	
+-- créer les instruments
+for ch = 1, 4 do
+	CreateSounds(ch, currentSoundsType[ch])
+end
+	
+editVolume = false
+showVolumeTrigger = false
+	
+mouseEnabled = true
 
 musicPlaying = false
 
@@ -552,7 +668,7 @@ function love.load()
 	-- créer la fenêtre graphique
 	love.window.setMode(realScnWidth, realScnHeight, {resizable=false, vsync=true, fullscreen=false})
 	love.window.setTitle("LoveRetroBasic ")
-	
+
 	-- récupérer la vraie taille de l'écran (ou de la fenêtre) et ajuster
 	realScnWidth = love.graphics.getWidth()
 	realScnHeight = love.graphics.getHeight()
@@ -614,6 +730,7 @@ function love.load()
 	if love.system.getOS() == "Windows" then
 		currentDrive = string.gsub(currentDrive, "\\", "/")
 	end
+	
 	currentDrive = currentDrive .. "/RBDisks/"
 	if os.rename(currentDrive, currentDrive) then
 		-- répertoire trouvé
@@ -622,6 +739,26 @@ function love.load()
 		-- répertoire non trouvé
 		currentDrive = ""
 	end
+	
+	-- récupérer le layout clavier mémorisé
+	GetKeyboardLayout()
+
+	-- préparer le clavier du tracker
+	for i = 1, 22 do
+		piano[i] = {"blanche", 8 + ((i - 1) * 12), 286, 0}
+	end
+	
+	InitPiano()
+
+	-- clavier hardware
+	for i = 1, 34 do
+		kb[i] = {}
+	end
+
+	InitKeyboard()
+
+	-- initialiser l'application
+	appStarted = true
 end
 
 function love.keyreleased(key, scancode, isrepeat)
@@ -908,6 +1045,44 @@ function love.keypressed(key, scancode, isrepeat)
 		elseif key == "e" and love.keyboard.isDown("lctrl", "rctrl") then
 			ExportSprites()
 		end
+	-- changer le layout clavier avec tab
+	elseif appState == TRACKER_MODE then
+		if key == "tab" then
+			if keyboard == AZERTY then
+				keyboard = QWERTY
+			else
+				keyboard = AZERTY
+			end
+			
+			UpdateKeyboardLayout()
+			InitKeyboard()
+		end
+		
+		if state == STOP then
+			if key == key_right then
+				if currentTrack < 4 then
+					currentTrack = currentTrack + 1
+				end
+			end
+			
+			if key == key_left then
+				if currentTrack > 1 then
+					currentTrack = currentTrack - 1
+				end
+			end
+			
+			if key == key_pageup then
+				currentShownLineStart = 1
+				currentShownLineEnd = 16
+				currentEditLine = 1
+			end
+			
+			if key == key_pagedown then
+				currentShownLineStart = notesPerPattern - 15
+				currentShownLineEnd = notesPerPattern
+				currentEditLine = currentShownLineEnd
+			end
+		end
 	-- ajouter certaines touches au buffer clavier
 	elseif appState == RUN_MODE then
 		if key == "return" then
@@ -932,6 +1107,12 @@ function love.textinput(t)
 end
 
 function love.update(dt)
+	-- initialiser countTime
+	if appStarted then
+		countTime = 0
+		appStarted = false
+	end
+	
 	-- mettre à jour la position de la souris
 	mouseX = GetMousePositionX()
 	mouseY = GetMousePositionY()
@@ -1331,6 +1512,856 @@ function love.update(dt)
 				end
 			end
 		end
+	elseif appState == TRACKER_MODE then
+		-- timers
+		for i = 1, #timeCounter do
+			timeCounter[i] = timeCounter[i] + dt
+			trigger[i] = false
+		end
+	
+		-- répéter le timer souris ou touche appuyée
+		if timeCounter[1] > 0.05 then
+			timeCounter[1] = timeCounter[1] - 0.05
+			trigger[1] = true
+		end
+
+		-- premier timer de souris ou de touche appuyée
+		if timeCounter[2] > 0.5 then
+			timeCounter[2] = timeCounter[2] - 0.5
+			trigger[2] = true
+		end
+
+		-- timer de clignotement
+		if timeCounter[3] > 0.5 then
+			timeCounter[3] = timeCounter[3] - 0.5
+			trigger[3] = true
+		end
+
+		-- clignotte si en mode d'édition de volume
+		if trigger[3] and editVolume then
+			if showVolumeTrigger == false then
+				showVolumeTrigger = true
+			else
+				showVolumeTrigger = false
+			end
+		end
+
+		-- mémoriser les anciens événements
+		old_b1 = b1
+		old_b2 = b2
+		old_b3 = b3
+	
+		-- get the mouse events
+		mx = mouseX
+		my = mouseY
+		b1, b2, b3 = love.mouse.isDown("1", "2", "3")
+
+		-- désactiver les boutons si en mode d'édition de volume
+		if editVolume then b1 = false; b2 = false; b3 = false end
+
+		if mx ~= NaN and my ~= NaN and mouseEnabled then
+			-- si un bouton souris est pressé...
+			if b1 then
+				trg = 0
+				if mx >= 313 and mx <= 313 + 31 and my >= 0 and my <= 31 then
+					trg = BTN_UP
+				elseif mx >= 313 and mx <= 313 + 31 and my >= 32 and my <= 63 then
+					trg = BTN_DOWN
+				elseif mx >= 313 and mx <= 313 + 31 and my >= 128 and my <= 128 + 31 then
+					trg = BTN_TEMPO_DOWN
+				elseif mx >= 377 and mx <= 377 + 31 and my >= 128 and my <= 128 + 31 then
+					trg = BTN_TEMPO_UP
+				elseif mx >= 340 and mx <= 340 + 31 and my >= 285 and my <= 285 + 31 then
+					trg = BTN_OCTAVE_UP
+				elseif mx >= 278 and mx <= 278 + 31 and my >= 285 and my <= 285 + 31 then
+					trg = BTN_OCTAVE_DOWN
+				elseif mx >= 383 and mx <= 383 + 95 and my >= 0 and my <= 31 then
+					trg = BTN_MENU_STOP
+				elseif mx >= 383 and mx <= 383 + 95 and my >= 32 and my <= 63 then
+					trg = BTN_MENU_EDIT
+				elseif mx >= 383 and mx <= 383 + 95 and my >= 64 and my <= 95 then
+					trg = BTN_MENU_PLAY
+				elseif mx >= 24 and mx <= 24 + 15 and my >= 264 and my <= 264 + 15 then
+					trg = BTN_SND_SHAPE_1
+				elseif mx >= 24 + 72 and mx <= 24 + 72 + 15 and my >= 264 and my <= 264 + 15 then
+					trg = BTN_SND_SHAPE_2
+				elseif mx >= 24 + 144 and mx <= 24 + 144 + 15 and my >= 264 and my <= 264 + 15 then
+					trg = BTN_SND_SHAPE_3
+				elseif mx >= 24 + 144 + 72 and mx <= 24 + 144 + 72 + 15 and my >= 264 and my <= 264 + 15 then
+					trg = BTN_SND_SHAPE_4
+				elseif mx >= 40 and mx <= 40 + 15 and my >= 264 and my <= 264 + 15 then
+					trg = BTN_SND_ARP_1
+				elseif mx >= 40 + 72 and mx <= 40 + 72 + 15 and my >= 264 and my <= 264 + 15 then
+					trg = BTN_SND_ARP_2
+				elseif mx >= 40 + 144 and mx <= 40+144+15 and my >= 264 and my <= 264 + 15 then
+					trg = BTN_SND_ARP_3
+				elseif mx >= 40 + 144 + 72 and mx <= 40 + 144 + 72 + 15 and my >= 264 and my <= 264 + 15 then
+					trg = BTN_SND_ARP_4
+				elseif mx >= 480 - 64 + 9 and mx <= 480 - 64 + 9 + 31 and my >= 285 and my <= 285 + 31 then
+					trg = BTN_LOAD
+				elseif mx >= 480 - 32 + 9 and mx <= 480 - 32 + 9 + 31 and my >= 285 and my <= 285 + 31 then
+					trg = BTN_SAVE
+				elseif mx >= 377 and mx <= 392 and my >= 168 and my <= 183 then
+					trg = BTN_CUT_TRACK
+				elseif mx >= 393 and mx <= 408 and my >= 168 and my <= 183 then
+					trg = BTN_CUT_PATTERN
+				elseif mx >= 377 and mx <= 392 and my >= 184 and my <= 199 then
+					trg = BTN_COPY_TRACK
+				elseif mx >= 393 and mx <= 408 and my >= 184 and my <= 199 then
+					trg = BTN_COPY_PATTERN
+				elseif mx >= 377 and mx <= 392 and my >= 200 and my <= 215 then
+					trg = BTN_PASTE_TRACK
+				elseif mx >= 393 and mx <= 408 and my >= 200 and my <= 215 then
+					trg = BTN_PASTE_PATTERN
+				elseif mx >= 409 and mx <= 424 and my >= 216 and my <= 231 then
+					trg = BTN_POS_DOWN
+				elseif mx >= 425 and mx <= 451 and my >= 216 and my <= 231 then
+					trg = BTN_POS_UP
+				elseif mx >= 409 and mx <= 424 and my >= 232 and my <= 247 then
+					trg = BTN_LEN_DOWN
+				elseif mx >= 425 and mx <= 451 and my >= 232 and my <= 247 then
+					trg = BTN_LEN_UP
+				elseif mx >= 409 and mx <= 424 and my >= 248 and my <= 263 then
+					trg = BTN_PAT_DOWN
+				elseif mx >= 425 and mx <= 451 and my >= 248 and my <= 263 then
+					trg = BTN_PAT_UP
+				elseif mx >= 32 and mx <= 103 and my >= 0 and my <= 263 then
+					currentTrack = 1
+					offst = math.floor((my - 4) / 16)
+					if offst >= 0 and offst <= 15 then
+						currentEditLine = currentShownLineStart + offst
+					end
+				elseif mx >= 104 and mx <= 175 and my >= 0 and my <= 263 then
+					currentTrack = 2
+					offst = math.floor((my - 4) / 16)
+					if offst >= 0 and offst <= 15 then
+						currentEditLine = currentShownLineStart + offst
+					end
+				elseif mx >= 176 and mx <= 247 and my >= 0 and my <= 263 then
+					currentTrack = 3
+					offst = math.floor((my - 4) / 16)
+					if offst >= 0 and offst <= 15 then
+						currentEditLine = currentShownLineStart + offst
+					end
+				elseif mx >= 248 and mx <= 319 and my >= 0 and my <= 263 then
+					currentTrack = 4
+					offst = math.floor((my - 4) / 16)
+					if offst >= 0 and offst <= 15 then
+						currentEditLine = currentShownLineStart + offst
+					end
+				else
+					trg = NO_BUTTONS
+				end
+			end
+
+			-- si un bouton souris est pressé à l'intérieur d'un bouton virtuel...
+			if b1 and not old_b1 then
+				if targetButton == 0 and trg ~= 0 then
+					targetButton = trg
+					waitTrigger = true
+					timeCounter[2] = 0
+				end
+			end
+		
+			-- attendre le premier trigger
+			if waitTrigger and trigger[2] then
+				waitTrigger = false
+				timeCounter[1] = 0
+			end
+
+			-- si le bouton gauche de la souris est pressé
+			if b1 then
+				if targetButton == trg then
+					if (not waitTrigger and trigger[1]) or not old_b1 or ((targetButton == BTN_UP or targetButton == BTN_DOWN) and trigger[1]) then
+						-- action tant que le bouton est pressé
+						if targetButton == BTN_UP then
+							if state ~= PLAY and currentEditLine > 1 then
+								currentEditLine = currentEditLine - 1
+								if currentEditLine < currentShownLineStart then
+									if currentShownLineStart > 1 then
+										currentShownLineStart = currentShownLineStart - 1
+										currentShownLineEnd = currentShownLineEnd - 1
+										currentEditLine = currentShownLineStart
+									end
+								end
+							end
+						elseif targetButton == BTN_DOWN then
+							if state ~= PLAY and currentEditLine < notesPerPattern then
+								currentEditLine = currentEditLine + 1
+								if currentEditLine > currentShownLineEnd then
+									if currentShownLineEnd < notesPerPattern then
+										currentShownLineStart = currentShownLineStart + 1
+										currentShownLineEnd = currentShownLineEnd + 1
+										currentEditLine = currentShownLineEnd
+									end
+								end
+							end
+						elseif targetButton == BTN_TEMPO_UP then
+							if state ~= PLAY then
+								if BPM < 240 then
+									BPM = BPM + 1
+									nextNotes = (60.0 / (4 * BPM))
+									for a = 1,4 do
+										nextArp[a] = nextNotes / arpeggioSpeed[a]
+									end
+								end
+							end
+						elseif targetButton == BTN_TEMPO_DOWN then
+							if state ~= PLAY then
+								if BPM > 40 then
+									BPM = BPM - 1
+									nextNotes = (60.0 / (4 * BPM))
+									for a = 1,4 do
+										nextArp[a] = nextNotes / arpeggioSpeed[a]
+									end
+								end
+							end
+						elseif targetButton == BTN_POS_DOWN then
+							if state ~= PLAY then
+								if currentPattern > 1 then
+									currentPattern = currentPattern - 1
+								end
+							else
+								if currentPattern > 1 then
+									-- stopper les instruments
+									SoundStop()
+	
+									currentPattern = currentPattern - 1
+								
+									-- remise à zéro du pattern
+									currentShownLineStart = 1
+									currentShownLineEnd = 16
+									currentNotesLine = 0
+									countTime = 0
+								end
+							end
+						elseif targetButton == BTN_POS_UP then
+							if state ~= PLAY then
+								if currentPattern < musicLength then
+									currentPattern = currentPattern + 1
+								end
+							else
+								if currentPattern < musicLength then
+									-- stopper les instruments
+									SoundStop()
+	
+									currentPattern = currentPattern + 1
+									
+									-- remise à zéro du pattern
+									currentShownLineStart = 1
+									currentShownLineEnd = 16
+									currentNotesLine = 0
+									countTime = 0
+								end
+							end
+						elseif targetButton == BTN_LEN_DOWN then
+							if state ~= PLAY then
+								if musicLength > 1 then
+									musicLength = musicLength - 1
+									if currentPattern > musicLength then
+										currentPattern = 1
+									end
+								end
+							else
+								if musicLength > 1 then
+									-- stopper les instruments
+									SoundStop()
+
+									musicLength = musicLength - 1
+									if currentPattern > musicLength then
+										currentPattern = 1
+									
+										-- remise à zéro du pattern
+										currentShownLineStart = 1
+										currentShownLineEnd = 16
+										currentNotesLine = 0
+										countTime = 0
+									end
+								end
+							end
+						elseif targetButton == BTN_LEN_UP then
+							if musicLength < MAX_MUSIC_LENGTH then
+								musicLength = musicLength + 1
+							end
+						elseif targetButton == BTN_PAT_DOWN then
+							if state ~= PLAY then
+								if mus[currentPattern] > 1 then
+									mus[currentPattern] = mus[currentPattern] - 1
+								end
+							else
+								if mus[currentPattern] > 1 then
+									-- stopper les instruments
+									SoundStop()
+	
+									mus[currentPattern] = mus[currentPattern] - 1
+									
+									-- remise à zéro du pattern
+									currentShownLineStart = 1
+									currentShownLineEnd = 16
+									currentNotesLine = 0
+									countTime = 0
+								end
+							end
+						elseif targetButton == BTN_PAT_UP then
+							if state ~= PLAY then
+								if mus[currentPattern] < MAX_PATTERNS then
+									mus[currentPattern] = mus[currentPattern] + 1
+								end
+							else
+								if mus[currentPattern] < MAX_PATTERNS then
+									-- stopper les instruments
+									SoundStop()
+	
+									mus[currentPattern] = mus[currentPattern] + 1
+									
+									-- remise à zéro du pattern
+									currentShownLineStart = 1
+									currentShownLineEnd = 16
+									currentNotesLine = 0
+									countTime = 0
+								end
+							end
+						end
+					end
+				else
+					targetButton = - 1
+				end
+			elseif targetButton == - 1 then
+				waitTrigger = false
+				targetButton = 0
+			else
+				-- action quand on relâche le bouton de la souris
+				if targetButton == BTN_OCTAVE_UP then
+					if currentOctave < 5 then
+						currentOctave = currentOctave + 1
+					end
+				elseif targetButton == BTN_OCTAVE_DOWN then
+					if currentOctave > 1 then
+						currentOctave = currentOctave - 1
+					end
+				elseif targetButton == BTN_MENU_STOP then
+					if state == PLAY then
+						-- stopper les instruments
+						SoundStop()
+	
+						currentEditLine = currentNotesLine
+						
+						-- changer d'état pour "Stop Mode"
+						state = STOP
+						options[1] = BTN_MENU_STOP
+					elseif state == EDIT then
+						state = STOP
+						options[1] = BTN_MENU_STOP
+					end
+				elseif targetButton == BTN_MENU_EDIT then
+					if state == PLAY then
+						-- stopper les instruments
+						SoundStop()
+	
+						currentEditLine = currentNotesLine
+						
+						-- changer d'état pour "Edit Mode"
+						state = EDIT
+						options[1] = BTN_MENU_EDIT
+					elseif state == STOP then
+						state = EDIT
+						options[1] = BTN_MENU_EDIT
+					end
+				elseif targetButton == BTN_MENU_PLAY then
+					if state ~= PLAY then
+						-- stopper les sons du piano
+						if currentPianoNote > 0 then
+							stop(instr[1][currentPianoNote])
+						end
+						
+						-- remette à zéro le pattern
+						currentShownLineStart = 1
+						currentShownLineEnd = 16
+						currentNotesLine = 0
+						countTime = 0
+						
+						-- changer d'état pour "Play Mode"
+						state = PLAY
+						options[1] = BTN_MENU_PLAY
+					end
+				elseif targetButton == BTN_SND_SHAPE_1 then
+					if state == STOP then
+						-- stopper les sons de piano
+						if currentPianoNote > 0 then
+							stop(instr[1][currentPianoNote])
+						end
+
+						-- changer la forme d'onde
+						currentSoundsType[1] = currentSoundsType[1] + 1
+
+						if currentSoundsType[1] > 4 then
+							currentSoundsType[1] = 1
+						end
+					
+						-- charger le nouveau son
+						CreateSounds(1, currentSoundsType[1])
+					end
+				elseif targetButton == BTN_SND_SHAPE_2 then
+					if state == STOP then
+						-- stopper les sons de piano
+						if currentPianoNote > 0 then
+							stop(instr[1][currentPianoNote])
+						end
+						
+						-- changer la forme d'onde
+						currentSoundsType[2] = currentSoundsType[2] + 1
+						if currentSoundsType[2] > 4 then
+							currentSoundsType[2] = 1
+						end
+						
+						-- charger le nouveau son
+						CreateSounds(2, currentSoundsType[2])
+					end
+				elseif targetButton == BTN_SND_SHAPE_3 then
+					if state == STOP then
+						-- stopper les sons de piano
+						if currentPianoNote > 0 then
+							stop(instr[1][currentPianoNote])
+						end
+						
+						-- changer la forme d'onde
+						currentSoundsType[3] = currentSoundsType[3] + 1
+						if currentSoundsType[3] > 4 then
+							currentSoundsType[3] = 1
+						end
+						
+						-- charger le nouveau son
+						CreateSounds(3, currentSoundsType[3])
+					end
+				elseif targetButton == BTN_SND_SHAPE_4 then
+					if state == STOP then
+						-- stopper les sons de piano
+						if currentPianoNote > 0 then
+							stop(instr[1][currentPianoNote])
+						end
+						
+						-- changer la forme d'onde
+						currentSoundsType[4] = currentSoundsType[4] + 1
+						if currentSoundsType[4] > 4 then
+							currentSoundsType[4] = 1
+						end
+					
+						-- charger le nouveau son
+						CreateSounds(4, currentSoundsType[4])
+					end
+				elseif targetButton == BTN_SND_ARP_1 then
+					if state == STOP then
+						-- stopper les sons de piano
+						if currentPianoNote > 0 then
+							stop(instr[1][currentPianoNote])
+						end
+						
+						-- changer le type d'arpège
+						arpeggioType[1] = arpeggioType[1] + 1
+						
+						if arpeggioType[1] > 4 then
+							arpeggioType[1] = 1
+						end
+					end
+				elseif targetButton == BTN_SND_ARP_2 then
+					if state == STOP then
+						-- stopper les sons de piano
+						if currentPianoNote > 0 then
+							stop(instr[1][currentPianoNote])
+						end
+						
+						-- changer le type d'arpège
+						arpeggioType[2] = arpeggioType[2] + 1
+						if arpeggioType[2] > 4 then
+							arpeggioType[2] = 1
+						end
+					end
+				elseif targetButton == BTN_SND_ARP_3 then
+					if state == STOP then
+						-- stopper les sons de piano
+						if currentPianoNote > 0 then
+							stop(instr[1][currentPianoNote])
+						end
+						
+						-- changer le type d'arpège
+						arpeggioType[3] = arpeggioType[3] + 1
+						if arpeggioType[3] > 4 then
+							arpeggioType[3] = 1
+						end
+					end
+				elseif targetButton == BTN_SND_ARP_4 then
+					if state == STOP then
+						--- stopper les sons de piano
+						if currentPianoNote > 0 then
+							stop(instr[1][currentPianoNote])
+						end
+						
+						-- changer le type d'arpège
+						arpeggioType[4] = arpeggioType[4] + 1
+						if arpeggioType[4] > 4 then
+							arpeggioType[4] = 1
+						end
+					end
+				elseif targetButton == BTN_LOAD then
+					if state == STOP then
+						-- stopper les sons de piano
+						if currentPianoNote > 0 then
+							stop(instr[1][currentPianoNote])
+						end
+
+						-- charger une musique
+						local f = input("Name of the music (no extension)", "My Music")
+						if f ~= nil then
+							if #f > 0 then
+								musicName = f .. ".rmu"
+								local filename = Path.combine(musicFolder, musicName)
+								ClearMusic()
+								LoadMusic(filename)
+								-- créer les instruments
+								for ch = 1,4 do
+									CreateSounds(ch, currentSoundsType[ch])
+								end
+							end
+						end
+					else
+						mouseEnabled = false
+						msgbox("Please push 'STOP' button first !")
+					end
+				elseif targetButton == BTN_SAVE then
+					if state == STOP then
+						-- stopper les sons de piano
+						if currentPianoNote > 0 then
+							stop(instr[1][currentPianoNote])
+						end
+						
+						-- sauvegarder une musique
+						if musicName == nil then
+							local f = input("Name of the music (no extension)", "My Music")
+							if f ~= nil then
+								if #f > 0 then
+									musicName = f .. ".rmu"
+									local filename = Path.combine(musicFolder, musicName)
+									SaveMusic(filename)
+									mouseEnabled = false
+									msgbox("Saved !")
+								end
+							end
+						else
+							local filename = Path.combine(musicFolder, musicName)
+							SaveMusic(filename)
+							mouseEnabled = false
+							msgbox("Saved !")
+						end
+					else
+						mouseEnabled = false
+						msgbox("Please push 'STOP' button first !")
+					end
+				elseif targetButton == BTN_CUT_TRACK then
+					if state == EDIT then
+						-- couper la piste
+						for i = 1,notesPerPattern do
+							clipmus[1][i][1] = pattern[currentTrack][i][mus[currentPattern]]
+							clipmus[1][i][2] = vol[currentTrack][i][mus[currentPattern]]
+							pattern[currentTrack][i][mus[currentPattern]] = 0
+							vol[currentTrack][i][mus[currentPattern]] = DEFAULT_VOLUME
+						end
+						
+						-- remettre à zéro les autres pistes
+						for i = 2,4 do
+							for j = 1,notesPerPattern do
+								clipmus[i][j][1] = 0
+								clipmus[i][j][2] = DEFAULT_VOLUME
+							end
+						end
+					else
+						msgbox("You must set EDIT mode !")
+					end
+				elseif targetButton == BTN_CUT_PATTERN then
+					if state == EDIT then
+						-- couper le pattern
+						for i = 1,4 do
+							for j = 1,notesPerPattern do
+								clipmus[i][j][1] = pattern[i][j][mus[currentPattern]]
+								clipmus[i][j][2] = vol[i][j][mus[currentPattern]]
+								pattern[i][j][mus[currentPattern]] = 0
+								vol[i][j][mus[currentPattern]] = DEFAULT_VOLUME
+							end
+						end
+					else
+						msgbox("You must set EDIT mode !")
+					end
+				elseif targetButton == BTN_COPY_TRACK then
+					if state == EDIT then
+						-- copier la piste
+						for i = 1,notesPerPattern do
+							clipmus[1][i][1] = pattern[currentTrack][i][mus[currentPattern]]
+							clipmus[1][i][2] = vol[currentTrack][i][mus[currentPattern]]
+						end
+						
+						-- remettre à zéro les autres pistes
+						for i = 2, 4 do
+							for j = 1, notesPerPattern do
+								clipmus[i][j][1] = 0
+								clipmus[i][j][2] = DEFAULT_VOLUME
+							end
+						end
+						
+						-- message d'info
+						msgbox("Copied")
+					else
+						msgbox("You must set EDIT mode !")
+					end
+				elseif targetButton == BTN_COPY_PATTERN then
+					if state == EDIT then
+						-- copier le pattern
+						for i = 1, 4 do
+							for j = 1, notesPerPattern do
+								clipmus[i][j][1] = pattern[i][j][mus[currentPattern]]
+								clipmus[i][j][2] = vol[i][j][mus[currentPattern]]
+							end
+						end
+						
+						msgbox("Copied")
+					else
+						msgbox("You must set EDIT mode !")
+					end
+				elseif targetButton == BTN_PASTE_TRACK then
+					if state == EDIT then
+						-- coller la piste
+						for i = 1,notesPerPattern do
+							pattern[currentTrack][i][mus[currentPattern]] = clipmus[1][i][1]
+							vol[currentTrack][i][mus[currentPattern]] = clipmus[1][i][2]
+						end
+					else
+						msgbox("You must set EDIT mode !")
+					end
+				elseif targetButton == BTN_PASTE_PATTERN then
+					if state == EDIT then
+						-- coller le pattern
+						for i = 1,4 do
+							for j = 1,notesPerPattern do
+								pattern[i][j][mus[currentPattern]] = clipmus[i][j][1]
+								vol[i][j][mus[currentPattern]] = clipmus[i][j][2]
+							end
+						end
+					else
+						msgbox("You must set EDIT mode !")
+					end
+				end
+				--
+				targetButton = 0
+				mouseEnabled = true
+			end
+		end
+		
+		-- ====================================================================
+		-- jouer une musique
+		if state == PLAY then
+			UpdateMusic(dt)
+		elseif state == STOP then
+			nt = GetKeyboardPlay(currentTrack, dt)
+			if nt == 0 then
+				if love.keyboard.isDown(key_up) and trigger[1] then
+					if currentEditLine > 1 then
+						currentEditLine = currentEditLine - 1
+						if currentEditLine < currentShownLineStart then
+							if currentShownLineStart > 1 then
+								currentShownLineStart = currentShownLineStart - 1
+								currentShownLineEnd = currentShownLineEnd - 1
+								currentEditLine = currentShownLineStart
+							end
+						end
+					end
+				end
+				if love.keyboard.isDown(key_down) and trigger[1] then
+					if currentEditLine < notesPerPattern then
+						currentEditLine = currentEditLine + 1
+						if currentEditLine > currentShownLineEnd then
+							if currentShownLineEnd < notesPerPattern then
+								currentShownLineStart = currentShownLineStart + 1
+								currentShownLineEnd = currentShownLineEnd + 1
+								currentEditLine = currentShownLineEnd
+							end
+						end
+					end
+				end
+			end
+		elseif state == EDIT then
+			if editVolume == false then
+				nt = GetKeyboardPlay(currentTrack, dt)
+				if nt > 0 and readyForNextNote then
+					pattern[currentTrack][currentEditLine][mus[currentPattern]] = nt
+					currentEditLine = currentEditLine + 1
+					if currentEditLine > currentShownLineEnd then
+						if currentShownLineEnd < notesPerPattern then
+							currentShownLineStart = currentShownLineStart + 1
+							currentShownLineEnd = currentShownLineEnd + 1
+						end
+						currentEditLine = currentShownLineEnd
+					end
+					readyForNextNote = false
+				elseif nt == 0 then
+					readyForNextNote = true
+	
+					-- touche suppr
+					if keyp(127) then
+						pattern[currentTrack][currentEditLine][mus[currentPattern]] = 0
+						currentEditLine = currentEditLine + 1
+						if currentEditLine > currentShownLineEnd then
+							if currentShownLineEnd < notesPerPattern then
+								currentShownLineStart = currentShownLineStart + 1
+								currentShownLineEnd = currentShownLineEnd + 1
+							end
+							currentEditLine = currentShownLineEnd
+						end
+					end
+	
+					-- touche espace
+					if keyp(32) then
+						pattern[currentTrack][currentEditLine][mus[currentPattern]] = 100
+						currentEditLine = currentEditLine + 1
+						if currentEditLine > currentShownLineEnd then
+							if currentShownLineEnd < notesPerPattern then
+								currentShownLineStart = currentShownLineStart + 1
+								currentShownLineEnd = currentShownLineEnd + 1
+							end
+							currentEditLine = currentShownLineEnd
+						end
+					end
+	
+					-- fleche haut
+					if keyp(key_up) then
+						if currentEditLine > 1 then
+							currentEditLine = currentEditLine - 1
+							if currentEditLine < currentShownLineStart then
+								if currentShownLineStart > 1 then
+									currentShownLineStart = currentShownLineStart - 1
+									currentShownLineEnd = currentShownLineEnd - 1
+								end
+								currentEditLine = currentShownLineStart
+							end
+						end
+					end
+	
+					-- fleche bas
+					if keyp(key_down) then
+						if currentEditLine < notesPerPattern then
+							currentEditLine = currentEditLine + 1
+							if currentEditLine > currentShownLineEnd then
+								if currentShownLineEnd < notesPerPattern then
+									currentShownLineStart = currentShownLineStart + 1
+									currentShownLineEnd = currentShownLineEnd + 1
+								end
+								currentEditLine = currentShownLineEnd
+							end
+						end
+					end
+	
+					-- fleche droite
+					if keyp(key_right) then
+						if currentTrack < 4 then
+							currentTrack = currentTrack + 1
+						end
+					end
+	
+					-- fleche gauche
+					if keyp(key_left) then
+						if currentTrack > 1 then
+							currentTrack = currentTrack - 1
+						end
+					end
+	
+					-- page up
+					if keyp(key_pageup) then
+						currentShownLineStart = 1
+						currentShownLineEnd = 16
+						currentEditLine = 1
+					end
+	
+					-- page down
+					if keyp(key_pagedown) then
+						currentShownLineStart = notesPerPattern - 15
+						currentShownLineEnd = notesPerPattern
+						currentEditLine = currentShownLineEnd
+					end
+					
+					-- touche entrée pour éditer le volume
+					if keyp(13) then
+						editVolume = true
+						showVolumeTrigger = true
+					end
+				end
+			else
+				-- touche entrée pour annuler l'édition de volume
+				if keyp(13) then
+					editVolume = false
+					showVolumeTrigger = false
+				end
+			
+				if editVolume then
+					for i = 48, 57 do
+						if keyp(i) then
+							vol[currentTrack][currentEditLine][mus[currentPattern]] = i - 48
+
+							if currentEditLine < notesPerPattern then
+								currentEditLine = currentEditLine + 1
+								if currentEditLine > currentShownLineEnd then
+									if currentShownLineEnd < notesPerPattern then
+										currentShownLineStart = currentShownLineStart + 1
+										currentShownLineEnd = currentShownLineEnd + 1
+									end
+									currentEditLine = currentShownLineEnd
+								end
+							end
+							
+							break
+						end
+					end
+				end
+			
+				if editVolume then
+					for i = 65, 70 do
+						if keyp(i) then
+							vol[currentTrack][currentEditLine][mus[currentPattern]] = i - 55
+
+							if currentEditLine < notesPerPattern then
+								currentEditLine = currentEditLine + 1
+								if currentEditLine > currentShownLineEnd then
+									if currentShownLineEnd < notesPerPattern then
+										currentShownLineStart = currentShownLineStart + 1
+										currentShownLineEnd = currentShownLineEnd + 1
+									end
+									currentEditLine = currentShownLineEnd
+								end
+							end
+							
+							break
+						end
+					end
+				end
+				
+				if editVolume then
+					for i = 97, 102 do
+						if keyp(i) then
+							vol[currentTrack][currentEditLine][mus[currentPattern]] = i - 87
+	
+							if currentEditLine < notesPerPattern then
+								currentEditLine = currentEditLine + 1
+								if currentEditLine > currentShownLineEnd then
+									if currentShownLineEnd < notesPerPattern then
+										currentShownLineStart = currentShownLineStart + 1
+										currentShownLineEnd = currentShownLineEnd + 1
+									end
+									currentEditLine = currentShownLineEnd
+								end
+							end
+							
+							break
+						end
+					end
+				end
+			end
+		end	
 	end
 	
 	-- effacer le buffer clavier
@@ -1426,6 +2457,288 @@ function love.draw()
 			elseif xn == 27 then
 				PrintInfosString("Export Sprites", 2, "black")
 			end
+		end
+	elseif appState == TRACKER_MODE then
+		local memGPen = gpen
+
+		-- dessiner l'UI du tracker
+		gpen = 17
+		DrawRectangle(0, 0, 312, 264, 1)
+		
+		gpen = 1
+		DrawRectangle(0, 0, 312, 264, 0)
+	
+		if state == PLAY then
+			if currentNotesLine > currentShownLineEnd then
+				currentShownLineEnd = currentNotesLine
+				currentShownLineStart = currentShownLineEnd - 15
+			elseif currentNotesLine < 2 then
+				currentShownLineStart = 1
+				currentShownLineEnd = 16
+			end
+			ShowTracks(currentShownLineStart, currentShownLineEnd, currentNotesLine, mus[currentPattern], 0)
+		else
+			ShowTracks(currentShownLineStart, currentShownLineEnd, currentEditLine, mus[currentPattern], currentTrack)
+		end
+	
+		-- montrer les pistes qui jouent
+		if app_started then
+			for i = 1,4 do
+				if pattern[i][currentNotesLine][mus[currentPattern]] ~= 0 then
+					rect(25 + ((i - 1)*72), 265, 25 + (i*72), 265+8, true, 2)
+				end
+			end
+		end
+
+		gpen = 1
+		
+		DrawFullLine(24, 0, 24, 264)
+		DrawFullLine(96, 0, 96, 264)
+		DrawFullLine(168, 0, 168, 264)
+		DrawFullLine(240, 0, 240, 264)
+		
+		gpen = memGPen
+	
+		-- scrollbar
+		if targetButton == BTN_UP then
+			--DrawButton(313, 0, 16, 16, 1, 9, 1, 0)
+		else
+			--DrawButton(313, 0, 16, 16, 2, 9, 1, 0)
+		end
+		--tex(button_up, 313, 0)
+	
+		if targetButton == BTN_DOWN then
+			--DrawButton(313, 32, 16, 16, 1, 9, 1, 0)
+		else
+			--DrawButton(313, 32, 16, 16, 2, 9, 1, 0)
+		end
+		--tex(button_down, 313, 32)
+	
+		-- boutons d'octave
+		if targetButton == BTN_OCTAVE_UP then
+			DrawButton(340, 285, 16, 16, 1, 9, 1, 0)
+		else
+			DrawButton(340, 285, 16, 16, 2, 9, 1, 0)
+		end
+		Text("+", 353, 291, 25)
+	
+		if targetButton == BTN_OCTAVE_DOWN then
+			DrawButton(278, 285, 16, 16, 1, 9, 1, 0)
+		else
+			DrawButton(278, 285, 16, 16, 2, 9, 1, 0)
+		end
+		Text("-", 291, 291, 25)
+	
+		Text("Octave:", 300, 266, 25)
+		DrawButton(308, 285, 16, 16, 1, 1, 9, 25)
+		Text(tostring(currentOctave), 322, 292, 25)
+	
+		-- boutons de menu
+		if options[1] == BTN_MENU_STOP then
+			--tex(large_button_pushed, 383, 0)
+		else
+			--tex(large_button, 383, 0)
+		end
+		Text(mode[1], 415, 7, 25)
+	
+		if options[1] == BTN_MENU_EDIT then
+			--tex(large_button_pushed, 383, 32)
+		else
+			--tex(large_button, 383, 32)
+		end
+		Text(mode[2], 415, 39, 25)
+	
+		if options[1] == BTN_MENU_PLAY then
+			--tex(large_button_pushed, 383, 64)
+		else
+			--tex(large_button, 383, 64)
+		end
+		Text(mode[3], 415, 71, 25)
+			
+		-- boutons de tempo
+		Text("TEMPO:", 313+28, 108, 25)
+		--tex(textbox, 313+32, 128)
+		Text(tostring(BPM), 313+37, 134, 25)
+	
+		if targetButton == BTN_TEMPO_DOWN then
+			--tex(button_pushed, 313, 128)
+		else
+			--tex(button, 313, 128)
+		end
+		Text("-", 326, 134, 25)
+	
+		if targetButton == BTN_TEMPO_UP then
+			--tex(button_pushed, 313+64, 128)
+		else
+			--tex(button, 313+64, 128)
+		end
+		Text("+", 326+64, 134, 25)
+	
+		-- montrer le layout clavier
+		if keyboard == AZERTY then
+			Text("AZERTY", 480-64+9, 291-24, 26)
+		else
+			Text("QWERTY", 480 - 64 + 9, 291 - 24, 26)
+		end
+		
+		-- boutons load/save
+		if targetButton == BTN_LOAD then
+			--tex(button_pushed, 480 - 64, 285)
+		else
+			--tex(button, 480 - 64, 285)
+		end
+		Text("LD", 480 - 64 + 9, 291, 25)
+	
+		if targetButton == BTN_SAVE then
+			--tex(button_pushed, 480 - 32, 285)
+		else
+			--tex(button, 480 - 32, 285)
+		end
+		Text("SV", 480 - 32 + 9, 291, 25)
+		
+		-- boutons de formes d'ondes
+		t = textbox_mini
+		if state ~= STOP then
+			t = textbox_mini_disabled
+		end
+		
+		--tex(t, 24, 264)
+		--tex(img_shape[currentSoundsType[1]], 24, 264)
+	
+		--tex(t, 24+72, 264, 16, 16)
+		--tex(img_shape[currentSoundsType[2]], 24+72, 264, 16, 16)
+	
+		--tex(t, 24+144, 264, 16, 16)
+		--tex(img_shape[currentSoundsType[3]], 24+144, 264, 16, 16)
+	
+		--tex(t, 24+144+72, 264, 16, 16)
+		--tex(img_shape[currentSoundsType[4]], 24+144+72, 264, 16, 16)
+		
+		-- boutons d'arpège
+		t = textbox_mini
+		if state ~= STOP then
+			t = textbox_mini_disabled
+		end
+		
+		--tex(t, 40, 264)
+		--tex(img_arp[arpeggioType[1]], 40, 264)
+	
+		--tex(t, 40+72, 264, 16, 16)
+		--tex(img_arp[arpeggioType[2]], 40+72, 264, 16, 16)
+	
+		--tex(t, 40+144, 264, 16, 16)
+		--tex(img_arp[arpeggioType[3]], 40+144, 264, 16, 16)
+	
+		--tex(t, 40+144+72, 264, 16, 16)
+		--tex(img_arp[arpeggioType[4]], 40+144+72, 264, 16, 16)
+	
+		-- bouton couper/copier/coller piste
+		--tex(large_textbox, 313, 168)
+		Text("CUT", 313+3, 167, 25)
+	
+		if targetButton == BTN_CUT_TRACK then
+			--tex(button_mini_pushed, 377, 168)
+		else
+			--tex(button_mini, 377, 168)
+		end
+		Text("T", 381, 166, 25)
+	
+		if targetButton == BTN_CUT_PATTERN then
+			--tex(button_mini_pushed, 393, 168)
+		else
+			--tex(button_mini, 393, 168)
+		end
+		Text("P", 397, 166, 25)
+	
+		--tex(large_textbox, 313, 184)
+		Text("COPY", 313+3, 183, 25)
+	
+		if targetButton == BTN_COPY_TRACK then
+			--tex(button_mini_pushed, 377, 184)
+		else
+			--tex(button_mini, 377, 184)
+		end
+		Text("T", 381, 182, 25)
+	
+		if targetButton == BTN_COPY_PATTERN then
+			--tex(button_mini_pushed, 393, 184)
+		else
+			--tex(button_mini, 393, 184)
+		end
+		Text("P", 397, 182, 25)
+	
+		--tex(large_textbox, 313, 200)
+		Text("PASTE", 313+3, 199, 25)
+	
+		if targetButton == BTN_PASTE_TRACK then
+			--tex(button_mini_pushed, 377, 200)
+		else
+			--tex(button_mini, 377, 200)
+		end
+		Text("T", 381, 198, 25)
+	
+		if targetButton == BTN_PASTE_PATTERN then
+			--tex(button_mini_pushed, 393, 200)
+		else
+			--tex(button_mini, 393, 200)
+		end
+		Text("P", 397, 198, 25)
+	
+		-- boutons et infos patterns
+		--tex(large_textbox, 313, 216)
+		Text("POSITION " .. tostring(currentPattern), 313+3, 215, 25)
+	
+		--tex(large_textbox, 313, 232)
+		Text("LENGTH   " .. tostring(musicLength), 313+3, 231, 25)
+	
+		--tex(large_textbox, 313, 248)
+		Text("PATTERN  " .. tostring(mus[currentPattern]), 313+3, 247, 25)
+	
+		if targetButton == BTN_POS_DOWN then
+			--tex(button_mini_pushed, 409, 216)
+		else
+			--tex(button_mini, 409, 216)
+		end
+		Text("-", 415, 214, 25)
+	
+		if targetButton == BTN_POS_UP then
+			--tex(button_mini_pushed, 313+96+16, 216)
+		else
+			--tex(button_mini, 313+96+16, 216)
+		end
+		Text("+", 431, 214, 25)
+	
+		if targetButton == BTN_LEN_DOWN then
+			--tex(button_mini_pushed, 313+96, 232)
+		else
+			--tex(button_mini, 313+96, 232)
+		end
+		Text("-", 415, 230, 25)
+	
+		if targetButton == BTN_LEN_UP then
+			--tex(button_mini_pushed, 313+96+16, 232)
+		else
+			--tex(button_mini, 313+96+16, 232)
+		end
+		Text("+", 431, 230, 25)
+	
+		if targetButton == BTN_PAT_DOWN then
+			--tex(button_mini_pushed, 313+96, 248)
+		else
+			--tex(button_mini, 313+96, 248)
+		end
+		Text("-", 415, 246, 25)
+	
+		if targetButton == BTN_PAT_UP then
+			--tex(button_mini_pushed, 313+96+16, 248)
+		else
+			--tex(button_mini, 313+96+16, 248)
+		end
+		Text("+", 431, 246, 25)
+		
+		-- montrer le piano pour jouer
+		for i = 1, 37 do
+			--tex(piano[i][1], piano[i][2], piano[i][3])
 		end
 	elseif appState == RUN_MODE and stepsMode and msgLine ~= nil then
 		PrintInfosString("Line " .. msgLine .. " :", 2, "black")
