@@ -166,7 +166,7 @@ function CreateDisk(f)
 end
 
 -- sélectionner un disque projet et en charger le programme basic
-function SelectDisk(f)
+function LoadDisc(f)
 	if f == nil then return ERR_DISC_MISSING end
 	
 	if os.rename(f .. "main.bas", f .. "main.bas") then

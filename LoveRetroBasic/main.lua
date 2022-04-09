@@ -607,7 +607,7 @@ function love.load()
 	currentFolder = currentFolder .. SEP
 	
 	-- choisir le Disk0 comme disque par défaut
-	SelectDisk(defaultFolder .. currentFolder)
+	LoadDisc(defaultFolder .. currentFolder)
 		
 	-- recherche d'un lecteur virtuel dans à côté du fichier .love
 	currentDrive = love.filesystem.getWorkingDirectory()
@@ -968,12 +968,12 @@ function love.update(dt)
 		end
 		
 		-- récupérer les clics sur le menu outils
-		if GetMouseClicLeft() then
+		if GetLeftMouseClic() then
 			local x = math.floor(mouseX / 8)
 			local y = love.mouse.getY()
 						
 			if y >= borderY - (16 * scnPixelSize) and y < borderY - (8 * scnPixelSize) then
-				if x == 0 then
+				if x == 0 then -- lancer l'éditeur de sprites
 					-- remise à zéro d'un éventuel message texte
 					msg = nil
 					SaveProgram()
@@ -986,7 +986,7 @@ function love.update(dt)
 					SpriteEditor()
 					--
 					return
-				elseif x == 2 then
+				elseif x == 2 then -- lancer l'éditeur de niveaux
 					-- remise à zéro d'un éventuel message texte
 					msg = nil
 					--
@@ -997,7 +997,7 @@ function love.update(dt)
 					LevelEditor()
 					--
 					return
-				elseif x == 4 then
+				elseif x == 4 then -- lancer l'éditeur de bruitages
 					-- remise à zéro d'un éventuel message texte
 					msg = nil
 					--
@@ -1008,7 +1008,7 @@ function love.update(dt)
 					NoiseEditor()
 					--
 					return
-				elseif x == 6 then
+				elseif x == 6 then -- lancer le tracker musical
 					-- remise à zéro d'un éventuel message texte
 					msg = nil
 					--
@@ -1019,7 +1019,7 @@ function love.update(dt)
 					Tracker()
 					--
 					return
-				elseif x == 8 then
+				elseif x == 8 then -- lancer l'aide
 					-- remise à zéro d'un éventuel message texte
 					msg = nil
 					--
@@ -1030,7 +1030,7 @@ function love.update(dt)
 					HelpManager()
 					--
 					return
-				elseif x >= 10 and x <= 12 then
+				elseif x >= 10 and x <= 12 then -- executer le programme
 					-- remise à zéro d'un éventuel message texte
 					msg = nil
 					--
@@ -1056,7 +1056,7 @@ function love.update(dt)
 					end
 					--
 					return
-				elseif x >= 14 and x <= 18 then
+				elseif x >= 14 and x <= 16 then -- déboguer le programme
 					-- remise à zéro d'un éventuel message texte
 					msg = nil
 					--
@@ -1082,20 +1082,36 @@ function love.update(dt)
 					end
 					--
 					return
-				elseif x >= 20 and x <= 23 then
+				elseif x >= 18 and x <= 21 then -- sauvegarder le programme
 					-- remise à zéro d'un éventuel message texte
 					msg = nil
 					--
 					SaveProgram()
 					--
 					return
-				elseif x >= 25 and x <= 28 then
+				elseif x >= 23 and x <= 26 then -- charger le programme
 					-- remise à zéro d'un éventuel message texte
 					msg = nil
 					--
 					ShowCursor(false)
 					ClearScreen()
-					SelectDisk(defaultFolder .. currentFolder)
+					LoadDisc(defaultFolder .. currentFolder)
+					--
+					return
+				elseif x >= 28 and x <= 30 then -- importer un programme
+					-- remise à zéro d'un éventuel message texte
+					msg = nil
+					--
+					ShowCursor(false)
+					ClearScreen()
+					ImportProgram()
+					--
+					return
+				elseif x >= 32 and x <= 34 then -- exporter un programme
+					-- remise à zéro d'un éventuel message texte
+					msg = nil
+					--
+					ExportProgram()
 					--
 					return
 				elseif x == 39 then
@@ -1151,7 +1167,7 @@ function love.update(dt)
 			if appState == RUN_MODE then
 				-- débogage
 				if stepsMode then
-					if GetMouseClicLeft() then
+					if GetLeftMouseClic() then
 						-- passer à la ligne de code suivante
 						ProgramCounter = ProgramCounter + 1
 						execStep = true
@@ -1436,7 +1452,7 @@ function love.draw()
 	
 	-- afficher le renderer de menu outils
 	if appState == EDIT_MODE then
-		PrintInfosString(Chr(1) .. " " ..Chr(2) .. " " ..Chr(3) .. " " ..Chr(4) .. " ? RUN DEBUG SAVE LOAD          X", 4, "blue")
+		PrintInfosString(Chr(1) .. " " ..Chr(2) .. " " ..Chr(3) .. " " ..Chr(4) .. " ? RUN DBG SAVE LOAD IMP EXP    X", 4, "blue")
 		love.graphics.draw(renderer[4], borderX, borderY - (16 * scnPixelSize), 0, scnPixelSize, scnPixelSize, 0, 0, 0, 0)
 	end
 

@@ -68,7 +68,7 @@ function GetMouseDownCenter()
 end
 
 -- voir si un clic gauche vient d'être effectué
-function GetMouseClicLeft()
+function GetLeftMouseClic()
 	if mouseSupport then
 		return mouseClic[1]
 	end
@@ -77,7 +77,7 @@ function GetMouseClicLeft()
 end
 
 -- voir si un clic droit vient d'être effectué
-function GetMouseClicRight()
+function GetRightMouseClic()
 	if mouseSupport then
 		return mouseClic[2]
 	end
