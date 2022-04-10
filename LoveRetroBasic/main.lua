@@ -69,7 +69,7 @@ commands = {
 			"HEX$", "HOTSPOT",
 			"IF", "INKEY$", "INPUT",
 			"LINE", "LOCATE",
-			"MOVE", "MOVER", "MUSIC",
+			"MODE", "MOVE", "MOVER", "MUSIC",
 			"NEXT",
 			"OVAL",
 			"PAPER", "PEN", "PLOT", "PLOTR", "PRINT",
@@ -125,6 +125,7 @@ cmd["HOTSPOT"].pmin, cmd["HOTSPOT"].pmax = 2, 2
 cmd["IF"].pmin, cmd["IF"].pmax = 1, 1
 cmd["LINE"].pmin, cmd["LINE"].pmax = 4, 4
 cmd["LOCATE"].pmin, cmd["LOCATE"].pmax = 2, 2
+cmd["MODE"].pmin, cmd["MODE"].pmax = 1, 1
 cmd["MOVE"].pmin, cmd["MOVE"].pmax = 2, 2
 cmd["MOVER"].pmin, cmd["MOVER"].pmax = 2, 2
 cmd["MUSIC"].pmin, cmd["MUSIC"].pmax = 1, 1
@@ -159,6 +160,7 @@ cmd["GOSUB"].ptype = VAR_LABEL
 cmd["GOTO"].ptype = VAR_LABEL
 cmd["GRAPHPRINT"].ptype = VAR_POLY
 cmd["IF"].ptype = VAR_CONDITION
+cmd["MODE"].ptype = VAR_INTEGER
 cmd["PRINT"].ptype = VAR_POLY
 cmd["SELECT"].ptype = VAR_VAR
 cmd["CASE"].ptype = VAR_CONSTANT
@@ -298,11 +300,23 @@ MAX_SPRAM = MAX_SPRITES_IMAGES * MAX_SPRITE_SIZE -- taille de la mémoire pour l
 MAX_STACK = 65536 -- taille de chaque pile
 
 
-SCN_SIZE_WIDTH = 320
-SCN_SIZE_HEIGHT = 200
+MAX_SCN_WIDTH = 640
+MAX_SCN_HEIGHT = 00
 SCN_SIZE_INFOS_HEIGHT = 8
 
-MAX_CLIPBOARD = SCN_SIZE_WIDTH * SCN_SIZE_HEIGHT
+MAX_CLIPBOARD = MAX_SCN_WIDTH * MAX_SCN_HEIGHT
+
+DEFAULT_MODE = 1
+
+-- ================================
+-- = définir les modes graphiques =
+-- ================================
+gmode = {}
+gmode[0] = {160, 200, 4, 2}
+gmode[1] = {320, 200, 2, 2}
+gmode[2] = {640, 200, 1, 2}
+
+currentMode = DEFAULT_MODE
 
 -- ===========================================================
 -- = définir la RAM du code source, les lignes à interpréter =
@@ -397,16 +411,14 @@ end
 -- =============================
 -- = définir l'écran graphique =
 -- =============================
-scnPixelSize = 3 -- taille d'un pixel à l'écran
-
 -- écran de 320*2 par 200*2 = 640x400
 -- avec le border, on peut prendre 800x600
 realScnWidth = 800
 realScnHeight = 600
 
 -- mettre à jour l'écran en fonction de sa mémoire virtuelle
-borderX = (realScnWidth - (scnPixelSize * SCN_SIZE_WIDTH)) / 2
-borderY = (realScnHeight - (scnPixelSize * SCN_SIZE_HEIGHT)) / 2
+borderX = (realScnWidth - (gmode[currentMode][3] * gmode[currentMode][1])) / 2
+borderY = (realScnHeight - (gmode[currentMode][4] * gmode[currentMode][2])) / 2
 
 -- mettre à jour la palette
 CreatePalette()
@@ -669,39 +681,14 @@ function love.load()
 	love.window.setMode(realScnWidth, realScnHeight, {resizable=false, vsync=true, fullscreen=false})
 	love.window.setTitle("LoveRetroBasic ")
 
-	-- récupérer la vraie taille de l'écran (ou de la fenêtre) et ajuster
-	realScnWidth = love.graphics.getWidth()
-	realScnHeight = love.graphics.getHeight()
-	local w = SCN_SIZE_WIDTH
-	local h = SCN_SIZE_HEIGHT
-	while w * scnPixelSize < realScnWidth - (20 * scnPixelSize) and h * scnPixelSize < realScnHeight - (20 * scnPixelSize) do
-		scnPixelSize = scnPixelSize + 1
-	end
-	while w * scnPixelSize > realScnWidth - (20 * scnPixelSize) or h * scnPixelSize > realScnHeight - (20 * scnPixelSize) do
-		scnPixelSize = scnPixelSize - 1
-	end
-	borderX = (realScnWidth - (scnPixelSize * SCN_SIZE_WIDTH)) / 2
-	borderY = (realScnHeight - (scnPixelSize * SCN_SIZE_HEIGHT)) / 2		
-	
 	-- initialiser le clavier
 	love.keyboard.setKeyRepeat(true)
 
 	-- charger le son de bip touches
 	beepSound = love.audio.newSource("audio/beep.ogg", "static")
-	
-	-- créer les renderers
-	renderer[0] = love.graphics.newCanvas(SCN_SIZE_WIDTH, SCN_SIZE_HEIGHT)
-	renderer[1] = love.graphics.newCanvas(SCN_SIZE_WIDTH, SCN_SIZE_HEIGHT)
-	renderer[2] = love.graphics.newCanvas(SCN_SIZE_WIDTH, SCN_SIZE_INFOS_HEIGHT)
-	renderer[3] = love.graphics.newCanvas(SCN_SIZE_WIDTH, SCN_SIZE_INFOS_HEIGHT)
-	renderer[4] = love.graphics.newCanvas(SCN_SIZE_WIDTH, SCN_SIZE_INFOS_HEIGHT)
 
-	-- désactiver le flou sur les renderers
-	renderer[0]:setFilter('nearest', 'nearest')
-	renderer[1]:setFilter('nearest', 'nearest')
-	renderer[2]:setFilter('nearest', 'nearest')
-	renderer[3]:setFilter('nearest', 'nearest')
-	renderer[4]:setFilter('nearest', 'nearest')
+	-- créer les renderers
+	CreateRenderers()
 	
 	-- dessiner sans flou
 	love.graphics.setLineStyle("rough")
@@ -798,7 +785,14 @@ function love.keyreleased(key, scancode, isrepeat)
 			-- revenir à l'éditeur
 			elseif key == "escape" then
 				ShowCursor(false)
+
+				-- rétablir le mode graphique par défaut
+				SetMode(DEFAULT_MODE)
+				
+				-- effacer l'écran
 				ClearScreen()
+				
+				-- redessiner l'éditeur
 				RedrawEditor()
 				cursor[1] = safeCursor[1]
 				cursor[2] = safeCursor[2]
@@ -822,6 +816,10 @@ function love.keyreleased(key, scancode, isrepeat)
 	-- gérer les raccourcis clavier de l'éditeur de sprites
 	if appState == SPRITE_MODE then
 		if key == "escape" then
+			-- rétablir le mode graphique par défaut
+			SetMode(DEFAULT_MODE)
+			
+			-- rétablir les couleurs
 			SetPenColor(DEFAULT_PEN)
 			SetPaperColor(DEFAULT_PAPER)
 			SetBorderColor(DEFAULT_PAPER)
@@ -1154,7 +1152,7 @@ function love.update(dt)
 			local x = math.floor(mouseX / 8)
 			local y = love.mouse.getY()
 						
-			if y >= borderY - (16 * scnPixelSize) and y < borderY - (8 * scnPixelSize) then
+			if y >= borderY - (16 * gmode[currentMode][3]) and y < borderY - (8 * gmode[currentMode][3]) then
 				if x == 0 then -- lancer l'éditeur de sprites
 					-- remise à zéro d'un éventuel message texte
 					msg = nil
@@ -2410,7 +2408,7 @@ function love.draw()
 	love.graphics.setColor(1, 1, 1, 1)
 
 	-- afficher le renderer
-	love.graphics.draw(renderer[currentRenderer], borderX, borderY, 0, scnPixelSize, scnPixelSize, 0, 0, 0, 0)
+	love.graphics.draw(renderer[currentRenderer], borderX, borderY, 0, gmode[currentMode][3], gmode[currentMode][4], 0, 0, 0, 0)
 		
 	-- restaurer l'écran capturé
 	love.graphics.setCanvas(renderer[currentRenderer])
@@ -2755,18 +2753,18 @@ function love.draw()
 
 	-- afficher le renderer d'infos en mode édition de texte
 	if appState == EDIT_MODE or (appState == RUN_MODE and stepsMode) or appState == SPRITE_MODE or appState == NOISE_MODE or appState == TRACKER_MODE then
-		love.graphics.draw(renderer[2], borderX, borderY + ((SCN_SIZE_HEIGHT + 8) * scnPixelSize), 0, scnPixelSize, scnPixelSize, 0, 0, 0, 0)
+		love.graphics.draw(renderer[2], borderX, borderY + ((gmode[currentMode][2] + 8) * gmode[currentMode][3]), 0, gmode[currentMode][3], gmode[currentMode][4], 0, 0, 0, 0)
 	end
 
 	-- afficher le renderer de message d'erreur
 	if appState == EDIT_MODE or appState == READY_MODE or (appState == RUN_MODE and stepsMode) then
-		love.graphics.draw(renderer[3], borderX, borderY + ((SCN_SIZE_HEIGHT + 16) * scnPixelSize), 0, scnPixelSize, scnPixelSize, 0, 0, 0, 0)
+		love.graphics.draw(renderer[3], borderX, borderY + ((gmode[currentMode][2] + 16) * gmode[currentMode][4]), 0, gmode[currentMode][3], gmode[currentMode][4], 0, 0, 0, 0)
 	end
 	
 	-- afficher le renderer de menu outils
 	if appState == EDIT_MODE then
 		PrintInfosString(Chr(1) .. " " ..Chr(2) .. " " ..Chr(3) .. " " ..Chr(4) .. " ? RUN DBG SAVE LOAD IMP EXP    X", 4, "blue")
-		love.graphics.draw(renderer[4], borderX, borderY - (16 * scnPixelSize), 0, scnPixelSize, scnPixelSize, 0, 0, 0, 0)
+		love.graphics.draw(renderer[4], borderX, borderY - (16 * gmode[currentMode][3]), 0, gmode[currentMode][3], gmode[currentMode][4], 0, 0, 0, 0)
 	end
 
 	-- afficher un message de débogage

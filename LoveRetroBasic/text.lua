@@ -73,7 +73,7 @@ function PrintChar(c, r)
 	-- dessiner en mémoire vidéo virtuelle
 	for y = y1, y1 + 7 do
 		for x = x1, x1 + 7 do
-			if x >= 0 and x <= SCN_SIZE_WIDTH - 1 and y >= 0 and y <= SCN_SIZE_HEIGHT - 1 then
+			if x >= 0 and x <= gmode[currentMode][1] - 1 and y >= 0 and y <= gmode[currentMode][2] - 1 then
 				if not textTransparency then
 					if sym[c][x - x1][y - y1] == nil then
 						return OK
@@ -141,7 +141,7 @@ function GraphPrintChar(c, r)
 	-- dessiner en mémoire vidéo virtuelle
 	for y = y1, y1 + 7 do
 		for x = x1, x1 + 7 do
-			if x >= 0 and x <= SCN_SIZE_WIDTH - 1 and y >= 0 and y <= SCN_SIZE_HEIGHT - 1 then
+			if x >= 0 and x <= gmode[currentMode][1] - 1 and y >= 0 and y <= gmode[currentMode][2] - 1 then
 				if not textTransparency then
 					if sym[c][x - x1][y - y1] == nil then
 						return OK

@@ -40,7 +40,7 @@ function ClearScreen()
 	SetCanvas(true)
 
 	love.graphics.setColor(scnPal[paper][0] / 255, scnPal[paper][1] / 255, scnPal[paper][2] / 255, 1)
-	love.graphics.rectangle("fill", 0, 0, SCN_SIZE_WIDTH, SCN_SIZE_HEIGHT)
+	love.graphics.rectangle("fill", 0, 0, gmode[currentMode][1], gmode[currentMode][2])
 	
 	SetCanvas(false)
 end
@@ -114,7 +114,7 @@ function PlotPixel(x, y)
 	gcursor[1] = x
 	gcursor[2] = y
 	
-	if gcursor[1] >= 0 and gcursor[1] <= 319 and gcursor[2] >= 0 and gcursor[2] <= 199 then
+	if gcursor[1] >= 0 and gcursor[1] <= gmode[currentMode][1] - 1 and gcursor[2] >= 0 and gcursor[2] <= gmode[currentMode][2] - 1 then
 		SetCanvas(true)
 		
 		love.graphics.setColor(scnPal[gpen][0] / 255, scnPal[gpen][1] / 255, scnPal[gpen][2] / 255, 1)
@@ -129,7 +129,7 @@ function PlotPixelRelative(x, y)
 	gcursor[1] = gcursor[1] + x
 	gcursor[2] = gcursor[2] + y
 	
-	if gcursor[1] >= 0 and gcursor[1] <= 319 and gcursor[2] >= 0 and gcursor[2] <= 199 then
+	if gcursor[1] >= 0 and gcursor[1] <= gmode[currentMode][1] - 1 and gcursor[2] >= 0 and gcursor[2] <= gmode[currentMode][2] - 1 then
 		SetCanvas(true)
 		
 		love.graphics.setColor(scnPal[gpen][0] / 255, scnPal[gpen][1] / 255, scnPal[gpen][2] / 255, 1)
@@ -204,6 +204,9 @@ function DrawFullLine(x0, y0, x1, y1)
 	else
 		love.graphics.line(x0, y0 + 0.5, x1, y1 + 0.5)
 	end
+	
+	gcursor[1] = x1
+	gcursor[2] = y1
 
 	SetCanvas(false)
 end
@@ -243,8 +246,8 @@ function ScrollScreenUp()
 	love.graphics.draw(tmpRenderer, 0, -8)
 		
 	-- effacer la ligne du bas
-	for y = SCN_SIZE_HEIGHT - 8,SCN_SIZE_HEIGHT - 1 do
-		for x = 0,SCN_SIZE_WIDTH - 1 do
+	for y = gmode[currentMode][2] - 8,gmode[currentMode][2] - 1 do
+		for x = 0,gmode[currentMode][1] - 1 do
 			love.graphics.setColor(scnPal[paper][0] / 255, scnPal[paper][1] / 255, scnPal[paper][2] / 255, 1)
 			love.graphics.points(x + 0.5, y + 0.5)
 		end
@@ -266,7 +269,7 @@ function ScrollScreenDown()
 	
 	-- effacer la ligne du bas
 	for y = 0, 7 do
-		for x = 0, SCN_SIZE_WIDTH - 1 do
+		for x = 0, gmode[currentMode][1] - 1 do
 			love.graphics.setColor(scnPal[paper][0] / 255, scnPal[paper][1] / 255, scnPal[paper][2] / 255, 1)
 			love.graphics.points(x + 0.5, y + 0.5)
 		end
@@ -287,8 +290,8 @@ function ScrollScreenLeft()
 	love.graphics.draw(tmpRenderer, -8, 0)
 		
 	-- effacer la ligne de droite
-	for x = SCN_SIZE_WIDTH - 8,SCN_SIZE_WIDTH - 1 do
-		for y = 0,SCN_SIZE_HEIGHT - 1 do
+	for x = gmode[currentMode][1] - 8,gmode[currentMode][1] - 1 do
+		for y = 0,gmode[currentMode][2] - 1 do
 			love.graphics.setColor(scnPal[paper][0] / 255, scnPal[paper][1] / 255, scnPal[paper][2] / 255, 1)
 			love.graphics.points(x + 0.5, y + 0.5)
 		end
@@ -310,7 +313,7 @@ function ScrollScreenRight()
 	
 	-- effacer la ligne de gauche
 	for x = 0, 7 do
-		for y = 0, SCN_SIZE_HEIGHT - 1 do
+		for y = 0, gmode[currentMode][2] - 1 do
 			love.graphics.setColor(scnPal[paper][0] / 255, scnPal[paper][1] / 255, scnPal[paper][2] / 255, 1)
 			love.graphics.points(x + 0.5, y + 0.5)
 		end
@@ -396,7 +399,7 @@ function DrawSprite(spr)
 			
 			for yp = yptemp, yptemp + scale - 1 do
 				for xp = xptemp, xptemp + scale - 1 do			
-					if xp >= 0 and xp <= 319 and yp >= 0 and yp <= 199 then
+					if xp >= 0 and xp <= gmode[currentMode][1] - 1 and yp >= 0 and yp <= gmode[currentMode][2] - 1 then
 						col = spram[(img * MAX_SPRITE_SIZE) + xs + (ys * SPRITE_WIDTH)]
 				
 						if col ~= bit.band(tc, 63) then
@@ -466,4 +469,39 @@ function WaitVBL()
 	VBL = true
 	
 	return OK
+end
+
+-- changer le mode graphique
+function SetMode(m)
+	if m < 0 or m > 2 then return ERR_TYPE_MISMATCH end
+	
+	currentMode = m
+	
+	DeleteRenderers()
+	CreateRenderers()
+end
+
+-- créer les renderers
+function CreateRenderers()
+	-- créer les renderers
+	renderer[0] = love.graphics.newCanvas(gmode[currentMode][1], gmode[currentMode][2])
+	renderer[1] = love.graphics.newCanvas(gmode[currentMode][1], gmode[currentMode][2])
+	renderer[2] = love.graphics.newCanvas(gmode[currentMode][1], SCN_SIZE_INFOS_HEIGHT)
+	renderer[3] = love.graphics.newCanvas(gmode[currentMode][1], SCN_SIZE_INFOS_HEIGHT)
+	renderer[4] = love.graphics.newCanvas(gmode[currentMode][1], SCN_SIZE_INFOS_HEIGHT)
+
+	-- désactiver le flou sur les renderers
+	renderer[0]:setFilter('nearest', 'nearest')
+	renderer[1]:setFilter('nearest', 'nearest')
+	renderer[2]:setFilter('nearest', 'nearest')
+	renderer[3]:setFilter('nearest', 'nearest')
+	renderer[4]:setFilter('nearest', 'nearest')
+end
+
+function DeleteRenderers()
+	renderer[0]:release()
+	renderer[1]:release()
+	renderer[2]:release()
+	renderer[3]:release()
+	renderer[4]:release()
 end

@@ -1477,6 +1477,9 @@ end
 function EndProgram()
 	appState = EDIT_MODE
 	
+	-- rétablir le mode graphique par défaut
+	SetMode(DEFAULT_MODE)
+	
 	-- effacer le message éventuel
 	msg = nil
 	

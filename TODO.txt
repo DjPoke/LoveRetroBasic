@@ -6,12 +6,8 @@ BUGS :
 
 FONCTIONS A AJOUTER :
 ---------------------
-- Mettre les constantes de la résolution graphique au maximum: 640x400 (pour l'instant) afin d'avoir de la mémoire vidéo
-- Ajouter 'Mode', 0 = 320x200, 1=480x320, 2=640x400
-- Etablir des variables de taille de mémoire vidéo basées sur le mode (modeWidth[x] et modeHeight[x])
 - Commandes 'DrawToBack' et 'DrawToFront', pour dessiner dans le backbuffer si désiré
 - Redimensionner les éditeur (sprites, tracker, etc.) selon le besoin
-- Le Mode par défaut est le mode 1
 
 - Ajouter un bouton carré pour passer en Fullscreen
 - Créer des fonctions de sauvegarde et de chargement de configuration

@@ -284,6 +284,17 @@ cmd["LOCATE"].fn = function(lst)
 	return OK
 end
 
+-- commande 'MODE'
+cmd["MODE"].fn = function(lst)
+	m, e = EvalInteger(lst[1])
+		
+	if e ~= OK then return ERR_SYNTAX_ERROR end
+	
+	SetMode(m)
+	
+	return OK
+end
+
 -- commande 'MOVE'
 cmd["MOVE"].fn = function(lst)
 	x, e = EvalInteger(lst[1])
