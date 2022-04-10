@@ -1734,23 +1734,23 @@ function love.update(dt)
 			-- si un bouton souris est pressé...
 			if b1 then
 				trg = 0
-				if mx >= 313 and mx <= 313 + 31 and my >= 0 and my <= 31 then
+				if mx >= 313 and mx <= 313 + 15 and my >= 0 and my <= 15 then
 					trg = BTN_UP
-				elseif mx >= 313 and mx <= 313 + 31 and my >= 32 and my <= 63 then
+				elseif mx >= 313 and mx <= 313 + 15 and my >= 32 and my <= 47 then
 					trg = BTN_DOWN
-				elseif mx >= 313 and mx <= 313 + 31 and my >= 128 and my <= 128 + 31 then
+				elseif mx >= 313 and mx <= 313 + 15 and my >= 128 and my <= 128 + 15 then
 					trg = BTN_TEMPO_DOWN
-				elseif mx >= 377 and mx <= 377 + 31 and my >= 128 and my <= 128 + 31 then
+				elseif mx >= 377 and mx <= 377 + 15 and my >= 128 and my <= 128 + 15 then
 					trg = BTN_TEMPO_UP
-				elseif mx >= 340 and mx <= 340 + 31 and my >= 285 and my <= 285 + 31 then
+				elseif mx >= 340 and mx <= 340 + 15 and my >= 285 and my <= 285 + 15 then
 					trg = BTN_OCTAVE_UP
-				elseif mx >= 278 and mx <= 278 + 31 and my >= 285 and my <= 285 + 31 then
+				elseif mx >= 278 and mx <= 278 + 15 and my >= 285 and my <= 285 + 15 then
 					trg = BTN_OCTAVE_DOWN
-				elseif mx >= 383 and mx <= 383 + 95 and my >= 0 and my <= 31 then
+				elseif mx >= 383 and mx <= 383 + 47 and my >= 0 and my <= 15 then
 					trg = BTN_MENU_STOP
-				elseif mx >= 383 and mx <= 383 + 95 and my >= 32 and my <= 63 then
+				elseif mx >= 383 and mx <= 383 + 47 and my >= 32 and my <= 47 then
 					trg = BTN_MENU_EDIT
-				elseif mx >= 383 and mx <= 383 + 95 and my >= 64 and my <= 95 then
+				elseif mx >= 383 and mx <= 383 + 47 and my >= 64 and my <= 79 then
 					trg = BTN_MENU_PLAY
 				elseif mx >= 24 and mx <= 24 + 15 and my >= 264 and my <= 264 + 15 then
 					trg = BTN_SND_SHAPE_1
@@ -1764,13 +1764,13 @@ function love.update(dt)
 					trg = BTN_SND_ARP_1
 				elseif mx >= 40 + 72 and mx <= 40 + 72 + 15 and my >= 264 and my <= 264 + 15 then
 					trg = BTN_SND_ARP_2
-				elseif mx >= 40 + 144 and mx <= 40+144+15 and my >= 264 and my <= 264 + 15 then
+				elseif mx >= 40 + 144 and mx <= 40 + 144 + 15 and my >= 264 and my <= 264 + 15 then
 					trg = BTN_SND_ARP_3
 				elseif mx >= 40 + 144 + 72 and mx <= 40 + 144 + 72 + 15 and my >= 264 and my <= 264 + 15 then
 					trg = BTN_SND_ARP_4
-				elseif mx >= 480 - 64 + 9 and mx <= 480 - 64 + 9 + 31 and my >= 285 and my <= 285 + 31 then
+				elseif mx >= 480 - 64 + 9 and mx <= 480 - 64 + 9 + 15 and my >= 285 and my <= 285 + 15 then
 					trg = BTN_LOAD
-				elseif mx >= 480 - 32 + 9 and mx <= 480 - 32 + 9 + 31 and my >= 285 and my <= 285 + 31 then
+				elseif mx >= 480 - 32 + 9 and mx <= 480 - 32 + 9 + 15 and my >= 285 and my <= 285 + 15 then
 					trg = BTN_SAVE
 				elseif mx >= 377 and mx <= 392 and my >= 168 and my <= 183 then
 					trg = BTN_CUT_TRACK
