@@ -181,9 +181,9 @@ end
 
 -- dessiner un ovale
 function DrawOval(x, y, w, h, f)
-	local mode = "line"
+	local md = "line"
 	
-	if f > 0 then mode = "fill" end
+	if f > 0 then md = "fill" end -- TODO!
 	
 	SetCanvas(true)
 	

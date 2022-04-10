@@ -379,7 +379,7 @@ function GetKeyboardPlay(ch, delta)
 					if j + ((currentOctave - 1) * 12) <= 85 then
 						currentPianoNote = j + ((currentOctave - 1) * 12)
 						arpeggioCounter[ch] = 1
-						Play(instr[ch][currentPianoNote], true, 0, 1)
+						Play(instr[ch][currentPianoNote], true, 1)
 					end
 				elseif arpeggioType[ch] > 1 then
 					arpTimer[ch] = arpTimer[ch] + delta
@@ -432,14 +432,14 @@ function GetKeyboardPlay(ch, delta)
 					-- jouer les notes de musique
 					if currentPianoNote + ofst <= 85 then
 						currentArpNote = currentPianoNote + ofst
-						Play(instr[ch][currentArpNote], true, 0, 1)
+						Play(instr[ch][currentArpNote], true, 1)
 					end
 				end
 			else
 				if j + ((currentOctave - 1) * 12) <= 85 then
 					currentPianoNote = j + ((currentOctave - 1) * 12)
 					arpeggioCounter[ch] = 1
-					Play(instr[ch][currentPianoNote], true, 0, 1)
+					Play(instr[ch][currentPianoNote], true, 1)
 				end
 			end
 			
@@ -479,7 +479,7 @@ function GetKeyboardPlay(ch, delta)
 						
 						if piano[i][4] + ((currentOctave - 1) * 12) <= 85 then
 							currentPianoNote = piano[i][4] + ((currentOctave - 1) * 12)
-							Play(instr[ch][currentPianoNote], true, 0, 1)
+							Play(instr[ch][currentPianoNote], true, 1)
 						end
 					elseif arpeggioType[ch] > 1 then
 						arpTimer[ch] = arpTimer[ch] + delta
@@ -531,13 +531,13 @@ function GetKeyboardPlay(ch, delta)
 						-- jouer les notes de musique
 						if currentPianoNote + ofst <= 85 then
 							currentArpNote = currentPianoNote + ofst
-							Play(instr[ch][currentArpNote], true, 0, 1)
+							Play(instr[ch][currentArpNote], true, 1)
 						end
 					end
 				else
 					if piano[i][4] + ((currentOctave - 1) * 12) <= 85 then
 						currentPianoNote = piano[i][4] + ((currentOctave - 1) * 12)
-						Play(instr[ch][currentPianoNote], true, 0, 1)
+						Play(instr[ch][currentPianoNote], true, 1)
 					end
 				end
 				
@@ -622,10 +622,18 @@ end
 
 -- stopper un son
 function Stop(snd)
-	snd:stop()
+	if snd == nil then return end
+
+	love.audio.stop(snd)
 end
 -- jouer un son
 function Play(snd, loop, trck)
+	if snd == nil then return end
+	
+	Stop(track[trck])
+	track[trck] = nil
+	
 	snd:setLooping(loop)
-	snd:play()
+	track[trck] = snd
+	love.audio.play(snd)
 end

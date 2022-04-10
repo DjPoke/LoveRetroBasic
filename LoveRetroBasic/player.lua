@@ -14,7 +14,7 @@ function UpdateMusic(delta)
 				-- stopper les instruments, si nécessaire
 				if lastNote[i] ~= 0 then
 					if pattern[i][currentNotesLine][mus[currentPattern]] ~= 0 then
-						instr[i][lastNote[i]]:stop()
+						Stop(instr[i][lastNote[i]])
 					end
 					
 					-- jouer la prochaine note d'arpège
@@ -58,7 +58,7 @@ function UpdateMusic(delta)
 					-- jouer les notes de musiques
 					if lastNote[i] + ofst <= 85 then
 						if arpLastNote[i] ~= 0 then
-							instr[i][arpLastNote[i]]:stop()
+							Stop(instr[i][arpLastNote[i]])
 							arpLastNote[i] = 0
 						end
 						arpLastNote[i] = lastNote[i] + ofst
@@ -90,9 +90,9 @@ function UpdateMusic(delta)
 				if pattern[i][cn][mus[cp]] ~= 0 then
 					if lastNote[i] ~= 0 then
 						if arpLastNote[i] ~= lastNote[i] and arpLastNote[i] ~= 0 then
-							instr[i][arpLastNote[i]]:stop()
+							Stop(instr[i][arpLastNote[i]])
 						else
-							instr[i][lastNote[i]]:stop()
+							Stop(instr[i][lastNote[i]])
 						end
 						arpLastNote[i] = 0
 						lastNote[i] = 0

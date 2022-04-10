@@ -652,7 +652,9 @@ PLAY = 3
 
 state = STOP
 
-mode = { "STOP", "EDIT", "PLAY" }
+trck_mode = { "STOP", "EDIT", "PLAY" }
+
+track = {nil, nil, nil, nil}
 
 -- générer des signaux carrés par défaut
 currentSoundsType = {3, 3, 3 ,3} -- pour chaque piste
@@ -813,8 +815,8 @@ function love.keyreleased(key, scancode, isrepeat)
 		end
 	end
 	
-	-- gérer les raccourcis clavier de l'éditeur de sprites
-	if appState == SPRITE_MODE then
+	-- permettre de quitter les éditeurs
+	if appState == SPRITE_MODE or appState == TRACKER_MODE then
 		if key == "escape" then
 			-- rétablir le mode graphique par défaut
 			SetMode(DEFAULT_MODE)
@@ -2046,7 +2048,7 @@ function love.update(dt)
 					if state ~= PLAY then
 						-- stopper les sons du piano
 						if currentPianoNote > 0 then
-							stop(instr[1][currentPianoNote])
+							Stop(instr[1][currentPianoNote])
 						end
 						
 						-- remette à zéro le pattern
@@ -2063,7 +2065,7 @@ function love.update(dt)
 					if state == STOP then
 						-- stopper les sons de piano
 						if currentPianoNote > 0 then
-							stop(instr[1][currentPianoNote])
+							Stop(instr[1][currentPianoNote])
 						end
 
 						-- changer la forme d'onde
@@ -2080,7 +2082,7 @@ function love.update(dt)
 					if state == STOP then
 						-- stopper les sons de piano
 						if currentPianoNote > 0 then
-							stop(instr[1][currentPianoNote])
+							Stop(instr[1][currentPianoNote])
 						end
 						
 						-- changer la forme d'onde
@@ -2096,7 +2098,7 @@ function love.update(dt)
 					if state == STOP then
 						-- stopper les sons de piano
 						if currentPianoNote > 0 then
-							stop(instr[1][currentPianoNote])
+							Stop(instr[1][currentPianoNote])
 						end
 						
 						-- changer la forme d'onde
@@ -2112,7 +2114,7 @@ function love.update(dt)
 					if state == STOP then
 						-- stopper les sons de piano
 						if currentPianoNote > 0 then
-							stop(instr[1][currentPianoNote])
+							Stop(instr[1][currentPianoNote])
 						end
 						
 						-- changer la forme d'onde
@@ -2128,7 +2130,7 @@ function love.update(dt)
 					if state == STOP then
 						-- stopper les sons de piano
 						if currentPianoNote > 0 then
-							stop(instr[1][currentPianoNote])
+							Stop(instr[1][currentPianoNote])
 						end
 						
 						-- changer le type d'arpège
@@ -2142,7 +2144,7 @@ function love.update(dt)
 					if state == STOP then
 						-- stopper les sons de piano
 						if currentPianoNote > 0 then
-							stop(instr[1][currentPianoNote])
+							Stop(instr[1][currentPianoNote])
 						end
 						
 						-- changer le type d'arpège
@@ -2155,7 +2157,7 @@ function love.update(dt)
 					if state == STOP then
 						-- stopper les sons de piano
 						if currentPianoNote > 0 then
-							stop(instr[1][currentPianoNote])
+							Stop(instr[1][currentPianoNote])
 						end
 						
 						-- changer le type d'arpège
@@ -2168,7 +2170,7 @@ function love.update(dt)
 					if state == STOP then
 						--- stopper les sons de piano
 						if currentPianoNote > 0 then
-							stop(instr[1][currentPianoNote])
+							Stop(instr[1][currentPianoNote])
 						end
 						
 						-- changer le type d'arpège
@@ -2181,7 +2183,7 @@ function love.update(dt)
 					if state == STOP then
 						-- stopper les sons de piano
 						if currentPianoNote > 0 then
-							stop(instr[1][currentPianoNote])
+							Stop(instr[1][currentPianoNote])
 						end
 
 						-- charger une musique
@@ -2200,13 +2202,13 @@ function love.update(dt)
 						end
 					else
 						mouseEnabled = false
-						msgbox("Please push 'STOP' button first !")
+						love.window.showMessageBox("Info", "Please push 'STOP' button first !", "info", true)
 					end
 				elseif targetButton == BTN_SAVE then
 					if state == STOP then
 						-- stopper les sons de piano
 						if currentPianoNote > 0 then
-							stop(instr[1][currentPianoNote])
+							Stop(instr[1][currentPianoNote])
 						end
 						
 						-- sauvegarder une musique
@@ -2218,18 +2220,18 @@ function love.update(dt)
 									local filename = Path.combine(musicFolder, musicName)
 									SaveMusic(filename)
 									mouseEnabled = false
-									msgbox("Saved !")
+									love.window.showMessageBox("Info", "Saved !", "info", true)
 								end
 							end
 						else
 							local filename = Path.combine(musicFolder, musicName)
 							SaveMusic(filename)
 							mouseEnabled = false
-							msgbox("Saved !")
+							love.window.showMessageBox("Info", "Saved !", "info", true)
 						end
 					else
 						mouseEnabled = false
-						msgbox("Please push 'STOP' button first !")
+						love.window.showMessageBox("Info", "Please push 'STOP' button first !", "info", true)
 					end
 				elseif targetButton == BTN_CUT_TRACK then
 					if state == EDIT then
@@ -2249,7 +2251,7 @@ function love.update(dt)
 							end
 						end
 					else
-						msgbox("You must set EDIT mode !")
+						love.window.showMessageBox("Info", "You must set EDIT mode !", "info", true)
 					end
 				elseif targetButton == BTN_CUT_PATTERN then
 					if state == EDIT then
@@ -2263,7 +2265,7 @@ function love.update(dt)
 							end
 						end
 					else
-						msgbox("You must set EDIT mode !")
+						love.window.showMessageBox("Info", "You must set EDIT mode !", "info", true)
 					end
 				elseif targetButton == BTN_COPY_TRACK then
 					if state == EDIT then
@@ -2282,9 +2284,9 @@ function love.update(dt)
 						end
 						
 						-- message d'info
-						msgbox("Copied")
+						love.window.showMessageBox("Info", "Copied", "info", true)
 					else
-						msgbox("You must set EDIT mode !")
+						love.window.showMessageBox("Info", "You must set EDIT mode !", "info", true)
 					end
 				elseif targetButton == BTN_COPY_PATTERN then
 					if state == EDIT then
@@ -2296,9 +2298,10 @@ function love.update(dt)
 							end
 						end
 						
-						msgbox("Copied")
+						-- message d'info
+						love.window.showMessageBox("Info", "Copied", "info", true)
 					else
-						msgbox("You must set EDIT mode !")
+						love.window.showMessageBox("Info", "You must set EDIT mode !", "info", true)
 					end
 				elseif targetButton == BTN_PASTE_TRACK then
 					if state == EDIT then
@@ -2308,7 +2311,7 @@ function love.update(dt)
 							vol[currentTrack][i][mus[currentPattern]] = clipmus[1][i][2]
 						end
 					else
-						msgbox("You must set EDIT mode !")
+						love.window.showMessageBox("Info", "You must set EDIT mode !", "info", true)
 					end
 				elseif targetButton == BTN_PASTE_PATTERN then
 					if state == EDIT then
@@ -2320,7 +2323,7 @@ function love.update(dt)
 							end
 						end
 					else
-						msgbox("You must set EDIT mode !")
+						love.window.showMessageBox("Info", "You must set EDIT mode !", "info", true)
 					end
 				end
 				--
@@ -2462,6 +2465,9 @@ function love.draw()
 	elseif appState == TRACKER_MODE then
 		local memGPen = gpen
 
+		-- effacer l'écran
+		ClearScreen()
+		
 		-- dessiner l'UI du tracker
 		gpen = 40
 		DrawRectangle(0, 0, 312, 264, 1)
@@ -2540,26 +2546,26 @@ function love.draw()
 		else
 			DrawButton(383, 0, 48, 16, 2, 9, 1, 0)
 		end
-		Text(mode[1], 415, 7, 25, false)
+		Text(trck_mode[1], 392, 4, 25, false)
 	
 		if options[1] == BTN_MENU_EDIT then
 			DrawButton(383, 32, 48, 16, 1, 9, 1, 0)
 		else
 			DrawButton(383, 32, 48, 16, 2, 9, 1, 0)
 		end
-		Text(mode[2], 415, 39, 25, false)
+		Text(trck_mode[2], 392, 36, 25, false)
 	
 		if options[1] == BTN_MENU_PLAY then
 			DrawButton(383, 64, 48, 16, 1, 9, 1, 0)
 		else
 			DrawButton(383, 64, 48, 16, 2, 9, 1, 0)
 		end
-		Text(mode[3], 415, 71, 25, false)
+		Text(trck_mode[3], 392, 68, 25, false)
 			
 		-- boutons de tempo
-		Text("TEMPO:", 313 + 16, 108, 25, false)
-		--tex(textbox, 313 + 32, 128)
-		Text(tostring(BPM), 313 + 40, 134, 25, true)
+		Text("TEMPO", 313 + 20, 112, 6, false)
+		DrawButton(313 + 16, 128, 48, 16, 1, 1, 9, 25)
+		Text(tostring(BPM), 313 + 40, 136, 25, true)
 	
 		if targetButton == BTN_TEMPO_DOWN then
 			DrawButton(313, 128, 16, 16, 1, 9, 1, 0)
