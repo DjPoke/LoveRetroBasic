@@ -240,8 +240,9 @@ require("screen")
 require("text")
 require("init")
 require("cmd")
-require("generator")
+require("audio")
 require("player")
+require("images")
 
 -- ==================
 -- = codes d'erreur =
@@ -307,6 +308,8 @@ SCN_SIZE_INFOS_HEIGHT = 8
 MAX_CLIPBOARD = MAX_SCN_WIDTH * MAX_SCN_HEIGHT
 
 DEFAULT_MODE = 1
+
+MAX_BOB = 65535
 
 -- ================================
 -- = définir les modes graphiques =
@@ -437,6 +440,11 @@ border = 10
 -- couleurs de dessin pour l'éditeur de sprites
 drawingPen = 0
 drawingPaper = 0
+
+-- ===========================
+-- = créer les bobs virtuels =
+-- ===========================
+bob = {}
 
 -- =============================================
 -- = définition de quelques variables globales =
