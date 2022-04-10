@@ -171,9 +171,15 @@ end
 function CreateDisk(path, folder)
 	-- le créer s'il n'existe pas
 	if GetFolderExists(path, folder) == nil then
-		if not love.filesystem.createDirectory(f) then
+		local id = love.filesystem.getIdentity()
+		
+		love.filesystem.setIdentity(path .. folder)
+
+		if not love.filesystem.createDirectory(folder) then
 			RuntimeError("Can't create the disk folder !")
 		end
+
+		love.filesystem.setIdentity(id)
 	end
 end
 
@@ -224,6 +230,13 @@ function LoadMusic(filename)
 
 	-- changer le répertoire courant
 	love.filesystem.setIdentity(currentRelativeFolder .. musicFolder .. SEP)
+
+	if not GetFileExists(currentRelativeFolder .. musicFolder, filename) then
+		-- rétablir le répertoire courant
+		love.filesystem.setIdentity(currentRelativeFolder)
+		
+		return
+	end
 
 	-- charger la musique
 	local m = {}
