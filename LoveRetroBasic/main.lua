@@ -2442,6 +2442,7 @@ function love.draw()
 		-- de l'éditeur de sprites
 		if x >= 0 and x < SPRITE_WIDTH and y >= 0 and y < SPRITE_HEIGHT then
 			local st = "x,y: " .. tostring(x) .. "," .. tostring(y)			
+			
 			PrintInfosString(st, 2, "black")
 		elseif y == 20 then
 			if xn == 17 then
@@ -2462,7 +2463,7 @@ function love.draw()
 		local memGPen = gpen
 
 		-- dessiner l'UI du tracker
-		gpen = 17
+		gpen = 40
 		DrawRectangle(0, 0, 312, 264, 1)
 		
 		gpen = 1
@@ -2556,29 +2557,29 @@ function love.draw()
 		Text(mode[3], 415, 71, 25, false)
 			
 		-- boutons de tempo
-		Text("TEMPO:", 313 + 28, 108, 25, true)
+		Text("TEMPO:", 313 + 16, 108, 25, false)
 		--tex(textbox, 313 + 32, 128)
-		Text(tostring(BPM), 313 + 37, 134, 25, true)
+		Text(tostring(BPM), 313 + 40, 134, 25, true)
 	
 		if targetButton == BTN_TEMPO_DOWN then
 			DrawButton(313, 128, 16, 16, 1, 9, 1, 0)
 		else
 			DrawButton(313, 128, 16, 16, 2, 9, 1, 0)
 		end
-		Text("-", 326, 134, 25, false)
+		Text("-", 321, 136, 25, true)
 	
 		if targetButton == BTN_TEMPO_UP then
 			DrawButton(313 + 64, 128, 16, 16, 1, 9, 1, 0)
 		else
 			DrawButton(313 + 64, 128, 16, 16, 2, 9, 1, 0)
 		end
-		Text("+", 326 + 64, 134, 25, false)
+		Text("+", 321 + 64, 136, 25, true)
 	
 		-- montrer le layout clavier
 		if keyboard == AZERTY then
-			Text("AZERTY", 480 - 64 + 9, 291-24, 26, false)
+			Text("AZERTY", 480 - 64, 291 - 20, 26, false)
 		else
-			Text("QWERTY", 480 - 64 + 9, 291 - 24, 26, false)
+			Text("QWERTY", 480 - 64, 291 - 20, 26, false)
 		end
 		
 		-- boutons load/save

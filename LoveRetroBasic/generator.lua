@@ -561,16 +561,19 @@ end
 -- récupérer le layout clavier
 function GetKeyboardLayout()
 	f = defaultFolder
+
+	-- clavier par défaut
+	keyboard = QWERTY
 	
+	-- sauvegarder le mode QWERTY si aucun fichier de configuration n'est présent
 	if not os.rename(f .. "config.cfg", f .. "config.cfg") then
-		keyboard = QWERTY
-		
 		local file = io.open(f .. "config.cfg", "w")
 		
 		file:write("QWERTY")
 		file:close()
 	end
-		
+	
+	--	 dans tous les cas, tenter de charger le fichier de configuration
 	if os.rename(f .. "config.cfg", f .. "config.cfg") then
 		local file = io.open(f .. "config.cfg", "rb")
 		
@@ -588,7 +591,7 @@ end
 function UpdateKeyboardLayout()
 	f = defaultFolder
 
-	local file = io.open(f .. "config.cfg", "rb")
+	local file = io.open(f .. "config.cfg", "w")
 	
 	if keyboard == QWERTY then
 		file:write("QWERTY")
