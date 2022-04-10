@@ -104,7 +104,6 @@ function LevelEditor()
 	SetPenColor(EDITOR_MENU)
 	PrintStringN("LEVEL EDITOR")
 	PrintString("------------")
-	Locate(1, 6)
 end
 
 function NoiseEditor()
@@ -119,21 +118,18 @@ function NoiseEditor()
 	SetPenColor(EDITOR_MENU)
 	PrintStringN("NOISE EDITOR")
 	PrintString("------------")
-	Locate(1, 6)
 end
 
 function Tracker()
 	-- afficher l'entête
-	SetPenColor(EDITOR_PEN)
 	SetPaperColor(EDITOR_PAPER)
 	SetBorderColor(EDITOR_BORDER)
 	
-	SetMode(2)
 	ClearScreen()
 
-	Locate(41, 1)
 	SetPenColor(EDITOR_MENU)
-	PrintStringN("TRACKER")
+	Locate(62, 1)
+	PrintString("TRACKER")
+	Locate(62, 2)
 	PrintString("-------")
-	Locate(1, 6)
 end

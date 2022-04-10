@@ -1369,6 +1369,7 @@ function love.update(dt)
 					safeCursor[1] = cursor[1]
 					safeCursor[2] = cursor[2]
 					appState = TRACKER_MODE
+					SetMode(2)
 					Tracker()
 
 					return
@@ -2496,9 +2497,12 @@ function love.draw()
 	elseif appState == TRACKER_MODE then
 		local memGPen = gpen
 
-		-- effacer l'écran
-		ClearScreen()
-		
+		-- redessiner l'écran
+		Tracker()
+
+		-- dessiner un background pour le tracker
+		DrawButton(0, 0, 480, 320, 1, 25, 9, 9)
+
 		-- dessiner l'UI du tracker
 		gpen = 40
 		DrawRectangle(0, 0, 312, 264, 1)
@@ -2528,7 +2532,7 @@ function love.draw()
 				end
 			end
 		end
-
+		
 		gpen = 1
 		
 		DrawFullLine(24, 0, 24, 264)
@@ -2558,21 +2562,23 @@ function love.draw()
 		-- boutons d'octave
 		if targetButton == BTN_OCTAVE_UP then
 			DrawButton(340, 285, 16, 16, 1, 9, 1, 0)
+			Text("+", 348, 293, 1, true)
 		else
 			DrawButton(340, 285, 16, 16, 2, 9, 1, 0)
+			Text("+", 348, 293, 25, true)
 		end
-		Text("+", 353, 291, 25, true)
 	
 		if targetButton == BTN_OCTAVE_DOWN then
 			DrawButton(278, 285, 16, 16, 1, 9, 1, 0)
+			Text("-", 286, 293, 1, true)
 		else
 			DrawButton(278, 285, 16, 16, 2, 9, 1, 0)
+			Text("-", 286, 293, 25, true)
 		end
-		Text("-", 291, 291, 25, true)
 	
-		Text("Octave:", 300, 266, 25, false)
+		Text("Octave", 300, 270, 4, false)
 		DrawButton(308, 285, 16, 16, 1, 1, 9, 9)
-		Text(tostring(currentOctave), 322, 292, 25, false)
+		Text(tostring(currentOctave), 316, 293, 25, true)
 	
 		-- boutons de menu
 		if options[1] == BTN_MENU_STOP then
@@ -2644,36 +2650,48 @@ function love.draw()
 		t = textbox_mini
 		if state ~= STOP then
 			t = textbox_mini_disabled
+
+			DrawButton(24, 264, 16, 16, 1, 9, 0, 0)
+			DrawButton(24 + 72, 264, 16, 16, 1, 9, 0, 0)
+			DrawButton(24 + 144, 264, 16, 16, 1, 9, 0, 0)
+			DrawButton(24 + 144 + 72, 264, 16, 16, 1, 9, 0, 0)
+		else
+			DrawButton(24, 264, 16, 16, 1, 1, 9, 9)
+			DrawButton(24 + 72, 264, 16, 16, 1, 1, 9, 9)
+			DrawButton(24 + 144, 264, 16, 16, 1, 1, 9, 9)
+			DrawButton(24 + 144 + 72, 264, 16, 16, 1, 1, 9, 9)
 		end
 		
-		--tex(t, 24, 264)
 		--tex(img_shape[currentSoundsType[1]], 24, 264)
 	
-		--tex(t, 24+72, 264, 16, 16)
 		--tex(img_shape[currentSoundsType[2]], 24+72, 264, 16, 16)
 	
-		--tex(t, 24+144, 264, 16, 16)
 		--tex(img_shape[currentSoundsType[3]], 24+144, 264, 16, 16)
 	
-		--tex(t, 24+144+72, 264, 16, 16)
 		--tex(img_shape[currentSoundsType[4]], 24+144+72, 264, 16, 16)
 		
 		-- boutons d'arpège
 		t = textbox_mini
 		if state ~= STOP then
 			t = textbox_mini_disabled
+			
+			DrawButton(40, 264, 16, 16, 1, 9, 0, 0)
+			DrawButton(40 + 72, 264, 16, 16, 1, 9, 0, 0)
+			DrawButton(40 + 144, 264, 16, 16, 1, 9, 0, 0)
+			DrawButton(40 + 144 + 72, 264, 16, 16, 1, 9, 0, 0)
+		else
+			DrawButton(40, 264, 16, 16, 1, 1, 9, 9)
+			DrawButton(40 + 72, 264, 16, 16, 1, 1, 9, 9)
+			DrawButton(40 + 144, 264, 16, 16, 1, 1, 9, 9)
+			DrawButton(40 + 144 + 72, 264, 16, 16, 1, 1, 9, 9)
 		end
 		
-		--tex(t, 40, 264)
 		--tex(img_arp[arpeggioType[1]], 40, 264)
 	
-		--tex(t, 40+72, 264, 16, 16)
 		--tex(img_arp[arpeggioType[2]], 40+72, 264, 16, 16)
 	
-		--tex(t, 40+144, 264, 16, 16)
 		--tex(img_arp[arpeggioType[3]], 40+144, 264, 16, 16)
 	
-		--tex(t, 40+144+72, 264, 16, 16)
 		--tex(img_arp[arpeggioType[4]], 40+144+72, 264, 16, 16)
 	
 		-- bouton couper/copier/coller piste

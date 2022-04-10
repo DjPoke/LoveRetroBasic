@@ -32,7 +32,7 @@ end
 -- changer la position du curseur texte
 function Locate(x, y)
 	-- gestion des erreurs
-	if x < 1 or x > 40 or y < 1 or y > 25 then return ERR_SYNTEX_ERROR end
+	if x < 1 or x > gmode[currentMode][1] / 8 or y < 1 or y > gmode[currentMode][2] / 8 then return ERR_SYNTEX_ERROR end
 
 	-- valeurs de retour
 	cursor[1] = x
@@ -102,10 +102,10 @@ function PrintChar(c, r)
 		if r == PRINT_CLIPPED then
 			cursor[1] = cursor[1] + 1
 			
-			if cursor[1] > 40 then
+			if cursor[1] > gmode[currentMode][1] / 8 then
 				cursor[1] = 1
 				cursor[2] = cursor[2] + 1
-				if cursor[2] > 25 then
+				if cursor[2] > gmode[currentMode][2] / 8 then
 					ScrollScreenUp()
 					cursor[2] = cursor[2] - 1
 				end
@@ -113,7 +113,7 @@ function PrintChar(c, r)
 		elseif r == PRINT_NOT_CLIPPED then
 			cursor[1] = cursor[1] + 1
 			
-			if cursor[1] > 40 then
+			if cursor[1] > gmode[currentMode][1] / 8 then
 				ScrollScreenLeft()
 				editorOffsetX = editorOffsetX + 1
 				cursor[1] = cursor[1] - 1
