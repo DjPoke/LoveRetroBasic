@@ -142,27 +142,17 @@ function GraphPrintChar(c, r)
 	for y = y1, y1 + 7 do
 		for x = x1, x1 + 7 do
 			if x >= 0 and x <= gmode[currentMode][1] - 1 and y >= 0 and y <= gmode[currentMode][2] - 1 then
-				if not textTransparency then
-					if sym[c][x - x1][y - y1] == nil then
-						return OK
-					elseif sym[c][x - x1][y - y1] == 1 then
-						love.graphics.setColor(scnPal[pen][0] / 255, scnPal[pen][1] / 255, scnPal[pen][2] / 255, 1)
-						love.graphics.points(x + 0.5, y + 0.5)
-					else
-						love.graphics.setColor(scnPal[paper][0] / 255, scnPal[paper][1] / 255, scnPal[paper][2] / 255, 1)
-						love.graphics.points(x + 0.5, y + 0.5)
-					end
-				else
-					if sym[c][x-x1][y-y1] == nil then
-						return OK
-					elseif sym[c][x-x1][y-y1] == 1 then
-						love.graphics.setColor(scnPal[pen][0] / 255, scnPal[pen][1] / 255, scnPal[pen][2] / 255, 1)
-						love.graphics.points(x + 0.5, y + 0.5)
-					end
+				if sym[c][x-x1][y-y1] == nil then
+					return OK
+				elseif sym[c][x-x1][y-y1] == 1 then
+					love.graphics.setColor(scnPal[gpen][0] / 255, scnPal[gpen][1] / 255, scnPal[gpen][2] / 255, 1)
+					love.graphics.points(x + 0.5, y + 0.5)
 				end
 			end
 		end
 	end
+	
+	gcursor[1] = gcursor[1] + 8
 
 	SetCanvas(false)
 	

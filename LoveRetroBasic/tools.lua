@@ -127,10 +127,11 @@ function Tracker()
 	SetPenColor(EDITOR_PEN)
 	SetPaperColor(EDITOR_PAPER)
 	SetBorderColor(EDITOR_BORDER)
-
+	
+	SetMode(2)
 	ClearScreen()
 
-	Locate(1, 1)
+	Locate(41, 1)
 	SetPenColor(EDITOR_MENU)
 	PrintStringN("TRACKER")
 	PrintString("-------")

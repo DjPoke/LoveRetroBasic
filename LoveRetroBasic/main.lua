@@ -301,7 +301,7 @@ MAX_STACK = 65536 -- taille de chaque pile
 
 
 MAX_SCN_WIDTH = 640
-MAX_SCN_HEIGHT = 00
+MAX_SCN_HEIGHT = 400
 SCN_SIZE_INFOS_HEIGHT = 8
 
 MAX_CLIPBOARD = MAX_SCN_WIDTH * MAX_SCN_HEIGHT
@@ -312,9 +312,9 @@ DEFAULT_MODE = 1
 -- = définir les modes graphiques =
 -- ================================
 gmode = {}
-gmode[0] = {160, 200, 4, 2}
+gmode[0] = {160, 100, 4, 4}
 gmode[1] = {320, 200, 2, 2}
-gmode[2] = {640, 200, 1, 2}
+gmode[2] = {640, 400, 1, 1}
 
 currentMode = DEFAULT_MODE
 
@@ -1079,6 +1079,183 @@ function love.keypressed(key, scancode, isrepeat)
 				currentShownLineStart = notesPerPattern - 15
 				currentShownLineEnd = notesPerPattern
 				currentEditLine = currentShownLineEnd
+			end
+		elseif state == EDIT then
+			if editVolume == false then
+				nt = GetKeyboardPlay(currentTrack, dt)
+				if nt > 0 and readyForNextNote then
+					pattern[currentTrack][currentEditLine][mus[currentPattern]] = nt
+					currentEditLine = currentEditLine + 1
+					
+					if currentEditLine > currentShownLineEnd then
+						if currentShownLineEnd < notesPerPattern then
+							currentShownLineStart = currentShownLineStart + 1
+							currentShownLineEnd = currentShownLineEnd + 1
+						end
+						currentEditLine = currentShownLineEnd
+					end
+					
+					readyForNextNote = false
+				elseif nt == 0 then
+					readyForNextNote = true
+	
+					-- touche suppr
+					if key == "backspace" then
+						pattern[currentTrack][currentEditLine][mus[currentPattern]] = 0
+						currentEditLine = currentEditLine + 1
+						if currentEditLine > currentShownLineEnd then
+							if currentShownLineEnd < notesPerPattern then
+								currentShownLineStart = currentShownLineStart + 1
+								currentShownLineEnd = currentShownLineEnd + 1
+							end
+							currentEditLine = currentShownLineEnd
+						end
+					end
+	
+					-- touche espace
+					if key == "space" then
+						pattern[currentTrack][currentEditLine][mus[currentPattern]] = 100
+						currentEditLine = currentEditLine + 1
+						if currentEditLine > currentShownLineEnd then
+							if currentShownLineEnd < notesPerPattern then
+								currentShownLineStart = currentShownLineStart + 1
+								currentShownLineEnd = currentShownLineEnd + 1
+							end
+							currentEditLine = currentShownLineEnd
+						end
+					end
+	
+					-- fleche haut
+					if key == key_up then
+						if currentEditLine > 1 then
+							currentEditLine = currentEditLine - 1
+							if currentEditLine < currentShownLineStart then
+								if currentShownLineStart > 1 then
+									currentShownLineStart = currentShownLineStart - 1
+									currentShownLineEnd = currentShownLineEnd - 1
+								end
+								currentEditLine = currentShownLineStart
+							end
+						end
+					end
+	
+					-- fleche bas
+					if key == key_down then
+						if currentEditLine < notesPerPattern then
+							currentEditLine = currentEditLine + 1
+							if currentEditLine > currentShownLineEnd then
+								if currentShownLineEnd < notesPerPattern then
+									currentShownLineStart = currentShownLineStart + 1
+									currentShownLineEnd = currentShownLineEnd + 1
+								end
+								currentEditLine = currentShownLineEnd
+							end
+						end
+					end
+	
+					-- fleche droite
+					if key == key_right then
+						if currentTrack < 4 then
+							currentTrack = currentTrack + 1
+						end
+					end
+	
+					-- fleche gauche
+					if key == key_left then
+						if currentTrack > 1 then
+							currentTrack = currentTrack - 1
+						end
+					end
+	
+					-- page up
+					if key == "pageup" then
+						currentShownLineStart = 1
+						currentShownLineEnd = 16
+						currentEditLine = 1
+					end
+	
+					-- page down
+					if key == "pagedown" then
+						currentShownLineStart = notesPerPattern - 15
+						currentShownLineEnd = notesPerPattern
+						currentEditLine = currentShownLineEnd
+					end
+					
+					-- touche entrée pour éditer le volume
+					if key == "return" then
+						editVolume = true
+						showVolumeTrigger = true
+					end
+				end
+			else
+				-- touche entrée pour annuler l'édition de volume
+				if key == "return" then
+					editVolume = false
+					showVolumeTrigger = false
+				end
+			
+				if editVolume then
+					for i = 48, 57 do
+						if key == string.char(i) then
+							vol[currentTrack][currentEditLine][mus[currentPattern]] = i - 48
+
+							if currentEditLine < notesPerPattern then
+								currentEditLine = currentEditLine + 1
+								if currentEditLine > currentShownLineEnd then
+									if currentShownLineEnd < notesPerPattern then
+										currentShownLineStart = currentShownLineStart + 1
+										currentShownLineEnd = currentShownLineEnd + 1
+									end
+									currentEditLine = currentShownLineEnd
+								end
+							end
+							
+							break
+						end
+					end
+				end
+			
+				if editVolume then
+					for i = 65, 70 do
+						if key == string.char(i) then
+							vol[currentTrack][currentEditLine][mus[currentPattern]] = i - 55
+
+							if currentEditLine < notesPerPattern then
+								currentEditLine = currentEditLine + 1
+								if currentEditLine > currentShownLineEnd then
+									if currentShownLineEnd < notesPerPattern then
+										currentShownLineStart = currentShownLineStart + 1
+										currentShownLineEnd = currentShownLineEnd + 1
+									end
+									currentEditLine = currentShownLineEnd
+								end
+							end
+							
+							break
+						end
+					end
+				end
+				
+				if editVolume then
+					for i = 97, 102 do
+						if keyp(i) then
+							vol[currentTrack][currentEditLine][mus[currentPattern]] = i - 87
+	
+							if currentEditLine < notesPerPattern then
+								currentEditLine = currentEditLine + 1
+								if currentEditLine > currentShownLineEnd then
+									if currentShownLineEnd < notesPerPattern then
+										currentShownLineStart = currentShownLineStart + 1
+										currentShownLineEnd = currentShownLineEnd + 1
+									end
+									currentEditLine = currentShownLineEnd
+								end
+							end
+							
+							break
+						end
+					end
+				end
 			end
 		end
 	-- ajouter certaines touches au buffer clavier
@@ -2184,181 +2361,6 @@ function love.update(dt)
 					end
 				end
 			end
-		elseif state == EDIT then
-			if editVolume == false then
-				nt = GetKeyboardPlay(currentTrack, dt)
-				if nt > 0 and readyForNextNote then
-					pattern[currentTrack][currentEditLine][mus[currentPattern]] = nt
-					currentEditLine = currentEditLine + 1
-					if currentEditLine > currentShownLineEnd then
-						if currentShownLineEnd < notesPerPattern then
-							currentShownLineStart = currentShownLineStart + 1
-							currentShownLineEnd = currentShownLineEnd + 1
-						end
-						currentEditLine = currentShownLineEnd
-					end
-					readyForNextNote = false
-				elseif nt == 0 then
-					readyForNextNote = true
-	
-					-- touche suppr
-					if keyp(127) then
-						pattern[currentTrack][currentEditLine][mus[currentPattern]] = 0
-						currentEditLine = currentEditLine + 1
-						if currentEditLine > currentShownLineEnd then
-							if currentShownLineEnd < notesPerPattern then
-								currentShownLineStart = currentShownLineStart + 1
-								currentShownLineEnd = currentShownLineEnd + 1
-							end
-							currentEditLine = currentShownLineEnd
-						end
-					end
-	
-					-- touche espace
-					if keyp(32) then
-						pattern[currentTrack][currentEditLine][mus[currentPattern]] = 100
-						currentEditLine = currentEditLine + 1
-						if currentEditLine > currentShownLineEnd then
-							if currentShownLineEnd < notesPerPattern then
-								currentShownLineStart = currentShownLineStart + 1
-								currentShownLineEnd = currentShownLineEnd + 1
-							end
-							currentEditLine = currentShownLineEnd
-						end
-					end
-	
-					-- fleche haut
-					if keyp(key_up) then
-						if currentEditLine > 1 then
-							currentEditLine = currentEditLine - 1
-							if currentEditLine < currentShownLineStart then
-								if currentShownLineStart > 1 then
-									currentShownLineStart = currentShownLineStart - 1
-									currentShownLineEnd = currentShownLineEnd - 1
-								end
-								currentEditLine = currentShownLineStart
-							end
-						end
-					end
-	
-					-- fleche bas
-					if keyp(key_down) then
-						if currentEditLine < notesPerPattern then
-							currentEditLine = currentEditLine + 1
-							if currentEditLine > currentShownLineEnd then
-								if currentShownLineEnd < notesPerPattern then
-									currentShownLineStart = currentShownLineStart + 1
-									currentShownLineEnd = currentShownLineEnd + 1
-								end
-								currentEditLine = currentShownLineEnd
-							end
-						end
-					end
-	
-					-- fleche droite
-					if keyp(key_right) then
-						if currentTrack < 4 then
-							currentTrack = currentTrack + 1
-						end
-					end
-	
-					-- fleche gauche
-					if keyp(key_left) then
-						if currentTrack > 1 then
-							currentTrack = currentTrack - 1
-						end
-					end
-	
-					-- page up
-					if keyp(key_pageup) then
-						currentShownLineStart = 1
-						currentShownLineEnd = 16
-						currentEditLine = 1
-					end
-	
-					-- page down
-					if keyp(key_pagedown) then
-						currentShownLineStart = notesPerPattern - 15
-						currentShownLineEnd = notesPerPattern
-						currentEditLine = currentShownLineEnd
-					end
-					
-					-- touche entrée pour éditer le volume
-					if keyp(13) then
-						editVolume = true
-						showVolumeTrigger = true
-					end
-				end
-			else
-				-- touche entrée pour annuler l'édition de volume
-				if keyp(13) then
-					editVolume = false
-					showVolumeTrigger = false
-				end
-			
-				if editVolume then
-					for i = 48, 57 do
-						if keyp(i) then
-							vol[currentTrack][currentEditLine][mus[currentPattern]] = i - 48
-
-							if currentEditLine < notesPerPattern then
-								currentEditLine = currentEditLine + 1
-								if currentEditLine > currentShownLineEnd then
-									if currentShownLineEnd < notesPerPattern then
-										currentShownLineStart = currentShownLineStart + 1
-										currentShownLineEnd = currentShownLineEnd + 1
-									end
-									currentEditLine = currentShownLineEnd
-								end
-							end
-							
-							break
-						end
-					end
-				end
-			
-				if editVolume then
-					for i = 65, 70 do
-						if keyp(i) then
-							vol[currentTrack][currentEditLine][mus[currentPattern]] = i - 55
-
-							if currentEditLine < notesPerPattern then
-								currentEditLine = currentEditLine + 1
-								if currentEditLine > currentShownLineEnd then
-									if currentShownLineEnd < notesPerPattern then
-										currentShownLineStart = currentShownLineStart + 1
-										currentShownLineEnd = currentShownLineEnd + 1
-									end
-									currentEditLine = currentShownLineEnd
-								end
-							end
-							
-							break
-						end
-					end
-				end
-				
-				if editVolume then
-					for i = 97, 102 do
-						if keyp(i) then
-							vol[currentTrack][currentEditLine][mus[currentPattern]] = i - 87
-	
-							if currentEditLine < notesPerPattern then
-								currentEditLine = currentEditLine + 1
-								if currentEditLine > currentShownLineEnd then
-									if currentShownLineEnd < notesPerPattern then
-										currentShownLineStart = currentShownLineStart + 1
-										currentShownLineEnd = currentShownLineEnd + 1
-									end
-									currentEditLine = currentShownLineEnd
-								end
-							end
-							
-							break
-						end
-					end
-				end
-			end
 		end	
 	end
 	
@@ -2499,16 +2501,16 @@ function love.draw()
 	
 		-- scrollbar
 		if targetButton == BTN_UP then
-			--DrawButton(313, 0, 16, 16, 1, 9, 1, 0)
+			DrawButton(313, 0, 16, 16, 1, 9, 1, 0)
 		else
-			--DrawButton(313, 0, 16, 16, 2, 9, 1, 0)
+			DrawButton(313, 0, 16, 16, 2, 9, 1, 0)
 		end
 		--tex(button_up, 313, 0)
 	
 		if targetButton == BTN_DOWN then
-			--DrawButton(313, 32, 16, 16, 1, 9, 1, 0)
+			DrawButton(313, 32, 16, 16, 1, 9, 1, 0)
 		else
-			--DrawButton(313, 32, 16, 16, 2, 9, 1, 0)
+			DrawButton(313, 32, 16, 16, 2, 9, 1, 0)
 		end
 		--tex(button_down, 313, 32)
 	
@@ -2533,23 +2535,23 @@ function love.draw()
 	
 		-- boutons de menu
 		if options[1] == BTN_MENU_STOP then
-			--tex(large_button_pushed, 383, 0)
+			DrawButton(383, 0, 48, 16, 1, 9, 1, 0)
 		else
-			--tex(large_button, 383, 0)
+			DrawButton(383, 0, 48, 16, 2, 9, 1, 0)
 		end
 		Text(mode[1], 415, 7, 25)
 	
 		if options[1] == BTN_MENU_EDIT then
-			--tex(large_button_pushed, 383, 32)
+			DrawButton(383, 32, 48, 16, 1, 9, 1, 0)
 		else
-			--tex(large_button, 383, 32)
+			DrawButton(383, 32, 48, 16, 2, 9, 1, 0)
 		end
 		Text(mode[2], 415, 39, 25)
 	
 		if options[1] == BTN_MENU_PLAY then
-			--tex(large_button_pushed, 383, 64)
+			DrawButton(383, 64, 48, 16, 1, 9, 1, 0)
 		else
-			--tex(large_button, 383, 64)
+			DrawButton(383, 64, 48, 16, 2, 9, 1, 0)
 		end
 		Text(mode[3], 415, 71, 25)
 			
@@ -2559,16 +2561,16 @@ function love.draw()
 		Text(tostring(BPM), 313+37, 134, 25)
 	
 		if targetButton == BTN_TEMPO_DOWN then
-			--tex(button_pushed, 313, 128)
+			DrawButton(313, 128, 16, 16, 1, 9, 1, 0)
 		else
-			--tex(button, 313, 128)
+			DrawButton(313, 128, 16, 16, 2, 9, 1, 0)
 		end
 		Text("-", 326, 134, 25)
 	
 		if targetButton == BTN_TEMPO_UP then
-			--tex(button_pushed, 313+64, 128)
+			DrawButton(313 + 64, 128, 16, 16, 1, 9, 1, 0)
 		else
-			--tex(button, 313+64, 128)
+			DrawButton(313 + 64, 128, 16, 16, 2, 9, 1, 0)
 		end
 		Text("+", 326+64, 134, 25)
 	
@@ -2581,16 +2583,16 @@ function love.draw()
 		
 		-- boutons load/save
 		if targetButton == BTN_LOAD then
-			--tex(button_pushed, 480 - 64, 285)
+			DrawButton(480 - 64, 285, 16, 16, 1, 9, 1, 0)
 		else
-			--tex(button, 480 - 64, 285)
+			DrawButton(480 - 64, 285, 16, 16, 2, 9, 1, 0)
 		end
 		Text("LD", 480 - 64 + 9, 291, 25)
 	
 		if targetButton == BTN_SAVE then
-			--tex(button_pushed, 480 - 32, 285)
+			DrawButton(480 - 32, 285, 16, 16, 1, 9, 1, 0)
 		else
-			--tex(button, 480 - 32, 285)
+			DrawButton(480 - 32, 285, 16, 16, 2, 9, 1, 0)
 		end
 		Text("SV", 480 - 32 + 9, 291, 25)
 		
@@ -2753,18 +2755,18 @@ function love.draw()
 
 	-- afficher le renderer d'infos en mode édition de texte
 	if appState == EDIT_MODE or (appState == RUN_MODE and stepsMode) or appState == SPRITE_MODE or appState == NOISE_MODE or appState == TRACKER_MODE then
-		love.graphics.draw(renderer[2], borderX, borderY + ((gmode[currentMode][2] + 8) * gmode[currentMode][3]), 0, gmode[currentMode][3], gmode[currentMode][4], 0, 0, 0, 0)
+		love.graphics.draw(renderer[2], borderX, borderY + ((gmode[currentMode][2] + 8) * 2), 0, 2, 2, 0, 0, 0, 0)
 	end
 
 	-- afficher le renderer de message d'erreur
 	if appState == EDIT_MODE or appState == READY_MODE or (appState == RUN_MODE and stepsMode) then
-		love.graphics.draw(renderer[3], borderX, borderY + ((gmode[currentMode][2] + 16) * gmode[currentMode][4]), 0, gmode[currentMode][3], gmode[currentMode][4], 0, 0, 0, 0)
+		love.graphics.draw(renderer[3], borderX, borderY + ((gmode[currentMode][2] + 16) * 2), 0, 2, 2, 0, 0, 0, 0)
 	end
 	
 	-- afficher le renderer de menu outils
 	if appState == EDIT_MODE then
 		PrintInfosString(Chr(1) .. " " ..Chr(2) .. " " ..Chr(3) .. " " ..Chr(4) .. " ? RUN DBG SAVE LOAD IMP EXP    X", 4, "blue")
-		love.graphics.draw(renderer[4], borderX, borderY - (16 * gmode[currentMode][3]), 0, gmode[currentMode][3], gmode[currentMode][4], 0, 0, 0, 0)
+		love.graphics.draw(renderer[4], borderX, borderY - (16 * 2), 0, 2, 2, 0, 0, 0, 0)
 	end
 
 	-- afficher un message de débogage
