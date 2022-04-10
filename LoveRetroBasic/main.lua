@@ -2326,7 +2326,7 @@ function love.update(dt)
 						love.window.showMessageBox("Info", "You must set EDIT mode !", "info", true)
 					end
 				end
-				--
+
 				targetButton = 0
 				mouseEnabled = true
 			end
@@ -2512,14 +2512,14 @@ function love.draw()
 		else
 			DrawButton(313, 0, 16, 16, 2, 9, 1, 0)
 		end
-		--tex(button_up, 313, 0)
+		Text(Chr(157), 317, 4, 25)
 	
 		if targetButton == BTN_DOWN then
 			DrawButton(313, 32, 16, 16, 1, 9, 1, 0)
 		else
 			DrawButton(313, 32, 16, 16, 2, 9, 1, 0)
 		end
-		--tex(button_down, 313, 32)
+		Text(Chr(158), 317, 36, 25)
 	
 		-- boutons d'octave
 		if targetButton == BTN_OCTAVE_UP then
