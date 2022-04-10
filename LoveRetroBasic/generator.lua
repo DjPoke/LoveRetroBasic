@@ -287,7 +287,7 @@ function ShowTracks(l1, l2, l0, pat, tr)
 		local fullLine = ""
 		for i = 1, 4 do
 			local n = pattern[i][j][pat]
-			
+
 			if n == 0 then
 				ln[i] = "___"
 			elseif n == NOTEOFF then
@@ -324,7 +324,8 @@ function ShowTracks(l1, l2, l0, pat, tr)
 		end
 		
 		if j - l1 == l0 - 1 - (l2 - 16) and state == PLAY  then
-			rect(28, 4 + ((l0 - 1 - (l2 - 16)) * 16), 284+24, 4 + ((l0 - (l2 - 16)) * 16) - 1, true, 26)
+			gpen = 26
+			DrawRectangle(28, 4 + ((l0 - 1 - (l2 - 16)) * 16), 284+24, 4 + ((l0 - (l2 - 16)) * 16) - 1, true)
 		end
 
 		Text(fullLine, 8, 4 + ((j - l1) * 16), 1, false)
@@ -602,7 +603,7 @@ function UpdateKeyboardLayout()
 	file:close()
 end
 
--- stopper un instrument du tracker
+-- stopper les instruments du tracker
 function SoundStop()
 	if currentNotesLine > 0 then
 		for i = 1, 4 do
@@ -620,20 +621,16 @@ function SoundStop()
 	end
 end
 
--- stopper un son
+-- stopper un instrument du tracker
 function Stop(snd)
 	if snd == nil then return end
 
 	love.audio.stop(snd)
 end
--- jouer un son
-function Play(snd, loop, trck)
+-- jouer un instrument du tracker
+function Play(snd, loop)
 	if snd == nil then return end
-	
-	Stop(track[trck])
-	track[trck] = nil
-	
+		
 	snd:setLooping(loop)
-	track[trck] = snd
 	love.audio.play(snd)
 end

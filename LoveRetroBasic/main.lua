@@ -489,7 +489,9 @@ for i = 0, MAX_CLIPBOARD - 1 do
 	clipboard[i] = 0
 end
 
--- audio et musique :
+-- ====================
+-- = audio et musique =
+-- ====================
 -- constantes
 NOTEOFF = 100
 DEFAULT_VOLUME = 16
@@ -566,7 +568,8 @@ for i = 1, 4 do
 end
 
 arpTimer = {0, 0, 0, 0}
-	
+
+-- créer les patterns
 pattern = {}
 vol = {}
 tVol = {}
@@ -583,6 +586,7 @@ for i = 1, 4 do
 	for j = 1, notesPerPattern do
 		pattern[i][j] = {}
 		vol[i][j] = {}
+
 		for k = 1, MAX_PATTERNS do
 			pattern[i][j][k] = 0
 			vol[i][j][k] = DEFAULT_VOLUME
@@ -1083,22 +1087,8 @@ function love.keypressed(key, scancode, isrepeat)
 				currentEditLine = currentShownLineEnd
 			end
 		elseif state == EDIT then
-			if editVolume == false then
-				nt = GetKeyboardPlay(currentTrack, dt)
-				if nt > 0 and readyForNextNote then
-					pattern[currentTrack][currentEditLine][mus[currentPattern]] = nt
-					currentEditLine = currentEditLine + 1
-					
-					if currentEditLine > currentShownLineEnd then
-						if currentShownLineEnd < notesPerPattern then
-							currentShownLineStart = currentShownLineStart + 1
-							currentShownLineEnd = currentShownLineEnd + 1
-						end
-						currentEditLine = currentShownLineEnd
-					end
-					
-					readyForNextNote = false
-				elseif nt == 0 then
+			if editVolume == false then				
+				if noteOn == 0 then
 					readyForNextNote = true
 	
 					-- touche suppr
@@ -1208,6 +1198,7 @@ function love.keypressed(key, scancode, isrepeat)
 										currentShownLineStart = currentShownLineStart + 1
 										currentShownLineEnd = currentShownLineEnd + 1
 									end
+									
 									currentEditLine = currentShownLineEnd
 								end
 							end
@@ -1229,6 +1220,7 @@ function love.keypressed(key, scancode, isrepeat)
 										currentShownLineStart = currentShownLineStart + 1
 										currentShownLineEnd = currentShownLineEnd + 1
 									end
+									
 									currentEditLine = currentShownLineEnd
 								end
 							end
@@ -1240,7 +1232,7 @@ function love.keypressed(key, scancode, isrepeat)
 				
 				if editVolume then
 					for i = 97, 102 do
-						if keyp(i) then
+						if key == string.char(i) then
 							vol[currentTrack][currentEditLine][mus[currentPattern]] = i - 87
 	
 							if currentEditLine < notesPerPattern then
@@ -1250,6 +1242,7 @@ function love.keypressed(key, scancode, isrepeat)
 										currentShownLineStart = currentShownLineStart + 1
 										currentShownLineEnd = currentShownLineEnd + 1
 									end
+									
 									currentEditLine = currentShownLineEnd
 								end
 							end
@@ -1350,7 +1343,8 @@ function love.update(dt)
 					msg = nil
 
 					SaveProgram()
-					safeCursor[1] = cursor[1]
+					
+					[1] = cursor[1]
 					safeCursor[2] = cursor[2]
 					appState = LEVEL_MODE
 					LevelEditor()
@@ -2025,9 +2019,11 @@ function love.update(dt)
 						
 						-- changer d'état pour "Stop Mode"
 						state = STOP
+
 						options[1] = BTN_MENU_STOP
 					elseif state == EDIT then
 						state = STOP
+						
 						options[1] = BTN_MENU_STOP
 					end
 				elseif targetButton == BTN_MENU_EDIT then
@@ -2049,6 +2045,7 @@ function love.update(dt)
 						-- stopper les sons du piano
 						if currentPianoNote > 0 then
 							Stop(instr[1][currentPianoNote])
+							currentPianoNote = 0
 						end
 						
 						-- remette à zéro le pattern
@@ -2056,6 +2053,9 @@ function love.update(dt)
 						currentShownLineEnd = 16
 						currentNotesLine = 0
 						countTime = 0
+						
+						-- musique en fonction
+						musicPlaying = true
 						
 						-- changer d'état pour "Play Mode"
 						state = PLAY
@@ -2066,6 +2066,7 @@ function love.update(dt)
 						-- stopper les sons de piano
 						if currentPianoNote > 0 then
 							Stop(instr[1][currentPianoNote])
+							currentPianoNote = 0
 						end
 
 						-- changer la forme d'onde
@@ -2083,6 +2084,7 @@ function love.update(dt)
 						-- stopper les sons de piano
 						if currentPianoNote > 0 then
 							Stop(instr[1][currentPianoNote])
+							currentPianoNote = 0
 						end
 						
 						-- changer la forme d'onde
@@ -2099,6 +2101,7 @@ function love.update(dt)
 						-- stopper les sons de piano
 						if currentPianoNote > 0 then
 							Stop(instr[1][currentPianoNote])
+							currentPianoNote = 0
 						end
 						
 						-- changer la forme d'onde
@@ -2115,6 +2118,7 @@ function love.update(dt)
 						-- stopper les sons de piano
 						if currentPianoNote > 0 then
 							Stop(instr[1][currentPianoNote])
+							currentPianoNote = 0
 						end
 						
 						-- changer la forme d'onde
@@ -2131,6 +2135,7 @@ function love.update(dt)
 						-- stopper les sons de piano
 						if currentPianoNote > 0 then
 							Stop(instr[1][currentPianoNote])
+							currentPianoNote = 0
 						end
 						
 						-- changer le type d'arpège
@@ -2145,6 +2150,7 @@ function love.update(dt)
 						-- stopper les sons de piano
 						if currentPianoNote > 0 then
 							Stop(instr[1][currentPianoNote])
+							currentPianoNote = 0
 						end
 						
 						-- changer le type d'arpège
@@ -2158,6 +2164,7 @@ function love.update(dt)
 						-- stopper les sons de piano
 						if currentPianoNote > 0 then
 							Stop(instr[1][currentPianoNote])
+							currentPianoNote = 0
 						end
 						
 						-- changer le type d'arpège
@@ -2171,6 +2178,7 @@ function love.update(dt)
 						--- stopper les sons de piano
 						if currentPianoNote > 0 then
 							Stop(instr[1][currentPianoNote])
+							currentPianoNote = 0
 						end
 						
 						-- changer le type d'arpège
@@ -2184,6 +2192,7 @@ function love.update(dt)
 						-- stopper les sons de piano
 						if currentPianoNote > 0 then
 							Stop(instr[1][currentPianoNote])
+							currentPianoNote = 0
 						end
 
 						-- charger une musique
@@ -2209,6 +2218,7 @@ function love.update(dt)
 						-- stopper les sons de piano
 						if currentPianoNote > 0 then
 							Stop(instr[1][currentPianoNote])
+							currentPianoNote = 0
 						end
 						
 						-- sauvegarder une musique
@@ -2336,9 +2346,29 @@ function love.update(dt)
 		-- jouer une musique
 		if state == PLAY then
 			UpdateMusic(dt)
+		elseif state == EDIT then
+			if editVolume == false then
+				noteOn = GetKeyboardPlay(currentTrack, dt)
+				
+				if noteOn > 0 and readyForNextNote then
+					pattern[currentTrack][currentEditLine][mus[currentPattern]] = noteOn
+					currentEditLine = currentEditLine + 1
+					
+					if currentEditLine > currentShownLineEnd then
+						if currentShownLineEnd < notesPerPattern then
+							currentShownLineStart = currentShownLineStart + 1
+							currentShownLineEnd = currentShownLineEnd + 1
+						end
+						currentEditLine = currentShownLineEnd
+					end
+					
+					readyForNextNote = false
+				end
+			end
 		elseif state == STOP then
-			nt = GetKeyboardPlay(currentTrack, dt)
-			if nt == 0 then
+			noteOn = GetKeyboardPlay(currentTrack, dt)
+			
+			if noteOn == 0 then
 				if love.keyboard.isDown(key_up) and trigger[1] then
 					if currentEditLine > 1 then
 						currentEditLine = currentEditLine - 1
@@ -2351,6 +2381,7 @@ function love.update(dt)
 						end
 					end
 				end
+
 				if love.keyboard.isDown(key_down) and trigger[1] then
 					if currentEditLine < notesPerPattern then
 						currentEditLine = currentEditLine + 1
@@ -2490,9 +2521,10 @@ function love.draw()
 	
 		-- montrer les pistes qui jouent
 		if app_started then
-			for i = 1,4 do
+			for i = 1, 4 do
 				if pattern[i][currentNotesLine][mus[currentPattern]] ~= 0 then
-					rect(25 + ((i - 1)*72), 265, 25 + (i*72), 265+8, true, 2)
+					gpen = 2
+					DrawRectangle(25 + ((i - 1) * 72), 265, 25 + (i * 72), 265 + 8, true)
 				end
 			end
 		end
@@ -2543,27 +2575,30 @@ function love.draw()
 		-- boutons de menu
 		if options[1] == BTN_MENU_STOP then
 			DrawButton(383, 0, 48, 16, 1, 9, 1, 0)
+			Text(trck_mode[1], 392, 4, 1, false)
 		else
 			DrawButton(383, 0, 48, 16, 2, 9, 1, 0)
+			Text(trck_mode[1], 392, 4, 25, false)
 		end
-		Text(trck_mode[1], 392, 4, 25, false)
 	
 		if options[1] == BTN_MENU_EDIT then
 			DrawButton(383, 32, 48, 16, 1, 9, 1, 0)
+			Text(trck_mode[2], 392, 36, 1, false)
 		else
 			DrawButton(383, 32, 48, 16, 2, 9, 1, 0)
+			Text(trck_mode[2], 392, 36, 25, false)
 		end
-		Text(trck_mode[2], 392, 36, 25, false)
 	
 		if options[1] == BTN_MENU_PLAY then
 			DrawButton(383, 64, 48, 16, 1, 9, 1, 0)
+			Text(trck_mode[3], 392, 68, 1, false)
 		else
 			DrawButton(383, 64, 48, 16, 2, 9, 1, 0)
+			Text(trck_mode[3], 392, 68, 25, false)
 		end
-		Text(trck_mode[3], 392, 68, 25, false)
 			
 		-- boutons de tempo
-		Text("TEMPO", 313 + 20, 112, 6, false)
+		Text("TEMPO", 313 + 20, 112, 4, false)
 		DrawButton(313 + 16, 128, 48, 16, 1, 1, 9, 25)
 		Text(tostring(BPM), 313 + 40, 136, 25, true)
 	
@@ -2583,9 +2618,9 @@ function love.draw()
 	
 		-- montrer le layout clavier
 		if keyboard == AZERTY then
-			Text("AZERTY", 480 - 64, 291 - 20, 26, false)
+			Text("AZERTY", 480 - 64, 291 - 20, 10, false)
 		else
-			Text("QWERTY", 480 - 64, 291 - 20, 26, false)
+			Text("QWERTY", 480 - 64, 291 - 20, 10, false)
 		end
 		
 		-- boutons load/save
@@ -2594,14 +2629,14 @@ function love.draw()
 		else
 			DrawButton(480 - 64, 285, 16, 16, 2, 9, 1, 0)
 		end
-		Text("LD", 480 - 64 + 9, 291, 25, false)
+		Text("L", 480 - 64 + 9, 293, 25, true)
 	
 		if targetButton == BTN_SAVE then
 			DrawButton(480 - 32, 285, 16, 16, 1, 9, 1, 0)
 		else
 			DrawButton(480 - 32, 285, 16, 16, 2, 9, 1, 0)
 		end
-		Text("SV", 480 - 32 + 9, 291, 25, false)
+		Text("S", 480 - 32 + 9, 293, 25, true)
 		
 		-- boutons de formes d'ondes
 		t = textbox_mini
