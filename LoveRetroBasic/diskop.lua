@@ -14,24 +14,27 @@ function SaveProject(filename, data)
 			break
 		end
 	end
-	
-	local file = io.open(filename, "w")
 
+	local s = ""
+	
 	for i = 1, lim do
 		d = data[i]
+		
 		if d:sub(#d) == "\r" then
 			d = d:sub(1, #d - 1)
 		end
+		
 		if d:sub(#d) == "\n" then
 			d = d:sub(1, #d - 1)
 		end
+		
 		if lim ~= 1 or d ~= "" then
-			file:write(d .. Chr(LF))
+			s = s .. d .. Chr(LF)
 		end
 	end
-	
-	file:close()
 
+	SaveFileString(s, currentRelativeFolder, filename)
+	
 	return true
 end
 
@@ -41,11 +44,9 @@ function LoadProject(filename)
 
 	-- vider la mémoire code
 	ram = {}
-
+	
 	-- charger le code source
-	for line in io.lines(filename) do
-		table.insert(ram, line)
-	end
+	ram = LoadFileTable(ram, currentRelativeFolder, filename)
 	
 	-- déterminer le numéro de la dernière ligne
 	local lim = #ram
@@ -95,8 +96,10 @@ end
 -- charger le fichier de sprites
 function LoadSprites(filename)
 	if filename == nil then return end
-
-	--
+	
+	-- changer le répertoire courant
+	love.filesystem.setIdentity(currentRelativeFolder .. spriteFolder .. SEP)
+	
 	local w = nil
 	local h = nil
 	local i = nil
@@ -110,21 +113,18 @@ function LoadSprites(filename)
 
 	-- ouvrir le fichier
 	local data = {}
-
-	for line in io.lines(filename) do
-		table.insert(data, line)
-	end
+	data = LoadFileTable(data, currentRelativeFolder .. spriteFolder .. SEP, filename)
 
 	i = 1
 	for j = 0, MAX_SPRITES_IMAGES - 1 do
-		w = Val(data[i])
-		h = Val(data[i + 1])
+		w = tonumber(data[i])
+		h = tonumber(data[i + 1])
 
 		i = i + 2
 		
 		for y = 0, h - 1 do
 			for x = 0, w - 1 do
-				spram[(j * MAX_SPRITE_SIZE) + x + (y * w)] = Val(data[i])
+				spram[(j * MAX_SPRITE_SIZE) + x + (y * w)] = tonumber(data[i])
 				i = i + 1
 			end
 		end
@@ -134,49 +134,65 @@ function LoadSprites(filename)
 	
 	-- créer un sprite vide
 	sprImgNumber = 0	
+
+	-- changer le répertoire courant
+	love.filesystem.setIdentity(currentRelativeFolder)
 end
 
 -- sauvegarder le fichier de sprites, si il y en a
 function SaveSprites(filename)
 	if filename == nil then return end
 
-	local file = io.open(filename, "w")
-
+	-- changer le répertoire courant
+	love.filesystem.setIdentity(currentRelativeFolder .. spriteFolder .. SEP)
+	
+	local s = ""
+	
 	for i = 0, MAX_SPRITES_IMAGES - 1 do
 		local w = SPRITE_WIDTH
 		local h = SPRITE_HEIGHT
-		file:write(tostring(w) .. Chr(LF))
-		file:write(tostring(h) .. Chr(LF))
+		s = s .. tostring(w) .. Chr(LF)
+		s = s .. tostring(h) .. Chr(LF)
 		for y = 0, h - 1 do
 			for x = 0, w - 1 do
-				file:write(tostring(spram[(i * MAX_SPRITE_SIZE) + x + (y * w)]) .. Chr(LF))
+				s = s .. tostring(spram[(i * MAX_SPRITE_SIZE) + x + (y * w)]) .. Chr(LF)
 			end
 		end
 	end
-	file:close()
+	
+	data = love.filesystem.newFileData(s, filename)
+	love.filesystem.write(filename, data)
+
+	-- changer le répertoire courant
+	love.filesystem.setIdentity(currentRelativeFolder)
 end
 
 -- créer un disque virtuel
-function CreateDisk(f)
+function CreateDisk(path, folder)
 	-- le créer s'il n'existe pas
-	if love.filesystem.getInfo(f, 'directory') == nil then
-		if love.filesystem.createDirectory(f) then
+	if GetFolderExists(path, folder) == nil then
+		if not love.filesystem.createDirectory(f) then
+			RuntimeError("Can't create the disk folder !")
 		end
 	end
 end
 
 -- sélectionner un disque projet et en charger le programme basic
-function LoadDisc(f)
-	if f == nil then return ERR_DISC_MISSING end
-	
-	if os.rename(f .. "main.bas", f .. "main.bas") then
-		LoadProject(f .. "main.bas")
+function LoadDisc(filename)
+	if filename == nil then return ERR_DISC_MISSING end
+
+	if GetFileExists(love.filesystem.getIdentity(), "main.bas") then
+		LoadProject("main.bas")
 			
-		if os.rename(f .. "sprites.spr", f .. "sprites.spr")~= nil then
-			LoadSprites(f .. "sprites.spr")
+		if GetFolderExists(currentRelativeFolder, spriteFolder) then
+			if GetFileExists(currentRelativeFolder .. spriteFolder, "sprites.spr") then
+				LoadSprites("sprites.spr")
+
+				msg = "Project Loaded !"
+			end
+		else
+			return ERR_DISC_MISSING
 		end
-		
-		msg = "Project Loaded !"
 	else
 		return ERR_DISC_MISSING
 	end
@@ -206,49 +222,68 @@ end
 function LoadMusic(filename)
 	if filename == nil then return end
 
-	local file = io.open(filename, "rb")
+	-- changer le répertoire courant
+	love.filesystem.setIdentity(currentRelativeFolder .. musicFolder .. SEP)
 
+	-- charger la musique
+	local m = {}
+	m = LoadFileTable(m, currentRelativeFolder .. musicFolder .. SEP, filename)
+
+	local cpt = 1
 	-- lire les BPM
-	BPM = Asc(file:read(1))
+	BPM = tonumber(m[cpt])
 	nextNotes = (60.0 / (4 * BPM))
 	countTime = 0
 	
+	cpt = cpt + 1
+	
 	-- lire le type et la vitesse d'arpège pour chaque canal
 	for i = 1, 4 do
-		arpeggioType[i] = Asc(file:read(1))
-		arpeggioSpeed[i] = Asc(file:read(1))
+		arpeggioType[i] = tonumber(m[cpt])
+		cpt = cpt + 1
+		
+		arpeggioSpeed[i] = tonumber(m[cpt])
+		cpt = cpt + 1
+		
 		arpeggioCounter[i] = 1
 		nextArp[i] = nextNotes / arpeggioSpeed[i]
 	end
 	
 	-- lire les valeurs d'instruments
 	for i = 1, 4 do
-		currentSoundsType[i] = Asc(file:read(1))
+		currentSoundsType[i] = tonumber(m[cpt])
+		cpt = cpt + 1
 	end
 
 	-- lire la structure de la musique
-	musicLength = Asc(file:read(1))
+	musicLength = tonumber(m[cpt])
+	cpt = cpt + 1
+
 	for i = 1, musicLength do
-		mus[i] = Asc(file:read(1))
+		mus[i] = tonumber(m[cpt])
+		cpt = cpt + 1
 	end
 
 	-- lire les données des patterns
 	for i = 1, 4 do
 		for j = 1, notesPerPattern do
 			for k = 1, MAX_PATTERNS do
-				pattern[i][j][k] = Asc(file:read(1))
-				vol[i][j][k] = Asc(file:read(1))
+				pattern[i][j][k] = tonumber(m[cpt])
+				cpt = cpt + 1
+				vol[i][j][k] = tonumber(m[cpt])
+				cpt = cpt + 1
 			end
 		end
 	end
-	
-	file:close()
 
 	-- créer les instruments
 	for ch = 1, 4 do
 		CreateSounds(ch, currentSoundsType[ch])
 	end
-	
+
+	-- changer le répertoire courant
+	love.filesystem.setIdentity(currentRelativeFolder)
+
 	return OK
 end
 
@@ -256,36 +291,119 @@ end
 function SaveMusic(filename)
 	if filename == nil then return end
 
-	file = File.new()
-	if file:open(filename, Stream.Write) then
-		-- écrire les BPM
-		 file:writeByte(BPM)
-		-- écrire le type d'arpège et la vitesse pour chaque canal
-		for i = 1,4 do
-			file:writeByte(arpeggioType[i])
-			file:writeByte(arpeggioSpeed[i])
-		end
-		-- écrire les valeurs d'instruments
-		for i = 1,4 do
-			file:writeByte(currentSoundsType[i])
-		end
-		-- écrire la structure musicale
-		file:writeByte(musicLength)
-		for i = 1,musicLength do
-			file:writeByte(mus[i])
-		end
-		-- écrire les données des patterns
-		for i = 1,4 do
-			for j = 1,notesPerPattern do
-				for k = 1,MAX_PATTERNS do
-					file:writeByte(pattern[i][j][k])
-					file:writeByte(vol[i][j][k])
-				end
+	-- changer le répertoire courant
+	love.filesystem.setIdentity(currentRelativeFolder .. musicFolder .. SEP)
+
+	-- écrire les BPM
+	s = tostring(BPM) .. Chr(LF)
+	
+	-- écrire le type d'arpège et la vitesse pour chaque canal
+	for i = 1, 4 do
+		s = s .. tostring(arpeggioType[i]) .. Chr(LF)
+		s = s .. tostring(arpeggioSpeed[i]) .. Chr(LF)
+	end
+
+	-- écrire les valeurs d'instruments
+	for i = 1, 4 do
+		s = s .. tostring(currentSoundsType[i]) .. Chr(LF)
+	end
+
+	-- écrire la structure musicale
+	s = s .. tostring(musicLength) .. Chr(LF)
+	
+	for i = 1, musicLength do
+		s = s .. tostring(mus[i]) .. Chr(LF)
+	end
+	
+	-- écrire les données des patterns
+	for i = 1, 4 do
+		for j = 1, notesPerPattern do
+			for k = 1,MAX_PATTERNS do
+				s = s .. tostring(pattern[i][j][k]) .. Chr(LF)
+				s = s .. tostring(vol[i][j][k]) .. Chr(LF)
 			end
 		end
+	end
 
-		file:close()
-	else
+	data = love.filesystem.newFileData(s, filename)
+	success, message = love.filesystem.write(filename, data)
+
+	-- erreur
+	if not success then
 		msg = "Error ! Can't save the music !"
 	end
+
+	-- changer le répertoire courant
+	love.filesystem.setIdentity(currentRelativeFolder)
+end
+
+-- récupérer les chemins vers le disque
+function GetCurrentFolder()
+	-- créer un chemin direct pour accéder au disque
+	currentRelativeFolder = driveFolder .. SEP .. diskFolder .. SEP
+end
+
+-- vérifier si un dossier existe
+function GetFolderExists(path, folder)
+	-- mémoriser le path courant
+	memPath = love.filesystem.getIdentity()
+	
+	-- choisir le path temporaire
+	love.filesystem.setIdentity(path)
+	
+	-- vérifier si le dossier existe
+	retValue = love.filesystem.getInfo(folder, "directory")
+	
+	-- rétablir le path courant
+	love.filesystem.setIdentity(memPath)
+
+	return retValue
+end
+
+-- vérifier si un fichier existe
+function GetFileExists(path, file)
+	-- mémoriser le path courant
+	memPath = love.filesystem.getIdentity()
+	
+	-- choisir le path temporaire
+	love.filesystem.setIdentity(path)
+	
+	-- vérifier si le dossier existe
+	retValue = love.filesystem.getInfo(file, "file")
+	
+	-- rétablir le path courant
+	love.filesystem.setIdentity(memPath)
+
+	return retValue
+end
+
+-- sauvegarder une chaine de caractères dans un fichier
+function SaveFileString(s, path, filename)
+	local cp = love.filesystem.getIdentity()
+	
+	-- changer le répertoire courant
+	love.filesystem.setIdentity(path)
+
+	local data = love.filesystem.newFileData(s, filename)
+	love.filesystem.write(filename, data)
+
+	-- changer le répertoire courant
+	love.filesystem.setIdentity(cp)
+end
+
+-- charger un fichier dans un tableau et retourner le tableau
+function LoadFileTable(t, path, filename)
+	local cp = love.filesystem.getIdentity()
+
+	-- changer le répertoire courant
+	love.filesystem.setIdentity(path)
+
+	for line in love.filesystem.lines(filename) do
+		table.insert(t, line)
+	end
+
+	-- changer le répertoire courant
+	love.filesystem.setIdentity(cp)
+	
+	return t
 end

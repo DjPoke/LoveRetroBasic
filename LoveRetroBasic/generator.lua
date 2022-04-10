@@ -561,46 +561,41 @@ end
 
 -- récupérer le layout clavier
 function GetKeyboardLayout()
-	f = defaultFolder
-
+	f = driveFolder
+	
 	-- clavier par défaut
 	keyboard = QWERTY
 	
 	-- sauvegarder le mode QWERTY si aucun fichier de configuration n'est présent
-	if not os.rename(f .. "config.cfg", f .. "config.cfg") then
-		local file = io.open(f .. "config.cfg", "w")
-		
-		file:write("QWERTY")
-		file:close()
+	if not GetFileExists(f, "config.cfg") then
+		s = "QWERTY" .. Chr(LF)
+		SaveFileString(s, f, "config.cfg")
 	end
 	
 	--	 dans tous les cas, tenter de charger le fichier de configuration
-	if os.rename(f .. "config.cfg", f .. "config.cfg") then
-		local file = io.open(f .. "config.cfg", "rb")
+	if GetFileExists(f, "config.cfg") then
+		local ln = {}
+		ln = LoadFileTable(ln, f, "config.cfg")
 		
-		if file:read() == "AZERTY" then
+		if ln[1] == "AZERTY" then
 			keyboard = AZERTY
 		else
 			keyboard = QWERTY
 		end
-
-		file:close()
 	end
 end
 
 -- mettre à jouer le layout clavier
 function UpdateKeyboardLayout()
-	f = defaultFolder
+	f = driveFolder
 
-	local file = io.open(f .. "config.cfg", "w")
+	local s = "QWERTY" .. Chr(LF)
 	
-	if keyboard == QWERTY then
-		file:write("QWERTY")
-	else
-		file:write("AZERTY")
+	if keyboard == AZERTY then
+		s = "AZERTY" .. Chr(LF)
 	end
 	
-	file:close()
+	SaveFileString(s, f, "config.cfg")
 end
 
 -- stopper les instruments du tracker

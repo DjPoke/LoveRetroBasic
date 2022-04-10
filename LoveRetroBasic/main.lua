@@ -447,9 +447,9 @@ err = nil -- sortie d'erreur
 msg = nil -- sortie de message ou de question (err est prioritaire sur msg)
 msgLine = nil -- sortie de numéro de ligne en steps mode
 
-currentDrive = nil -- nom du projet en cours, pour sauvegarder le fichier
-currentFolder = nil -- nom du dossier du projet en cours, pour sauvegarder le fichier
-defaultFolder = nil -- répertoire par défaut de l'application
+diskFolder = nil -- nom du dossier du projet en cours, pour sauvegarder le fichier
+driveFolder = nil -- répertoire par défaut de l'application
+currentRelativeFolder = nil -- chemin relatif courant
 
 SEP = "/" -- séparateur de dossiers
 
@@ -707,31 +707,30 @@ function love.load()
 		Reset()
 	end
 
-	defaultFolder = love.filesystem.getSaveDirectory()
-	defaultFolder = string.gsub(defaultFolder, "\\", "/") .. "/"
+	-- trouver le drive virtuel courant
+	driveFolder = love.filesystem.getIdentity()
 	
 	-- créer le Disk0 s'il n'existe pas
-	currentFolder = "Disk0"
-	CreateDisk(currentFolder)
-	currentFolder = currentFolder .. SEP
+	diskFolder = "Disk0"
+	CreateDisk(driveFolder, diskFolder)
+
+	--récupérer le répertoire courant
+	GetCurrentFolder()
+	
+	-- créer les dossiers pour le jeu
+	imageFolder = "Images"
+	spriteFolder = "Sprites"
+	musicFolder = "Musics"
+		
+	if not love.filesystem.getInfo(currentRelativeFolder .. imageFolder, "directory") then love.filesystem.createDirectory(diskFolder .. SEP .. imageFolder) end
+	if not love.filesystem.getInfo(currentRelativeFolder .. spriteFolder, "directory") then love.filesystem.createDirectory(diskFolder .. SEP .. spriteFolder) end
+	if not love.filesystem.getInfo(currentRelativeFolder .. musicFolder, "directory") then love.filesystem.createDirectory(diskFolder .. SEP .. musicFolder) end
+
+	-- pointer sur le disque par défaut
+	love.filesystem.setIdentity(currentRelativeFolder)
 	
 	-- choisir le Disk0 comme disque par défaut
-	LoadDisc(defaultFolder .. currentFolder)
-		
-	-- recherche d'un lecteur virtuel dans à côté du fichier .love
-	currentDrive = love.filesystem.getWorkingDirectory()
-	if love.system.getOS() == "Windows" then
-		currentDrive = string.gsub(currentDrive, "\\", "/")
-	end
-	
-	currentDrive = currentDrive .. "/RBDisks/"
-	if os.rename(currentDrive, currentDrive) then
-		-- répertoire trouvé
-		-- os.execute("copy ...") ou os.execute("cp ...")
-	else
-		-- répertoire non trouvé
-		currentDrive = ""
-	end
+	LoadDisc(currentRelativeFolder)
 	
 	-- récupérer le layout clavier mémorisé
 	GetKeyboardLayout()
@@ -978,7 +977,7 @@ function love.keypressed(key, scancode, isrepeat)
 	elseif appState == SPRITE_MODE then	
 		if key == "s" and love.keyboard.isDown("lctrl", "rctrl") then
 			-- sauvegarder tous les sprites existants
-			SaveSprites(defaultFolder .. currentFolder .. "sprites.spr")
+			SaveSprites("sprites.spr")
 
 			return
 		elseif key == "x" and love.keyboard.isDown("lctrl", "rctrl") then
@@ -1449,7 +1448,7 @@ function love.update(dt)
 
 					ShowCursor(false)
 					ClearScreen()
-					LoadDisc(defaultFolder .. currentFolder)
+					LoadDisc(currentRelativeFolder)
 
 					return
 				elseif x >= 28 and x <= 30 then -- importer un programme
@@ -2197,15 +2196,15 @@ function love.update(dt)
 						end
 
 						-- charger une musique
-						local f = input("Name of the music (no extension)", "My Music")
+						--local f = input("Name of the music (no extension)", "My Music")
+						-- TODO
+						musicName = "music1.rmu"
 						if f ~= nil then
 							if #f > 0 then
-								musicName = f .. ".rmu"
-								local filename = Path.combine(musicFolder, musicName)
 								ClearMusic()
-								LoadMusic(filename)
+								LoadMusic(musicName)
 								-- créer les instruments
-								for ch = 1,4 do
+								for ch = 1, 4 do
 									CreateSounds(ch, currentSoundsType[ch])
 								end
 							end
@@ -2224,19 +2223,19 @@ function love.update(dt)
 						
 						-- sauvegarder une musique
 						if musicName == nil then
-							local f = input("Name of the music (no extension)", "My Music")
+							--local f = input("Name of the music (no extension)", "My Music")
+							-- TODO
+							musicName = "music1.rmu"
+							
 							if f ~= nil then
 								if #f > 0 then
-									musicName = f .. ".rmu"
-									local filename = Path.combine(musicFolder, musicName)
-									SaveMusic(filename)
+									SaveMusic(musicName)
 									mouseEnabled = false
 									love.window.showMessageBox("Info", "Saved !", "info", true)
 								end
 							end
 						else
-							local filename = Path.combine(musicFolder, musicName)
-							SaveMusic(filename)
+							SaveMusic(musicName)
 							mouseEnabled = false
 							love.window.showMessageBox("Info", "Saved !", "info", true)
 						end
@@ -2576,7 +2575,7 @@ function love.draw()
 			Text("-", 286, 293, 25, true)
 		end
 	
-		Text("Octave", 300, 270, 4, false)
+		Text("Octave", 294, 270, 4, false)
 		DrawButton(308, 285, 16, 16, 1, 1, 9, 9)
 		Text(tostring(currentOctave), 316, 293, 25, true)
 	
@@ -2850,5 +2849,3 @@ function love.draw()
 		dbg = nil
 	end	
 end
-
--- ==============================================================================================================================

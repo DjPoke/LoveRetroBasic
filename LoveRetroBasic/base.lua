@@ -1621,15 +1621,15 @@ end
 
 -- sauvegarder le programme en cours d'édition
 function SaveProgram()
-	if SaveProject(defaultFolder .. currentFolder .. "main.bas", ram) then
+	if SaveProject("main.bas", ram) then
 		msg = "Program saved !"
 	end
 end
 
 -- importer un programme
 function ImportProgram()
-	local lnk = defaultFolder .. currentFolder
-	
+	local lnk = love.filesystem.getSaveDirectory()
+
 	if love.window.showMessageBox("Info", "Your program can be dropped here:\n" .. lnk .. "\n\nLink copied to clipboard !", "info", true) then
 		love.system.setClipboardText(lnk)
 	else
@@ -1639,7 +1639,7 @@ end
 
 -- exporter un programme
 function ExportProgram()
-	local lnk = defaultFolder .. currentFolder
+	local lnk = love.filesystem.getSaveDirectory()
 
 	if love.window.showMessageBox("Info", "Your program can be taken here:\n" .. lnk .. "\n\nLink copied to clipboard !", "info", true) then
 		love.system.setClipboardText(lnk)
@@ -1650,7 +1650,7 @@ end
 
 -- importer une banque de sprites
 function ImportSprites()
-	local lnk = defaultFolder .. currentFolder
+	local lnk = love.filesystem.getSaveDirectory() .. spriteFolder .. SEP
 	
 	if love.window.showMessageBox("Info", "Your sprite bank can be dropped here:\n" .. lnk .. "\n\nLink copied to clipboard !", "info", true) then
 		love.system.setClipboardText(lnk)
@@ -1661,7 +1661,7 @@ end
 
 -- exporter une banque de sprites
 function ExportSprites()
-	local lnk = defaultFolder .. currentFolder
+	local lnk = love.filesystem.getSaveDirectory() .. spriteFolder .. SEP
 
 	if love.window.showMessageBox("Info", "Your sprite bank be taken here:\n" .. lnk .. "\n\nLink copied to clipboard !", "info", true) then
 		love.system.setClipboardText(lnk)
