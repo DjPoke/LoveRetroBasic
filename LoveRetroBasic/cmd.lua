@@ -599,9 +599,9 @@ cmd["STOPMUSIC"].fn = function(lst)
 	for i = 1, 4 do
 		if lastNote[i] ~= 0 then
 			if arpLastNote[i] ~= lastNote[i] and arpLastNote[i] ~= 0 then
-				instr[i][arpLastNote[i]]:stop()
+				Stop(instr[i][arpLastNote[i]])
 			else
-				instr[i][lastNote[i]]:stop()
+				Stop(instr[i][lastNote[i]])
 			end
 			arpLastNote[i] = 0
 			lastNote[i] = 0

@@ -205,16 +205,21 @@ function GraphPrintString(s)
 end
 
 -- afficher un texte graphique à l'écran (fonction raccourci pour les UI)
-function Text(p, x, y, c)
+function Text(p, x, y, c, center)
 	local memGraphCursor = {gcursor[1], gcursor[2]}
 	local memGPen = gpen
-	
-	gcursor[1] = x
-	gcursor[2] = y
+
+	if center then
+		gcursor[1] = x - ((p:len() * 8) / 2)
+		gcursor[2] = y - 4
+	else
+		gcursor[1] = x
+		gcursor[2] = y
+	end
 	
 	gpen = c
 
-	GraphPrintString()
+	GraphPrintString(p)
 
 	gcursor[1] = memGraphCursor[1]
 	gcursor[2] = memGraphCursor[2]

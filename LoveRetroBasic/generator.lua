@@ -204,7 +204,7 @@ function InitKeyboard()
 		kb[1] = {"w", 1}
 		kb[2] = {"s", 2}
 		kb[3] = {"x", 3}
-		kb[4] = {"s", 4}
+		kb[4] = {"d", 4}
 		kb[5] = {"c", 5}
 		kb[6] = {"v", 6}
 		kb[7] = {"g", 7}
@@ -221,21 +221,21 @@ function InitKeyboard()
 
 		-- touches du haut pour clavier AZERTY
 		kb[18] = {"a", 13}
-		kb[19] = {"é", 14}
+		kb[19] = {"2", 14}
 		kb[20] = {"z", 15}
-		kb[21] = {"\"", 16}
+		kb[21] = {"3", 16}
 		kb[22] = {"e", 17}
 		kb[23] = {"r", 18}
-		kb[24] = {"(", 19}
+		kb[24] = {"5", 19}
 		kb[25] = {"t", 20}
-		kb[26] = {"-", 21}
+		kb[26] = {"6", 21}
 		kb[27] = {"y", 22}
-		kb[28] = {"è", 23}
+		kb[28] = {"7", 23}
 		kb[29] = {"u", 24}
 		kb[30] = {"i", 25}
-		kb[31] = {"ç", 26}
+		kb[31] = {"9", 26}
 		kb[32] = {"o", 27}
-		kb[33] = {"à", 28}
+		kb[33] = {"0", 28}
 		kb[34] = {"p", 29}
 	else
 		-- touches du bas pour clavier QWERTY
@@ -327,32 +327,32 @@ function ShowTracks(l1, l2, l0, pat, tr)
 			rect(28, 4 + ((l0 - 1 - (l2 - 16)) * 16), 284+24, 4 + ((l0 - (l2 - 16)) * 16) - 1, true, 26)
 		end
 
-		Text(fullLine, 8, 4 + ((j - l1) * 16), 1)
+		Text(fullLine, 8, 4 + ((j - l1) * 16), 1, false)
 		
 		if j - l1 == l0 - 1 - (l2 - 16) and state ~= PLAY then
 			if tr == 1 then
-				Text(ln[1], 32, 4 + ((j - l1) * 16), 2)
+				Text(ln[1], 32, 4 + ((j - l1) * 16), 2, false)
 				
 				if showVolumeTrigger then
-					Text(string.sub(ln[1], 5, 7), 64, 4 + ((j - l1) * 16), 38)
+					Text(string.sub(ln[1], 5, 7), 64, 4 + ((j - l1) * 16), 38, false)
 				end
 			elseif tr == 2 then
 				Text(ln[2], 104, 4 + ((j - l1) * 16), 2)
 				
 				if showVolumeTrigger then
-					Text(string.sub(ln[2], 5, 7), 136, 4 + ((j - l1) * 16), 38)
+					Text(string.sub(ln[2], 5, 7), 136, 4 + ((j - l1) * 16), 38, false)
 				end
 			elseif tr == 3 then
 				Text(ln[3], 176, 4 + ((j - l1) * 16), 2)
 				
 				if showVolumeTrigger then
-					Text(string.sub(ln[3], 5, 7), 208, 4 + ((j - l1) * 16), 38)
+					Text(string.sub(ln[3], 5, 7), 208, 4 + ((j - l1) * 16), 38, false)
 				end
 			elseif tr == 4 then
 				Text(ln[4], 176 + 72, 4 + ((j - l1) * 16), 2)
 				
 				if showVolumeTrigger then
-					Text(string.sub(ln[4], 5, 7), 208+72, 4 + ((j - l1) * 16), 38)
+					Text(string.sub(ln[4], 5, 7), 208+72, 4 + ((j - l1) * 16), 38, false)
 				end
 			end
 		end
@@ -368,9 +368,9 @@ function GetKeyboardPlay(ch, delta)
 			if currentPianoNote > 0 then
 				if currentPianoNote ~= j + ((currentOctave - 1) * 12) then
 					if currentArpNote ~= currentPianoNote and currentArpNote > 0 then
-						stop(instr[ch][currentArpNote])
+						Stop(instr[ch][currentArpNote])
 					else
-						stop(instr[ch][currentPianoNote])
+						Stop(instr[ch][currentPianoNote])
 					end
 					
 					currentPianoNote = 0
@@ -379,14 +379,14 @@ function GetKeyboardPlay(ch, delta)
 					if j + ((currentOctave - 1) * 12) <= 85 then
 						currentPianoNote = j + ((currentOctave - 1) * 12)
 						arpeggioCounter[ch] = 1
-						play(instr[ch][currentPianoNote], true, 0, 1)
+						Play(instr[ch][currentPianoNote], true, 0, 1)
 					end
 				elseif arpeggioType[ch] > 1 then
 					arpTimer[ch] = arpTimer[ch] + delta
 					
 					if arpTimer[ch] >= nextArp[ch] then
 						arpTimer[ch] = arpTimer[ch] - nextArp[ch]
-						stop(instr[ch][currentPianoNote])
+						Stop(instr[ch][currentPianoNote])
 					end
 					
 					-- jouer la prochaine note d'arpège
@@ -432,14 +432,14 @@ function GetKeyboardPlay(ch, delta)
 					-- jouer les notes de musique
 					if currentPianoNote + ofst <= 85 then
 						currentArpNote = currentPianoNote + ofst
-						play(instr[ch][currentArpNote], true, 0, 1)
+						Play(instr[ch][currentArpNote], true, 0, 1)
 					end
 				end
 			else
 				if j + ((currentOctave - 1) * 12) <= 85 then
 					currentPianoNote = j + ((currentOctave - 1) * 12)
 					arpeggioCounter[ch] = 1
-					play(instr[ch][currentPianoNote], true, 0, 1)
+					Play(instr[ch][currentPianoNote], true, 0, 1)
 				end
 			end
 			
@@ -468,9 +468,9 @@ function GetKeyboardPlay(ch, delta)
 					if currentPianoNote ~= piano[i][4] + ((currentOctave - 1) * 12) then
 						if currentPianoNote ~= piano[i][4] + ((currentOctave - 1) * 12) then
 							if currentArpNote ~= currentPianoNote and currentArpNote > 0 then
-								stop(instr[ch][currentArpNote])
+								Stop(instr[ch][currentArpNote])
 							else
-								stop(instr[ch][currentPianoNote])
+								Stop(instr[ch][currentPianoNote])
 							end
 							
 							currentPianoNote = 0
@@ -479,14 +479,14 @@ function GetKeyboardPlay(ch, delta)
 						
 						if piano[i][4] + ((currentOctave - 1) * 12) <= 85 then
 							currentPianoNote = piano[i][4] + ((currentOctave - 1) * 12)
-							play(instr[ch][currentPianoNote], true, 0, 1)
+							Play(instr[ch][currentPianoNote], true, 0, 1)
 						end
 					elseif arpeggioType[ch] > 1 then
 						arpTimer[ch] = arpTimer[ch] + delta
 						
 						if arpTimer[ch] >= nextArp[ch] then
 							arpTimer[ch] = arpTimer[ch] - nextArp[ch]
-							stop(instr[ch][currentPianoNote])
+							Stop(instr[ch][currentPianoNote])
 						end
 						
 						-- jouer les prochaines notes d'arpège
@@ -531,13 +531,13 @@ function GetKeyboardPlay(ch, delta)
 						-- jouer les notes de musique
 						if currentPianoNote + ofst <= 85 then
 							currentArpNote = currentPianoNote + ofst
-							play(instr[ch][currentArpNote], true, 0, 1)
+							Play(instr[ch][currentArpNote], true, 0, 1)
 						end
 					end
 				else
 					if piano[i][4] + ((currentOctave - 1) * 12) <= 85 then
 						currentPianoNote = piano[i][4] + ((currentOctave - 1) * 12)
-						play(instr[ch][currentPianoNote], true, 0, 1)
+						Play(instr[ch][currentPianoNote], true, 0, 1)
 					end
 				end
 				
@@ -546,9 +546,9 @@ function GetKeyboardPlay(ch, delta)
 		end
 	elseif currentPianoNote > 0 then
 		if currentArpNote ~= currentPianoNote and currentArpNote > 0 then
-			stop(instr[ch][currentArpNote])
+			Stop(instr[ch][currentArpNote])
 		else
-			stop(instr[ch][currentPianoNote])
+			Stop(instr[ch][currentPianoNote])
 		end
 		
 		currentPianoNote = 0
@@ -605,9 +605,9 @@ function SoundStop()
 		for i = 1, 4 do
 			if lastNote[i] ~= 0 then
 				if arpLastNote[i] ~= lastNote[i] and arpLastNote[i] ~= 0 then
-					stop(instr[i][arpLastNote[i]])
+					Stop(instr[i][arpLastNote[i]])
 				else
-					stop(instr[i][lastNote[i]])
+					Stop(instr[i][lastNote[i]])
 				end
 				
 				arpLastNote[i] = 0
@@ -615,4 +615,14 @@ function SoundStop()
 			end
 		end
 	end
+end
+
+-- stopper un son
+function Stop(snd)
+	snd:stop()
+end
+-- jouer un son
+function Play(snd, loop, trck)
+	snd:setLooping(loop)
+	snd:play()
 end
