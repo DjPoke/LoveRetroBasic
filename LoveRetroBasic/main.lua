@@ -755,12 +755,6 @@ function love.load()
 
 	InitKeyboard()
 	
-	-- charger BOB test
-	LoadBOB("test.png", currentRelativeFolder .. imageFolder .. "/", 1)
-	
-	-- sauver BOB test
-	SaveBOB("test2.png", currentRelativeFolder .. imageFolder .. "/", 1)
-	
 	-- initialiser l'application
 	appStarted = true
 end

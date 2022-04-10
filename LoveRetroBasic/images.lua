@@ -19,8 +19,8 @@ function SaveBOB(filename, path, n)
 		for x = 0, bob[n][1] - 1 do
 			local i = x + (y * bob[n][1]) + 3
 			local c = bob[n][i]
-			local r, g, b = scnPal[c][0], scnPal[c][1], scnPal[c][2]
-			data:setPixel(x, y, r, g, b, 255)
+			local r, g, b = scnPal[c][0] / 255, scnPal[c][1] / 255, scnPal[c][2] / 255
+			data:setPixel(x, y, r, g, b, 1.0)
 		end
 	end
 	
@@ -49,7 +49,7 @@ function LoadBOB(filename, path, n)
 	love.filesystem.setIdentity(path)
 
 	-- créer une image data de la même taille
-	local data = love.image.newImageData(filename)
+	local data = love.image.newImageData(filename) -- TODO : remplacer par encoded data
 	
 	bob[n] = {
 		data:getWidth(),
@@ -66,7 +66,7 @@ function LoadBOB(filename, path, n)
 			local c1 = r + g + b
 			local c2 = 0
 			local dist = 255 * 3
-			local memDist = 256 * 3
+			local memDist = 255 * 3
 			local c = 0
 
 			-- trouver la couleur exacte
