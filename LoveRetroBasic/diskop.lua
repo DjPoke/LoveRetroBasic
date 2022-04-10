@@ -98,7 +98,7 @@ function LoadSprites(filename)
 	if filename == nil then return end
 	
 	-- changer le répertoire courant
-	love.filesystem.setIdentity(currentRelativeFolder .. spriteFolder .. SEP)
+	love.filesystem.setIdentity(currentRelativeFolder .. spriteFolder .. "/")
 	
 	local w = nil
 	local h = nil
@@ -113,7 +113,7 @@ function LoadSprites(filename)
 
 	-- ouvrir le fichier
 	local data = {}
-	data = LoadFileTable(data, currentRelativeFolder .. spriteFolder .. SEP, filename)
+	data = LoadFileTable(data, currentRelativeFolder .. spriteFolder .. "/", filename)
 
 	i = 1
 	for j = 0, MAX_SPRITES_IMAGES - 1 do
@@ -144,7 +144,7 @@ function SaveSprites(filename)
 	if filename == nil then return end
 
 	-- changer le répertoire courant
-	love.filesystem.setIdentity(currentRelativeFolder .. spriteFolder .. SEP)
+	love.filesystem.setIdentity(currentRelativeFolder .. spriteFolder .. "/")
 	
 	local s = ""
 	
@@ -229,7 +229,7 @@ function LoadMusic(filename)
 	if filename == nil then return end
 
 	-- changer le répertoire courant
-	love.filesystem.setIdentity(currentRelativeFolder .. musicFolder .. SEP)
+	love.filesystem.setIdentity(currentRelativeFolder .. musicFolder .. "/")
 
 	if not GetFileExists(currentRelativeFolder .. musicFolder, filename) then
 		-- rétablir le répertoire courant
@@ -240,7 +240,7 @@ function LoadMusic(filename)
 
 	-- charger la musique
 	local m = {}
-	m = LoadFileTable(m, currentRelativeFolder .. musicFolder .. SEP, filename)
+	m = LoadFileTable(m, currentRelativeFolder .. musicFolder .. "/", filename)
 
 	local cpt = 1
 	-- lire les BPM
@@ -305,7 +305,7 @@ function SaveMusic(filename)
 	if filename == nil then return end
 
 	-- changer le répertoire courant
-	love.filesystem.setIdentity(currentRelativeFolder .. musicFolder .. SEP)
+	love.filesystem.setIdentity(currentRelativeFolder .. musicFolder .. "/")
 
 	-- écrire les BPM
 	s = tostring(BPM) .. Chr(LF)
@@ -353,7 +353,7 @@ end
 -- récupérer les chemins vers le disque
 function GetCurrentFolder()
 	-- créer un chemin direct pour accéder au disque
-	currentRelativeFolder = driveFolder .. SEP .. diskFolder .. SEP
+	currentRelativeFolder = driveFolder .. "/" .. diskFolder .. "/"
 end
 
 -- vérifier si un dossier existe

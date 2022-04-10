@@ -1650,7 +1650,7 @@ end
 
 -- importer une banque de sprites
 function ImportSprites()
-	local lnk = love.filesystem.getSaveDirectory() .. spriteFolder .. SEP
+	local lnk = love.filesystem.getSaveDirectory() .. spriteFolder .. "/"
 	
 	if love.window.showMessageBox("Info", "Your sprite bank can be dropped here:\n" .. lnk .. "\n\nLink copied to clipboard !", "info", true) then
 		love.system.setClipboardText(lnk)
@@ -1661,7 +1661,7 @@ end
 
 -- exporter une banque de sprites
 function ExportSprites()
-	local lnk = love.filesystem.getSaveDirectory() .. spriteFolder .. SEP
+	local lnk = love.filesystem.getSaveDirectory() .. spriteFolder .. "/"
 
 	if love.window.showMessageBox("Info", "Your sprite bank be taken here:\n" .. lnk .. "\n\nLink copied to clipboard !", "info", true) then
 		love.system.setClipboardText(lnk)

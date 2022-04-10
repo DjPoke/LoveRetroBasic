@@ -459,8 +459,6 @@ diskFolder = nil -- nom du dossier du projet en cours, pour sauvegarder le fichi
 driveFolder = nil -- répertoire par défaut de l'application
 currentRelativeFolder = nil -- chemin relatif courant
 
-SEP = "/" -- séparateur de dossiers
-
 helpPage = 0 -- numéro de page d'aide affichée
 
 beepSound = nil -- id de chargement du son bip
@@ -730,9 +728,9 @@ function love.load()
 	spriteFolder = "Sprites"
 	musicFolder = "Musics"
 		
-	if not love.filesystem.getInfo(currentRelativeFolder .. imageFolder, "directory") then love.filesystem.createDirectory(diskFolder .. SEP .. imageFolder) end
-	if not love.filesystem.getInfo(currentRelativeFolder .. spriteFolder, "directory") then love.filesystem.createDirectory(diskFolder .. SEP .. spriteFolder) end
-	if not love.filesystem.getInfo(currentRelativeFolder .. musicFolder, "directory") then love.filesystem.createDirectory(diskFolder .. SEP .. musicFolder) end
+	if not love.filesystem.getInfo(currentRelativeFolder .. imageFolder, "directory") then love.filesystem.createDirectory(diskFolder .. "/" .. imageFolder) end
+	if not love.filesystem.getInfo(currentRelativeFolder .. spriteFolder, "directory") then love.filesystem.createDirectory(diskFolder .. "/" .. spriteFolder) end
+	if not love.filesystem.getInfo(currentRelativeFolder .. musicFolder, "directory") then love.filesystem.createDirectory(diskFolder .. "/" .. musicFolder) end
 
 	-- pointer sur le disque par défaut
 	love.filesystem.setIdentity(currentRelativeFolder)
@@ -756,7 +754,13 @@ function love.load()
 	end
 
 	InitKeyboard()
-
+	
+	-- charger BOB test
+	LoadBOB("test.png", currentRelativeFolder .. imageFolder .. "/", 1)
+	
+	-- sauver BOB test
+	SaveBOB("test2.png", currentRelativeFolder .. imageFolder .. "/", 1)
+	
 	-- initialiser l'application
 	appStarted = true
 end
@@ -2855,5 +2859,5 @@ function love.draw()
 		love.window.showMessageBox("Debug", dbg, "info", true)
 		print("Debug: " .. dbg)
 		dbg = nil
-	end	
+	end
 end

@@ -335,11 +335,11 @@ cmd["MUSIC"].fn = function(lst)
 		
 	if e ~= OK then return ERR_SYNTAX_ERROR end
 
-	if not os.rename(driveFolder .. diskFolder .. SEP .. "music" .. tostring(v) .. ".mus", driveFolder .. diskFolder .. SEP .. "music" .. tostring(v) .. ".mus") then
+	if not os.rename(driveFolder .. diskFolder .. "/" .. "music" .. tostring(v) .. ".mus", driveFolder .. diskFolder .. "/" .. "music" .. tostring(v) .. ".mus") then
 		return ERR_FILE_MISSING
 	end
 	
-	LoadMusic(driveFolder .. diskFolder .. SEP .. "music" .. tostring(v) .. ".mus")
+	LoadMusic(driveFolder .. diskFolder .. "/" .. "music" .. tostring(v) .. ".mus")
 
 	-- timer musical à zéro
 	countTime = 0
