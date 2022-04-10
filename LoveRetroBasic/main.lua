@@ -1159,14 +1159,14 @@ function love.keypressed(key, scancode, isrepeat)
 					end
 	
 					-- page up
-					if key == "pageup" then
+					if key == key_home then
 						currentShownLineStart = 1
 						currentShownLineEnd = 16
 						currentEditLine = 1
 					end
 	
 					-- page down
-					if key == "pagedown" then
+					if key == key_end then
 						currentShownLineStart = notesPerPattern - 15
 						currentShownLineEnd = notesPerPattern
 						currentEditLine = currentShownLineEnd
