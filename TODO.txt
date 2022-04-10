@@ -6,9 +6,6 @@ BUGS :
 
 FONCTIONS A AJOUTER :
 ---------------------
-- Commandes 'DrawToBack' et 'DrawToFront', pour dessiner dans le backbuffer si désiré
-- Redimensionner les éditeur (sprites, tracker, etc.) selon le besoin
-
 - Ajouter un bouton carré pour passer en Fullscreen
 - Créer des fonctions de sauvegarde et de chargement de configuration
 - Stocker l'état fullscreen ou windowed dans la configuration
