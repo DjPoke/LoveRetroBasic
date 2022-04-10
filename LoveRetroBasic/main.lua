@@ -2541,17 +2541,19 @@ function love.draw()
 		-- scrollbar
 		if targetButton == BTN_UP then
 			DrawButton(313, 0, 16, 16, 1, 9, 1, 0)
+			Text(Chr(157), 317, 4, 1)
 		else
 			DrawButton(313, 0, 16, 16, 2, 9, 1, 0)
+			Text(Chr(157), 317, 4, 25)
 		end
-		Text(Chr(157), 317, 4, 25)
 	
 		if targetButton == BTN_DOWN then
 			DrawButton(313, 32, 16, 16, 1, 9, 1, 0)
+			Text(Chr(158), 317, 36, 1)
 		else
 			DrawButton(313, 32, 16, 16, 2, 9, 1, 0)
+			Text(Chr(158), 317, 36, 25)
 		end
-		Text(Chr(158), 317, 36, 25)
 	
 		-- boutons d'octave
 		if targetButton == BTN_OCTAVE_UP then
@@ -2569,7 +2571,7 @@ function love.draw()
 		Text("-", 291, 291, 25, true)
 	
 		Text("Octave:", 300, 266, 25, false)
-		DrawButton(308, 285, 16, 16, 1, 1, 9, 25)
+		DrawButton(308, 285, 16, 16, 1, 1, 9, 9)
 		Text(tostring(currentOctave), 322, 292, 25, false)
 	
 		-- boutons de menu
@@ -2599,7 +2601,7 @@ function love.draw()
 			
 		-- boutons de tempo
 		Text("TEMPO", 313 + 20, 112, 4, false)
-		DrawButton(313 + 16, 128, 48, 16, 1, 1, 9, 25)
+		DrawButton(313 + 16, 128, 48, 16, 1, 1, 9, 9)
 		Text(tostring(BPM), 313 + 40, 136, 25, true)
 	
 		if targetButton == BTN_TEMPO_DOWN then
@@ -2675,108 +2677,120 @@ function love.draw()
 		--tex(img_arp[arpeggioType[4]], 40+144+72, 264, 16, 16)
 	
 		-- bouton couper/copier/coller piste
-		--tex(large_textbox, 313, 168)
-		Text("CUT", 313+3, 167, 25, false)
+		DrawButton(313, 168, 96, 16, 1, 1, 9, 0)
+		Text("CUT", 316, 172, 25, false)
 	
 		if targetButton == BTN_CUT_TRACK then
-			--tex(button_mini_pushed, 377, 168)
+			DrawButton(377, 168, 16, 16, 1, 9, 1, 0)
+			Text("T", 381, 172, 1, false)
 		else
-			--tex(button_mini, 377, 168)
+			DrawButton(377, 168, 16, 16, 2, 9, 1, 0)
+			Text("T", 381, 172, 25, false)
 		end
-		Text("T", 381, 166, 25, false)
 	
 		if targetButton == BTN_CUT_PATTERN then
-			--tex(button_mini_pushed, 393, 168)
+			DrawButton(393, 168, 16, 16, 1, 9, 1, 0)
+			Text("P", 398, 172, 1, false)
 		else
-			--tex(button_mini, 393, 168)
+			DrawButton(393, 168, 16, 16, 2, 9, 1, 0)
+			Text("P", 398, 172, 25, false)
 		end
-		Text("P", 397, 166, 25, false)
 	
-		--tex(large_textbox, 313, 184)
-		Text("COPY", 313+3, 183, 25, false)
+		DrawButton(313, 184, 96, 16, 1, 1, 9, 0)
+		Text("COPY", 316, 188, 25, false)
 	
 		if targetButton == BTN_COPY_TRACK then
-			--tex(button_mini_pushed, 377, 184)
+			DrawButton(377, 184, 16, 16, 1, 9, 1, 0)
+			Text("T", 381, 188, 1, false)
 		else
-			--tex(button_mini, 377, 184)
+			DrawButton(377, 184, 16, 16, 2, 9, 1, 0)
+			Text("T", 381, 188, 25, false)
 		end
-		Text("T", 381, 182, 25, false)
 	
 		if targetButton == BTN_COPY_PATTERN then
-			--tex(button_mini_pushed, 393, 184)
+			DrawButton(393, 184, 16, 16, 1, 9, 1, 0)
+			Text("P", 398, 188, 1, false)
 		else
-			--tex(button_mini, 393, 184)
+			DrawButton(393, 184, 16, 16, 2, 9, 1, 0)
+			Text("P", 398, 188, 25, false)
 		end
-		Text("P", 397, 182, 25, false)
 	
-		--tex(large_textbox, 313, 200)
-		Text("PASTE", 313+3, 199, 25, false)
+		DrawButton(313, 200, 96, 16, 1, 1, 9, 0)
+		Text("PASTE", 316, 204, 25, false)
 	
 		if targetButton == BTN_PASTE_TRACK then
-			--tex(button_mini_pushed, 377, 200)
+			DrawButton(377, 200, 16, 16, 1, 9, 1, 0)
+			Text("T", 381, 204, 1, false)
 		else
-			--tex(button_mini, 377, 200)
+			DrawButton(377, 200, 16, 16, 2, 9, 1, 0)
+			Text("T", 381, 204, 25, false)
 		end
-		Text("T", 381, 198, 25, false)
 	
 		if targetButton == BTN_PASTE_PATTERN then
-			--tex(button_mini_pushed, 393, 200)
+			DrawButton(393, 200, 16, 16, 1, 9, 1, 0)
+			Text("P", 398, 204, 1, false)
 		else
-			--tex(button_mini, 393, 200)
+			DrawButton(393, 200, 16, 16, 2, 9, 1, 0)
+			Text("P", 398, 204, 25, false)
 		end
-		Text("P", 397, 198, 25, false)
 	
 		-- boutons et infos patterns
-		--tex(large_textbox, 313, 216)
-		Text("POSITION " .. tostring(currentPattern), 313+3, 215, 25, false)
+		DrawButton(313, 216, 96, 16, 1, 1, 25, 0)
+		Text("POSITION " .. tostring(currentPattern), 316, 220, 25, false)
 	
-		--tex(large_textbox, 313, 232)
-		Text("LENGTH   " .. tostring(musicLength), 313+3, 231, 25, false)
+		DrawButton(313, 232, 96, 16, 1, 1, 25, 0)
+		Text("LENGTH   " .. tostring(musicLength), 316, 236, 25, false)
 	
-		--tex(large_textbox, 313, 248)
-		Text("PATTERN  " .. tostring(mus[currentPattern]), 313+3, 247, 25, false)
+		DrawButton(313, 248, 96, 16, 1, 1, 25, 0)
+		Text("PATTERN  " .. tostring(mus[currentPattern]), 316, 252, 25, false)
 	
 		if targetButton == BTN_POS_DOWN then
-			--tex(button_mini_pushed, 409, 216)
+			DrawButton(409, 216, 16, 16, 1, 9, 0, 1)
+			Text("-", 413, 220, 1, false)
 		else
-			--tex(button_mini, 409, 216)
+			DrawButton(409, 216, 16, 16, 2, 9, 0, 1)
+			Text("-", 413, 220, 25, false)
 		end
-		Text("-", 415, 214, 25, false)
 	
 		if targetButton == BTN_POS_UP then
-			--tex(button_mini_pushed, 313+96+16, 216)
+			DrawButton(313 + 96 + 16, 216, 16, 16, 1, 9, 0, 1)
+			Text("+", 429, 220, 1, false)
 		else
-			--tex(button_mini, 313+96+16, 216)
+			DrawButton(313 + 96 + 16, 216, 16, 16, 2, 9, 0, 1)
+			Text("+", 429, 220, 25, false)
 		end
-		Text("+", 431, 214, 25, false)
 	
 		if targetButton == BTN_LEN_DOWN then
-			--tex(button_mini_pushed, 313+96, 232)
+			DrawButton(313 + 96, 232, 16, 16, 1, 9, 0, 1)
+			Text("-", 413, 237, 1, false)
 		else
-			--tex(button_mini, 313+96, 232)
+			DrawButton(313 + 96, 232, 16, 16, 2, 9, 0, 1)
+			Text("-", 413, 237, 25, false)
 		end
-		Text("-", 415, 230, 25, false)
 	
 		if targetButton == BTN_LEN_UP then
-			--tex(button_mini_pushed, 313+96+16, 232)
+			DrawButton(313 + 96 + 16, 232, 16, 16, 1, 9, 0, 1)
+			Text("+", 429, 237, 1, false)
 		else
-			--tex(button_mini, 313+96+16, 232)
+			DrawButton(313 + 96 + 16, 232, 16, 16, 2, 9, 0, 1)
+			Text("+", 429, 237, 25, false)
 		end
-		Text("+", 431, 230, 25, false)
 	
 		if targetButton == BTN_PAT_DOWN then
-			--tex(button_mini_pushed, 313+96, 248)
+			DrawButton(313 + 96, 248, 16, 16, 1, 9, 0, 1)
+			Text("-", 413, 254, 1, false)
 		else
-			--tex(button_mini, 313+96, 248)
+			DrawButton(313 + 96, 248, 16, 16, 2, 9, 0, 1)
+			Text("-", 413, 254, 25, false)
 		end
-		Text("-", 415, 246, 25, false)
 	
 		if targetButton == BTN_PAT_UP then
-			--tex(button_mini_pushed, 313+96+16, 248)
+			DrawButton(313 + 96 + 16, 248, 16, 16, 1, 9, 0, 1)
+			Text("+", 429, 254, 1, false)
 		else
-			--tex(button_mini, 313+96+16, 248)
+			DrawButton(313 + 96 + 16, 248, 16, 16, 2, 9, 0, 1)
+			Text("+", 429, 254, 25, false)
 		end
-		Text("+", 431, 246, 25, false)
 		
 		-- montrer le piano pour jouer
 		for i = 1, 37 do
