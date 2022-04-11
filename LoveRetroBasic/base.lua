@@ -400,6 +400,73 @@ function AssignToVar(var, vType, s)
 	return ERR_TYPE_MISMATCH
 end
 
+-- exploser la ligne de commande et l'exécuter (TODO !!!)
+function Exeplode(t, l)
+	-- retourner si la table est vide
+	if t == nil or #t == 0 then return OK end
+
+	-- retourner si le nombre de parenthèses est impair
+	local obracket = 0
+	local cbracket = 0
+	local cln = 0
+	
+	for i = 1, #t do
+		if t[i].typ == "openbracket" then
+			obracket = obracket + 1
+		elseif t[i].typ == "closebracket" then
+			cbracket = cbracket + 1
+		elseif t[i].typ == "colon" then
+			cln = cln + 1
+		end
+	end
+	
+	if obracket ~= cbracket then return ERR_SYNTAX_ERROR end
+	
+	-- exécuter les morceau de code en fonction des séparateurs 'deux points'
+	local t2 = {}
+	local e = OK
+	
+	for i = 1, #t do
+		if t[i].typ == "colon" then
+			-- exécuter un tronçon de code
+			if #t2 > 0 then
+				e = Exec(t2, l)
+
+				if e ~= OK then return e end
+				
+				-- vider le tampon de commandes
+				t2 = {}
+			end
+		elseif t[i].typ ~= "colon" and cln > 0 and i == #t then
+			table.insert(t2, t[i])
+
+			-- exécuter un tronçon de code
+			if #t2 > 0 then
+				e = Exec(t2, l)
+
+				if e ~= OK then return e end
+				
+				-- vider le tampon de commandes
+				t2 = {}
+			end			
+		else
+			table.insert(t2, t[i])
+		end
+	end
+
+	-- n'exécuter que les morceaux de code unique
+	if cln > 0 then return OK end
+
+	-- le début est une commande ?
+	if t[1].typ == "command" then
+		-- mémoriser la commande dans cs
+		cs = t[1].sym
+		
+		print(cs)
+	end
+
+	return OK
+end
 
 -- exécuter les instructions basic présentes sur une ligne
 function Exec(t, l)
