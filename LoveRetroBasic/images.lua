@@ -66,10 +66,12 @@ function LoadBOB(filename, path, n)
 			g = math.floor(g * 255)
 			b = math.floor(b * 255)
 			local found = false
-			local c1 = r + g + b
-			local c2 = 0
-			local dist = 255 * 3
-			local memDist = 255 * 3
+			local distr = 255
+			local distg = 255
+			local distb = 255
+			local memdistr = 255
+			local memdistg = 255
+			local memdistb = 255
 			local c = 0
 
 			-- trouver la couleur exacte
@@ -80,71 +82,18 @@ function LoadBOB(filename, path, n)
 					break
 				end
 			end
-
-			-- trouver deux valeurs sur trois
-			if not found then
-				for i = 0, 63 do
-					c2 = scnPal[i][0] + scnPal[i][1] + scnPal[i][2]
-					dist = math.abs(c1 - c2)
-					
-					if scnPal[i][0] == r and scnPal[i][1] == g then						
-						if dist < memDist then
-							memDist = dist
-							c = i
-							found = true
-						end
-					elseif scnPal[i][0] == r and scnPal[i][2] == b then
-						if dist < memDist then
-							memDist = dist
-							c = i
-							found = true
-						end
-					elseif scnPal[i][1] == g and scnPal[i][2] == b then
-						if dist < memDist then
-							memDist = dist
-							c = i
-							found = true
-						end
-					end
-				end
-			end
 			
-			-- trouver une valeur sur trois
+			-- trouver une valeur approximative
 			if not found then
 				for i = 0, 63 do
-					c2 = scnPal[i][0] + scnPal[i][1] + scnPal[i][2]
-					dist = math.abs(c1 - c2)
+					distr = math.abs(r - scnPal[i][0])
+					distg = math.abs(g - scnPal[i][1])
+					distb = math.abs(b - scnPal[i][2])
 
-					if scnPal[i][0] == r then
-						if dist < memDist then
-							memDist = dist
-							c = i
-							found = true
-						end
-					elseif scnPal[i][1] == g then
-						if dist < memDist then
-							memDist = dist
-							c = i
-							found = true
-						end
-					elseif scnPal[i][2] == b then
-						if dist < memDist then
-							memDist = dist
-							c = i
-							found = true
-						end
-					end
-				end
-			end
-			
-			-- trouver une valeur sur trois
-			if not found then
-				for i = 0, 63 do
-					c2 = scnPal[i][0] + scnPal[i][1] + scnPal[i][2]
-					dist = math.abs(c1 - c2)
-
-					if dist < memDist then
-						memDist = dist
+					if distr <= memdistr and distg <= memdistg and distb <= memdistb then
+						memdistr = distr
+						memdistg = distg
+						memdistb = distb
 						c = i
 						found = true
 					end
@@ -180,7 +129,7 @@ function LoadImage(filename, path)
 	love.filesystem.setIdentity(path)
 
 	-- créer une image data de la même taille
-	local data = love.image.newImageData(filename) -- TODO : remplacer par encoded data
+	local data = love.image.newImageData(filename)
 	
 	local mgp = gpen
 	
@@ -191,13 +140,15 @@ function LoadImage(filename, path)
 			g = math.floor(g * 255)
 			b = math.floor(b * 255)
 			local found = false
-			local c1 = r + g + b
-			local c2 = 0
-			local dist = 255 * 3
-			local memDist = 255 * 3
+			local distr = 255
+			local distg = 255
+			local distb = 255
+			local memdistr = 255
+			local memdistg = 255
+			local memdistb = 255
 			local c = 0
 
-			-- trouver la couleur exacte
+			-- trouver les couleurs exactes
 			for i = 0, 63 do
 				if scnPal[i][0] == r and scnPal[i][1] == g and scnPal[i][2] == b then
 					c = i
@@ -205,71 +156,18 @@ function LoadImage(filename, path)
 					break
 				end
 			end
-
-			-- trouver deux valeurs sur trois
-			if not found then
-				for i = 0, 63 do
-					c2 = scnPal[i][0] + scnPal[i][1] + scnPal[i][2]
-					dist = math.abs(c1 - c2)
-					
-					if scnPal[i][0] == r and scnPal[i][1] == g then						
-						if dist < memDist then
-							memDist = dist
-							c = i
-							found = true
-						end
-					elseif scnPal[i][0] == r and scnPal[i][2] == b then
-						if dist < memDist then
-							memDist = dist
-							c = i
-							found = true
-						end
-					elseif scnPal[i][1] == g and scnPal[i][2] == b then
-						if dist < memDist then
-							memDist = dist
-							c = i
-							found = true
-						end
-					end
-				end
-			end
 			
-			-- trouver une valeur sur trois
+			-- trouver une valeur approximative
 			if not found then
 				for i = 0, 63 do
-					c2 = scnPal[i][0] + scnPal[i][1] + scnPal[i][2]
-					dist = math.abs(c1 - c2)
+					distr = math.abs(r - scnPal[i][0])
+					distg = math.abs(g - scnPal[i][1])
+					distb = math.abs(b - scnPal[i][2])
 
-					if scnPal[i][0] == r then
-						if dist < memDist then
-							memDist = dist
-							c = i
-							found = true
-						end
-					elseif scnPal[i][1] == g then
-						if dist < memDist then
-							memDist = dist
-							c = i
-							found = true
-						end
-					elseif scnPal[i][2] == b then
-						if dist < memDist then
-							memDist = dist
-							c = i
-							found = true
-						end
-					end
-				end
-			end
-			
-			-- trouver une valeur sur trois
-			if not found then
-				for i = 0, 63 do
-					c2 = scnPal[i][0] + scnPal[i][1] + scnPal[i][2]
-					dist = math.abs(c1 - c2)
-
-					if dist < memDist then
-						memDist = dist
+					if distr <= memdistr and distg <= memdistg and distb <= memdistb then
+						memdistr = distr
+						memdistg = distg
+						memdistb = distb
 						c = i
 						found = true
 					end
@@ -280,7 +178,7 @@ function LoadImage(filename, path)
 			if found then
 				gpen = c
 				PlotPixel(x, y)
-			end			
+			end
 		end
 	end
 	
