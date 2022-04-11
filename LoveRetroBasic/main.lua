@@ -1474,6 +1474,25 @@ function love.update(dt)
 					ImportExportProgram()
 
 					return
+				elseif x >= 24 and x <= 24 then -- effacer le programme
+					-- remise à zéro d'un éventuel message texte
+					msg = nil
+
+					ShowCursor(false)
+
+					ResetEditor()
+
+					-- effacer la RAM
+					for i = 0, MAX_RAM - 1 do
+						ram[i] = ""
+					end
+					ramLine = 1
+
+					Locate(1, 1)
+					
+					ShowCursor(true)
+
+					return
 				elseif x == 39 then
 					--
 					SaveProgram()
@@ -2850,6 +2869,7 @@ function love.draw()
 		PrintInfosString("?       " .. Chr(158) .. " " .. Chr(157), 4, "black", 8)
 		PrintInfosString(Chr(160) .. " " .. Chr(161), 4, "red", 11)
 		PrintInfosString(Chr(162), 4, "blue", 21)
+		PrintInfosString(Chr(255), 4, "red", 24)
 		PrintInfosString("X", 4, "red", 39)
 		love.graphics.draw(renderer[4], borderX, borderY - (16 * 2), 0, 2, 2, 0, 0, 0, 0)
 	end
