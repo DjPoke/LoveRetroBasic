@@ -414,8 +414,8 @@ function PrivateInc(indice, indiceMax, commande, liste)
 	return indice, OK, false
 end
 
--- exploser la ligne de commande et l'exécuter (TODO !!!)
-function Exeplode(t, l)
+-- exploser la ligne de commande et l'exécuter (TODO !!! WIP)
+function Exec(t, l)
 	-- retourner si la table est vide
 	if t == nil or #t == 0 then return OK end
 
@@ -476,6 +476,7 @@ function Exeplode(t, l)
 	local i = 1
 	local lst = {}
 	local sig = nil
+	local stp = false
 
 	if t[i].typ == "command" then
 		-- mémoriser la commande dans cs
@@ -595,8 +596,16 @@ function Exeplode(t, l)
 		else
 			local cm = false
 			
-			-- scanner les paramètres
+			-- scanner les types de paramètres d'entrées nécessaires
 			for j = 1, maxpnum do
+				-- ignorer les espaces
+				while t[i].typ == "whitespace" do
+					-- vérifier la suite
+					i, e, stp = PrivateInc(i, #t, cs, lst)
+					if e ~= OK then return e end
+					if stp then return OK end
+				end
+				
 				-- pas de virgule tout de suite après une commande
 				-- qui nécessite des paramètres
 				if t[i].typ == "comma" then
@@ -605,35 +614,90 @@ function Exeplode(t, l)
 					else
 						cm = false
 						
-						i = i + 1
+						-- vérifier la suite
+						i, e, stp = PrivateInc(i, #t, cs, lst)
+						if e ~= OK then return e end
+						if stp then return OK end
 						
 						-- virgule à la fin de la ligne
 						if i > #t then return ERR_SYNTAX_ERROR end
 					end
 				end
-				
+
+				-- détecter les paramètres numériques entiers
 				if cmd[cs].ptype[j] == VAR_INTEGER then
-					if t[i].typ == "integer" then
+					if t[i].typ == "number" then
 						cm = true
-						
-						table.insert(lst, t[i].sym)
-						
-						i = i + 1
+
+						local n, e = EvalInteger(t[i].sym)
+						if e ~= OK then return e end
+
+						table.insert(lst, n)
+
+						-- vérifier la suite
+						i, e, stp = PrivateInc(i, #t, cs, lst)
+						if e ~= OK then return e end
+						if stp then return OK end						
 					else
 						return ERR_TYPE_MISMATCH
 					end
+				-- détecter les paramètres numériques réels
 				elseif cmd[cs].ptype[j] == VAR_FLOAT then
-					if t[i].typ == "float" then
+					if t[i].typ == "number" then
 						cm = true
 
-						table.insert(lst, t[i].sym)					
+						local n, e = EvalFloat(t[i].sym)
+						if e ~= OK then return e end
 						
-						i = i + 1
+						table.insert(lst, n)
+						
+						-- vérifier la suite
+						i, e, stp = PrivateInc(i, #t, cs, lst)
+						if e ~= OK then return e end
+						if stp then return OK end
+					else
+						return ERR_TYPE_MISMATCH
+					end
+				elseif cmd[cs].ptype[j] == VAR_NUMBER then
+					if t[i].typ == "number" then
+						cm = true
+
+						local n, e = EvalFloat(t[i].sym)
+						if e ~= OK then return e end
+
+						table.insert(lst, n)
+						
+						-- vérifier la suite
+						i, e, stp = PrivateInc(i, #t, cs, lst)
+						if e ~= OK then return e end
+						if stp then return OK end
+					else
+						return ERR_TYPE_MISMATCH
+					end
+				elseif cmd[cs].ptype[j] == VAR_POLY or cmd[cs].ptype[j] == VAR_STRING then
+					if t[i].typ == "poly" or t[i].typ == "string" then
+						cm = true
+
+						local s, e = EvalString(t[i].sym)
+						if e ~= OK then return e end
+
+						table.insert(lst, s)
+						
+						-- vérifier la suite
+						i, e, stp = PrivateInc(i, #t, cs, lst)
+						if e ~= OK then return e end
+						if stp then return OK end
 					else
 						return ERR_TYPE_MISMATCH
 					end
 				end
 			end
+			
+			-- exécuter la commande
+			local e = ExecOne(cs, lst)
+						
+			-- erreur ?
+			if e ~= OK then return e end
 		end		
 	end
 
@@ -641,7 +705,8 @@ function Exeplode(t, l)
 end
 
 -- exécuter les instructions basic présentes sur une ligne
-function Exec(t, l)
+-- TODO : à supprimer dès que c'est prêt
+function Explode(t, l)
 	-- retourner si la table est vide
 	if t == nil or #t == 0 then return OK end
 		
