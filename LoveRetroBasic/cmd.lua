@@ -282,7 +282,7 @@ end
 
 -- commande 'LOADBOB'
 cmd["LOADBOB"].fn = function(lst)
-	LoadBOB(lst[1], currentRelativeFolder .. imageFolder, lst[2])
+	LoadBOB(lst[1], currentRelativeFolder .. imageFolder, Val(lst[2]))
 	
 	return OK
 end
@@ -559,7 +559,7 @@ cmd["SAVEBOB"].fn = function(lst)
 	v2, e = EvalInteger(lst[3])
 	if e ~= OK then return ERR_SYNTAX_ERROR end
 	
-	SaveBOB(v1, currentRelativeFolder .. imageFolder, v2)
+	SaveBOB(v1, currentRelativeFolder .. imageFolder, Val(v2))
 	
 	return OK
 end
