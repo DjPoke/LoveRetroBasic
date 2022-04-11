@@ -2866,11 +2866,12 @@ function love.draw()
 	-- afficher le renderer de menu outils
 	if appState == EDIT_MODE then
 		PrintInfosString(Chr(1) .. " " ..Chr(2) .. " " ..Chr(3) .. " " .. Chr(4), 4, "orange")
-		PrintInfosString("?       " .. Chr(158) .. " " .. Chr(157), 4, "black", 8)
+		PrintInfosString("?", 4, "green", 8)
+		PrintInfosString(Chr(158) .. " " .. Chr(157), 4, "black", 16)
 		PrintInfosString(Chr(160) .. " " .. Chr(161), 4, "red", 11)
 		PrintInfosString(Chr(162), 4, "blue", 21)
 		PrintInfosString(Chr(255), 4, "red", 24)
-		PrintInfosString("X", 4, "red", 39)
+		PrintInfosString("X", 4, "black", 39)
 		love.graphics.draw(renderer[4], borderX, borderY - (16 * 2), 0, 2, 2, 0, 0, 0, 0)
 	end
 
