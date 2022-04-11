@@ -167,7 +167,6 @@ function Bin(b)
 	for i = 1, #s do
 		local nibble = string.sub(s, i, i)
 		local v = Val("&" .. nibble)
-		print(v)
 		r = r .. a[v + 1]
 	end
 	
@@ -400,6 +399,21 @@ function AssignToVar(var, vType, s)
 	return ERR_TYPE_MISMATCH
 end
 
+-- fonction privée
+function PrivateInc(indice, indiceMax, commande, liste)
+	indice = indice + 1
+	
+	-- exécuter une commande isolée, sans paramètres
+	if indice > indiceMax then
+		local e = ExecOne(commande, liste)
+		
+		-- erreur ?
+		if e ~= OK then return indice, e, true else return indice, OK, true end
+	end
+	
+	return indice, OK, false
+end
+
 -- exploser la ligne de commande et l'exécuter (TODO !!!)
 function Exeplode(t, l)
 	-- retourner si la table est vide
@@ -458,11 +472,169 @@ function Exeplode(t, l)
 	if cln > 0 then return OK end
 
 	-- le début est une commande ?
-	if t[1].typ == "command" then
+	local maxpnum = 0
+	local i = 1
+	local lst = {}
+	local sig = nil
+
+	if t[i].typ == "command" then
 		-- mémoriser la commande dans cs
-		cs = t[1].sym
+		cs = t[i].sym
 		
-		print(cs)
+		-- erreur si une fonction est trouvée en tant que commande, sans assignation à une variable
+		if cmd[cs].ret > 0 then
+			return ERR_SYNTAX_ERROR
+		end
+		
+		-- vérifier la suite
+		i, e, stp = PrivateInc(i, #t, cs, lst)
+		if e ~= OK then return e end
+		if stp then return OK end
+
+		-- vérifier le type de paramètres admis par cette commande
+		if #cmd[cs].ptype > 1 then
+			maxpnum = #cmd[cs].ptype
+		else
+			maxpnum = cmd[cs].pmax
+		end
+		
+		-- si le nombre de paramètres est infini, alors...
+		if maxpnum < 0 then
+			local cm = false
+
+			while true do
+				if t[i].typ == "whitespace" then
+					-- vérifier la suite
+					i, e, stp = PrivateInc(i, #t, cs, lst)
+					if e ~= OK then return e end
+					if stp then
+						if cm == true then return ERR_SYNTAX_ERROR end
+						
+						-- mixer tout de suite la chaîne et l'analyser
+						local p = ""
+						
+						for j = 1, #lst do
+							p = p .. lst[j]
+						end
+	
+						p, e = EvalString(p)
+						if e ~= OK then return e end
+	
+						lst = {p}
+
+						-- exécuter la commande
+						local e = ExecOne(cs, lst)
+						
+						-- erreur ?
+						if e ~= OK then return e else return OK end
+					end
+				end
+				
+				if cmd[cs].ptype[1] == VAR_POLY or cmd[cs].ptype[1] == VAR_STRING then
+					if t[i].typ == "poly" or t[i].typ == "string" then
+						table.insert(lst, t[i].sym)
+						
+						cm = false
+					else
+						return ERR_SYNTAX_ERROR
+					end
+				else
+					return ERR_SYNTAX_ERROR
+				end
+
+				-- vérifier la suite
+				i, e, stp = PrivateInc(i, #t, cs, lst)
+				if e ~= OK then return e end
+				if stp then return OK end
+						
+				-- chercher une virgule de séparation
+				if t[i].typ == "comma" then
+					if not cm then						
+						-- vérifier la suite
+						i, e, stp = PrivateInc(i, #t, cs, lst)
+						if e ~= OK then return e end
+						if stp then return ERR_SYNTAX_ERROR end
+					
+						-- insérer un blanc lors de la virgule  TODO ?
+						table.insert(lst, " ")
+						
+						cm = true
+					else
+						return ERR_SYNTAX_ERROR
+					end
+				elseif t[i].typ == "plus" then
+					if not cm then
+						-- mélanges de plus et de point-virgule
+						if sig == "semicolon" then return ERR_SYNTAX_ERROR end
+
+						-- vérifier la suite
+						i, e, stp = PrivateInc(i, #t, cs, lst)
+						if e ~= OK then return e end
+						if stp then return OK end
+
+						sig = "plus"
+					else
+						return ERR_SYNTAX_ERROR
+					end
+				elseif t[i].typ == "semicolon" then
+					if not cm then
+						-- mélanges de plus et de point-virgule
+						if sig == "plus" then return ERR_SYNTAX_ERROR end
+
+						-- vérifier la suite
+						i, e, stp = PrivateInc(i, #t, cs, lst)
+						if e ~= OK then return e end
+						if stp then return OK end
+
+						sig = "semicolon"
+					else
+						return ERR_SYNTAX_ERROR
+					end
+				end
+			end
+		else
+			local cm = false
+			
+			-- scanner les paramètres
+			for j = 1, maxpnum do
+				-- pas de virgule tout de suite après une commande
+				-- qui nécessite des paramètres
+				if t[i].typ == "comma" then
+					if cm == false then
+						return ERR_SYNTAX_ERROR
+					else
+						cm = false
+						
+						i = i + 1
+						
+						-- virgule à la fin de la ligne
+						if i > #t then return ERR_SYNTAX_ERROR end
+					end
+				end
+				
+				if cmd[cs].ptype[j] == VAR_INTEGER then
+					if t[i].typ == "integer" then
+						cm = true
+						
+						table.insert(lst, t[i].sym)
+						
+						i = i + 1
+					else
+						return ERR_TYPE_MISMATCH
+					end
+				elseif cmd[cs].ptype[j] == VAR_FLOAT then
+					if t[i].typ == "float" then
+						cm = true
+
+						table.insert(lst, t[i].sym)					
+						
+						i = i + 1
+					else
+						return ERR_TYPE_MISMATCH
+					end
+				end
+			end
+		end		
 	end
 
 	return OK
