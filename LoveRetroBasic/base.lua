@@ -849,15 +849,15 @@ function EvalParam(param, typ)
 
 	if typ == VAR_INTEGER then
 		l, e = EvalInteger(param)
-		if e == OK then return tostring(l), e end
+		if e == OK then return l, e end
 	elseif typ == VAR_FLOAT then
 		l, e = EvalFloat(param)
-		if e == OK then return tostring(l), e end
+		if e == OK then return l, e end
 	elseif typ == VAR_NUM then
 		-- tous les paramètres numériques sont possibles
 		local l, e = EvalFloat(param)
 		if e ~= OK then l, e = EvalInteger(param) end
-		if e == OK then return tostring(l), e end
+		if e == OK then return l, e end
 	elseif typ == VAR_STRING then
 		l, e = EvalString(param)
 
@@ -874,8 +874,6 @@ function EvalParam(param, typ)
 					return nil, e
 				end
 			end
-				
-			l = tostring(l)
 		elseif e ~= OK then
 			return nil, e
 		end

@@ -1,6 +1,6 @@
 -- commande 'ABS'
 cmd["ABS"].fn = function(lst)
-	return OK, Abs(Val(lst[1]))
+	return OK, Abs(lst[1])
 end
 
 -- commande 'ASC'
@@ -15,11 +15,7 @@ end
 
 -- commande 'BORDER'
 cmd["BORDER"].fn = function(lst)
-	v, e = EvalInteger(lst[1])
-	
-	if e ~= OK then return ERR_SYNTAX_ERROR end
-	
-	SetBorderColor(v)
+	SetBorderColor(lst[1])
 	
 	return OK
 end
@@ -31,15 +27,11 @@ end
 
 -- commande 'CHR$'
 cmd["CHR$"].fn = function(lst)
-	v, e = EvalInteger(lst[1])
-
-	if e ~= OK then return ERR_SYNTAX_ERROR, nil end
-	
-	if v < 0 or v > 255 then
+	if lst[1] < 0 or v > lst[1] then
 		return ERR_OVERFLOW, nil
 	end
 
-	return OK, "\"" .. Chr(v) .. "\""
+	return OK, "\"" .. Chr(lst[1]) .. "\""
 end
 
 -- commande 'CLS'
@@ -51,30 +43,14 @@ end
 
 -- commande 'DRAW'
 cmd["DRAW"].fn = function(lst)
-	x, e = EvalInteger(lst[1])
-	
-	if e ~= OK then return ERR_SYNTAX_ERROR end
-
-	y, e = EvalInteger(lst[2])
-	
-	if e ~= OK then return ERR_SYNTAX_ERROR end
-	
-	DrawLine(x, y)
+	DrawLine(lst[1], lst[2])
 	
 	return OK
 end
 
 -- commande 'DRAWR'
-cmd["DRAWR"].fn = function(lst)
-	x, e = EvalInteger(lst[1])
-	
-	if e ~= OK then return ERR_SYNTAX_ERROR end
-	
-	y, e = EvalInteger(lst[2])
-	
-	if e ~= OK then return ERR_SYNTAX_ERROR end
-		
-	DrawLineRelative(x, y)
+cmd["DRAWR"].fn = function(lst)		
+	DrawLineRelative(lst[1], lst[2])
 	
 	return OK
 end
@@ -113,12 +89,9 @@ end
 
 -- commande 'FREEBOB'
 cmd["FREEBOB"].fn = function(lst)
-	v, e = EvalInteger(lst[1])
-	if e ~= OK then return ERR_SYNTAX_ERROR end
+	FreeBOB(lst[1])
 	
-	FreeBOB(v)
-	
-	return OK, retValue
+	return OK
 end
 
 
@@ -197,11 +170,7 @@ end
 
 -- commande 'GRAPHPEN'
 cmd["GRAPHPEN"].fn = function(lst)
-	v, e = EvalInteger(lst[1])
-	
-	if e ~= OK then return ERR_SYNTAX_ERROR end
-	
-	SetGraphicPenColor(v)
+	SetGraphicPenColor(lst[1])
 	
 	return OK
 end
@@ -230,16 +199,8 @@ cmd["HEX$"].fn = function(lst)
 end
 
 -- commande 'HOTSPOT'
-cmd["HOTSPOT"].fn = function(lst)
-	spr, e = EvalInteger(lst[1])
-		
-	if e ~= OK then return ERR_SYNTAX_ERROR end
-
-	hsp, e = EvalInteger(lst[2])
-		
-	if e ~= OK then return ERR_SYNTAX_ERROR end
-	
-	return SetHotspotPosition(spr, hsp)
+cmd["HOTSPOT"].fn = function(lst)	
+	return SetHotspotPosition(lst[1], lst[2])
 end
 
 -- commande 'IF'
@@ -259,30 +220,14 @@ end
 
 -- commande 'LINE'
 cmd["LINE"].fn = function(lst)
-	x, e = EvalInteger(lst[1])
-	
-	if e ~= OK then return ERR_SYNTAX_ERROR end
-	
-	y, e = EvalInteger(lst[2])
-		
-	if e ~= OK then return ERR_SYNTAX_ERROR end
-	
-	w, e = EvalInteger(lst[3])
-	
-	if e ~= OK then return ERR_SYNTAX_ERROR end
-	
-	h, e = EvalInteger(lst[4])
-		
-	if e ~= OK then return ERR_SYNTAX_ERROR end
-
-	DrawFullLine(x, y, w, h)
+	DrawFullLine(lst[1], lst[2], lst[3], lst[4])
 	
 	return OK
 end
 
 -- commande 'LOADBOB'
 cmd["LOADBOB"].fn = function(lst)
-	LoadBOB(lst[1], currentRelativeFolder .. imageFolder, Val(lst[2]))
+	LoadBOB(lst[1], currentRelativeFolder .. imageFolder, lst[2])
 	
 	return OK
 end
@@ -295,57 +240,29 @@ cmd["LOADIMAGE"].fn = function(lst)
 end
 
 -- commande 'LOCATE'
-cmd["LOCATE"].fn = function(lst)
-	x, e = EvalInteger(lst[1])
-		
-	if e ~= OK then return ERR_SYNTAX_ERROR end
-
-	y, e = EvalInteger(lst[2])
-		
-	if e ~= OK then return ERR_SYNTAX_ERROR end
-	
-	Locate(x, y)
+cmd["LOCATE"].fn = function(lst)	
+	Locate(lst[1], lst[2])
 	
 	return OK
 end
 
 -- commande 'MODE'
 cmd["MODE"].fn = function(lst)
-	m, e = EvalInteger(lst[1])
-		
-	if e ~= OK then return ERR_SYNTAX_ERROR end
-	
-	SetMode(m)
+	SetMode(lst[1])
 	
 	return OK
 end
 
 -- commande 'MOVE'
 cmd["MOVE"].fn = function(lst)
-	x, e = EvalInteger(lst[1])
-		
-	if e ~= OK then return ERR_SYNTAX_ERROR end
-
-	y, e = EvalInteger(lst[2])
-		
-	if e ~= OK then return ERR_SYNTAX_ERROR end
-	
-	MoveGraphicCursor(x, y)
+	MoveGraphicCursor(lst[1], lst[2])
 	
 	return OK
 end
 
 -- commande 'MOVER'
 cmd["MOVER"].fn = function(lst)
-	x, e = EvalInteger(lst[1])
-		
-	if e ~= OK then return ERR_SYNTAX_ERROR end
-
-	y, e = EvalInteger(lst[2])
-		
-	if e ~= OK then return ERR_SYNTAX_ERROR end
-
-	MoveGraphicCursorRelative(x, y)
+	MoveGraphicCursorRelative(lst[1], lst[2])
 	
 	return OK
 end
@@ -356,15 +273,11 @@ cmd["MUSIC"].fn = function(lst)
 		cmd["STOPMUSIC"].fn("")
 	end
 	
-	local v, e = EvalInteger(lst[1])
-		
-	if e ~= OK then return ERR_SYNTAX_ERROR end
-
-	if not os.rename(driveFolder .. diskFolder .. "/" .. "music" .. tostring(v) .. ".mus", driveFolder .. diskFolder .. "/" .. "music" .. tostring(v) .. ".mus") then
+	if not GetFileExists(currentRelativeFolder .. musicFolder, "music" .. tostring(lst[1]) .. ".rmu") then
 		return ERR_FILE_MISSING
 	end
 	
-	LoadMusic(driveFolder .. diskFolder .. "/" .. "music" .. tostring(v) .. ".mus")
+	LoadMusic(driveFolder .. diskFolder .. "/" .. "music" .. tostring(lst[1]) .. ".mus")
 
 	-- timer musical à zéro
 	countTime = 0
@@ -387,96 +300,43 @@ cmd["NEXT"].fn = function(lst)
 end
 
 -- commande 'OVAL'
-cmd["OVAL"].fn = function(lst)
-	x, e = EvalInteger(lst[1])
-		
-	if e ~= OK then return ERR_SYNTAX_ERROR end
-
-	y, e = EvalInteger(lst[2])
-		
-	if e ~= OK then return ERR_SYNTAX_ERROR end
-
-	w, e = EvalInteger(lst[3])
-		
-	if e ~= OK then return ERR_SYNTAX_ERROR end
-
-	h, e = EvalInteger(lst[4])
-		
-	if e ~= OK then return ERR_SYNTAX_ERROR end
-
-	f, e = EvalInteger(lst[5])
-		
-	if e ~= OK then return ERR_SYNTAX_ERROR end
-	
-	DrawOval(x, y, w, h, f)
+cmd["OVAL"].fn = function(lst)	
+	DrawOval(lst[1], lst[2], lst[3], lst[4], lst[5])
 	
 	return OK
 end
 
 -- commande 'PAPER'
 cmd["PAPER"].fn = function(lst)
-	v, e = EvalInteger(lst[1])
-		
-	if e ~= OK then return ERR_SYNTAX_ERROR end
-
-	SetPaperColor(v)
+	SetPaperColor(lst[1])
 	
 	return OK
 end
 
 -- commande 'PASTEBOB'
 cmd["PASTEBOB"].fn = function(lst)
-	v1, e = EvalInteger(lst[1])
-	if e ~= OK then return ERR_SYNTAX_ERROR end
-
-	v2, e = EvalFloat(lst[2])
-	if e ~= OK then return ERR_SYNTAX_ERROR end
-
-	v3, e = EvalFloat(lst[3])
-	if e ~= OK then return ERR_SYNTAX_ERROR end
-	
-	PasteBOB(v1, v2, v3)
+	PasteBOB(lst[1], lst[2], lst[3])
 	
 	return OK
 end
 
 -- commande 'PEN'
 cmd["PEN"].fn = function(lst)
-	v, e = EvalInteger(lst[1])
-		
-	if e ~= OK then return ERR_SYNTAX_ERROR end
-
-	SetPenColor(v)
+	SetPenColor(lst[1])
 	
 	return OK
 end
 
 -- commande 'PLOT'
 cmd["PLOT"].fn = function(lst)
-	x, e = EvalInteger(lst[1])
-		
-	if e ~= OK then return ERR_SYNTAX_ERROR end
-
-	y, e = EvalInteger(lst[2])
-		
-	if e ~= OK then return ERR_SYNTAX_ERROR end
-	
-	PlotPixel(x, y)
+	PlotPixel(lst[1], lst[2])
 	
 	return OK
 end
 
 -- commande 'PLOTR'
 cmd["PLOTR"].fn = function(lst)
-	x, e = EvalInteger(lst[1])
-		
-	if e ~= OK then return ERR_SYNTAX_ERROR end
-
-	y, e = EvalInteger(lst[2])
-		
-	if e ~= OK then return ERR_SYNTAX_ERROR end
-	
-	PlotPixelRelative(x, y)
+	PlotPixelRelative(lst[1], lst[2])
 	
 	return OK
 end
@@ -508,27 +368,7 @@ end
 
 -- commande 'RECT'
 cmd["RECT"].fn = function(lst)
-	x, e = EvalInteger(lst[1])
-		
-	if e ~= OK then return ERR_SYNTAX_ERROR end
-
-	y, e = EvalInteger(lst[2])
-		
-	if e ~= OK then return ERR_SYNTAX_ERROR end
-
-	w, e = EvalInteger(lst[3])
-		
-	if e ~= OK then return ERR_SYNTAX_ERROR end
-
-	h, e = EvalInteger(lst[4])
-		
-	if e ~= OK then return ERR_SYNTAX_ERROR end
-
-	f, e = EvalInteger(lst[5])
-		
-	if e ~= OK then return ERR_SYNTAX_ERROR end
-	
-	DrawRectangle(x, y, w, h, f)
+	DrawRectangle(lst[1], lst[2], lst[3], lst[4], lst[5])
 	
 	return OK
 end
@@ -553,13 +393,7 @@ end
 
 -- commande 'SAVEBOB'
 cmd["SAVEBOB"].fn = function(lst)
-	v1, e = EvalString(lst[1])
-	if e ~= OK then return ERR_SYNTAX_ERROR end
-
-	v2, e = EvalInteger(lst[3])
-	if e ~= OK then return ERR_SYNTAX_ERROR end
-	
-	SaveBOB(v1, currentRelativeFolder .. imageFolder, Val(v2))
+	SaveBOB(lst[1], currentRelativeFolder .. imageFolder, lst[2])
 	
 	return OK
 end
@@ -571,81 +405,37 @@ end
 
 -- commande 'SGN'
 cmd["SGN"].fn = function(lst)
-	return OK, Sign(Val(lst[1]))
+	return OK, Sign(lst[1])
 end
 
 -- commande 'SPRITEIMG'
 cmd["SPRITEIMG"].fn = function(lst)
-	spr, e = EvalInteger(lst[1])
-		
-	if e ~= OK then return ERR_SYNTAX_ERROR end
-
-	img, e = EvalInteger(lst[2])
-		
-	if e ~= OK then return ERR_SYNTAX_ERROR end
-
-	return SetSpriteImage(spr, img)
+	return SetSpriteImage(lst[1], lst[2])
 end
 
 -- commande 'SPRITEOFF'
 cmd["SPRITEOFF"].fn = function(lst)
-	spr, e = EvalInteger(lst[1])
-		
-	if e ~= OK then return ERR_SYNTAX_ERROR end
-
-	return EnableSprite(spr, false)
+	return EnableSprite(lst[1], false)
 end
 
 -- commande 'SPRITEON'
 cmd["SPRITEON"].fn = function(lst)
-	spr, e = EvalInteger(lst[1])
-		
-	if e ~= OK then return ERR_SYNTAX_ERROR end
-	
-	return EnableSprite(spr, true)
+	return EnableSprite(lst[1], true)
 end
 
 -- commande 'SPRITEPOS'
 cmd["SPRITEPOS"].fn = function(lst)
-	spr, e = EvalInteger(lst[1])
-		
-	if e ~= OK then return ERR_SYNTAX_ERROR end
-
-	x, e = EvalInteger(lst[2])
-		
-	if e ~= OK then return ERR_SYNTAX_ERROR end
-
-	y, e = EvalInteger(lst[3])
-		
-	if e ~= OK then return ERR_SYNTAX_ERROR end
-	
-	return SetSpritePosition(spr, x, y)
+	return SetSpritePosition(lst[1], lst[2], lst[3])
 end
 
 -- commande 'SPRITESCALE'
 cmd["SPRITESCALE"].fn = function(lst)
-	spr, e = EvalInteger(lst[1])
-		
-	if e ~= OK then return ERR_SYNTAX_ERROR end
-
-	ss, e = EvalInteger(lst[2])
-		
-	if e ~= OK then return ERR_SYNTAX_ERROR end
-	
-	return SetSpriteScale(spr, ss)
+	return SetSpriteScale(lst[1], lst[2])
 end
 
 -- commande 'SPRITETRANSP'
 cmd["SPRITETRANSP"].fn = function(lst)
-	spr, e = EvalInteger(lst[1])
-		
-	if e ~= OK then return ERR_SYNTAX_ERROR end
-
-	tc, e = EvalInteger(lst[2])
-		
-	if e ~= OK then return ERR_SYNTAX_ERROR end
-
-	return SetSpriteTransparentColor(spr, tc)
+	return SetSpriteTransparentColor(lst[1], lst[2])
 end
 
 -- commande 'STOPMUSIC'
