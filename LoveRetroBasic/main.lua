@@ -1399,7 +1399,7 @@ function love.update(dt)
 					HelpManager()
 
 					return
-				elseif x >= 10 and x <= 12 then -- executer le programme
+				elseif x >= 11 and x <= 11 then -- executer le programme
 					-- remise à zéro d'un éventuel message texte
 					msg = nil
 
@@ -1425,7 +1425,7 @@ function love.update(dt)
 					end
 
 					return
-				elseif x >= 14 and x <= 16 then -- déboguer le programme
+				elseif x >= 13 and x <= 13 then -- déboguer le programme
 					-- remise à zéro d'un éventuel message texte
 					msg = nil
 
@@ -1451,14 +1451,14 @@ function love.update(dt)
 					end
 
 					return
-				elseif x >= 18 and x <= 21 then -- sauvegarder le programme
+				elseif x >= 16 and x <= 16 then -- sauvegarder le programme
 					-- remise à zéro d'un éventuel message texte
 					msg = nil
 
 					SaveProgram()
 
 					return
-				elseif x >= 23 and x <= 26 then -- charger le programme
+				elseif x >= 18 and x <= 18 then -- charger le programme
 					-- remise à zéro d'un éventuel message texte
 					msg = nil
 
@@ -1467,20 +1467,11 @@ function love.update(dt)
 					LoadDisc(currentRelativeFolder)
 
 					return
-				elseif x >= 28 and x <= 30 then -- importer un programme
+				elseif x >= 21 and x <= 21 then -- importer/exporter un programme
 					-- remise à zéro d'un éventuel message texte
 					msg = nil
 
-					ShowCursor(false)
-					ClearScreen()
-					ImportProgram()
-
-					return
-				elseif x >= 32 and x <= 34 then -- exporter un programme
-					-- remise à zéro d'un éventuel message texte
-					msg = nil
-
-					ExportProgram()
+					ImportExportProgram()
 
 					return
 				elseif x == 39 then
@@ -2830,7 +2821,8 @@ function love.draw()
 			--tex(piano[i][1], piano[i][2], piano[i][3])
 		end
 	elseif appState == RUN_MODE and stepsMode and msgLine ~= nil then
-		PrintInfosString("Line " .. msgLine .. " :", 2, "black")
+		PrintInfosString("Line " .. msgLine, 2, "black")
+		PrintInfosString("LeftClick " .. Chr(160) .. Chr(160), 2, "orange", 20)
 	end
 
 	-- afficher les erreurs
@@ -2854,7 +2846,11 @@ function love.draw()
 	
 	-- afficher le renderer de menu outils
 	if appState == EDIT_MODE then
-		PrintInfosString(Chr(1) .. " " ..Chr(2) .. " " ..Chr(3) .. " " ..Chr(4) .. " ? RUN DBG SAVE LOAD IMP EXP    X", 4, "blue")
+		PrintInfosString(Chr(1) .. " " ..Chr(2) .. " " ..Chr(3) .. " " .. Chr(4), 4, "orange")
+		PrintInfosString("?       " .. Chr(158) .. " " .. Chr(157), 4, "black", 8)
+		PrintInfosString(Chr(160) .. " " .. Chr(161), 4, "red", 11)
+		PrintInfosString(Chr(162), 4, "blue", 21)
+		PrintInfosString("X", 4, "red", 39)
 		love.graphics.draw(renderer[4], borderX, borderY - (16 * 2), 0, 2, 2, 0, 0, 0, 0)
 	end
 

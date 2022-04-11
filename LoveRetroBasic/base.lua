@@ -1731,22 +1731,11 @@ function SaveProgram()
 	end
 end
 
--- importer un programme
-function ImportProgram()
+-- importer/exporter un programme
+function ImportExportProgram()
 	local lnk = love.filesystem.getSaveDirectory()
 
-	if love.window.showMessageBox("Info", "Your program can be dropped here:\n" .. lnk .. "\n\nLink copied to clipboard !", "info", true) then
-		love.system.setClipboardText(lnk)
-	else
-		msg = "Runtime error !"
-	end
-end
-
--- exporter un programme
-function ExportProgram()
-	local lnk = love.filesystem.getSaveDirectory()
-
-	if love.window.showMessageBox("Info", "Your program can be taken here:\n" .. lnk .. "\n\nLink copied to clipboard !", "info", true) then
+	if love.window.showMessageBox("Info", "Your program can be dropped or taken here:\n" .. "Don't forget to reload your program after importing it !\n" .. lnk .. "\n\nLink copied to clipboard !", "info", true) then
 		love.system.setClipboardText(lnk)
 	else
 		msg = "Runtime error !"

@@ -253,9 +253,11 @@ function GetTextInput()
 end
 
 -- afficher une chaîne de caractères d'infos en haut de l'écran, dans le border
-function PrintInfosString(s, r, col)
+function PrintInfosString(s, r, col, offset)
 	love.graphics.push()
 	love.graphics.setCanvas(renderer[r])
+	
+	if offset == nil then offset = 0 end
 
 	-- dessiner tous les caractères en haut de l'écran
 	for i = 1, #s do
@@ -269,16 +271,19 @@ function PrintInfosString(s, r, col)
 				elseif sym[c][x][y] == 1 then
 					if col == "red" then
 						love.graphics.setColor(1, 0, 0, 1)
+					elseif col == "orange" then
+						love.graphics.setColor(1, 0.5, 0, 1)
 					elseif col == "blue" then
 						love.graphics.setColor(0, 0.5, 1, 1)
 					elseif col == "black" then
 						love.graphics.setColor(0, 0, 0, 1)
 					end
-					love.graphics.points(((i - 1) * 8) + x + 0.5, y + 0.5)
+				-- blanc
 				else
 					love.graphics.setColor(1, 1, 1, 1)
-					love.graphics.points(((i - 1) * 8) + x + 0.5, y + 0.5)
 				end
+
+				love.graphics.points(((i - 1) * 8) + x + (offset * 8) + 0.5, y + 0.5)
 			end
 		end		
 	end
