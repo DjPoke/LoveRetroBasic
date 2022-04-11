@@ -638,6 +638,7 @@ function Exec(t, l)
 				if param == nil or param == "" then
 					return ERR_OPERAND_MISSING
 				end
+				
 				-- on rencontre une virgule, on va chercher le paramètres suivant
 				action = "find_next_parameter"
 				local p, e = EvalParam(param, cmd[cs].ptype[pnum])
@@ -757,13 +758,33 @@ function Exec(t, l)
 				local c, p, e
 				c, p, i, e = GetFunction(t, i)
 				if e ~= OK then return nil, e end
+
+				-- exploser la chaine 'p' en plusieurs paramètres évaluables
+				--[[ TODO !!!
+				local t = ???
 				
-				local pn = 0
+				local pn = 1
 				
-				for j = 1, #p do
+				for j = 1, #t do
+					if cmd[c].ptype[pn] == VAR_INTEGER then
+						print(c)
+					end
+
+					local p2, e2 = EvalParam(p[j], cmd[c].ptype[pn])
+
 					pn = pn + 1
 					if #cmd[c].ptype == 1 then pn = 1 end
-
+				
+					if e2 ~= OK then return nil, e end
+					if p2 ~= nil then
+						table.insert(lst, p2)
+					end
+					
+					local e2, ch = ExecOne(c, lst)
+					if e2 ~= OK then return nil, e2 end
+				end
+				--]]
+				--[[
 					-- quel est le type de paramètres requis par la commande ?
 					if cmd[c].ptype[pn] == VAR_STRING then
 						p[j], e = EvalString(p[j])
@@ -811,6 +832,7 @@ function Exec(t, l)
 						param = param .. ch
 					end
 				end
+				--}]]
 			elseif t[i].typ == "number" then
 				param = param .. t[i].sym
 			else
@@ -1359,7 +1381,7 @@ function GetFunction(t, i)
 	if i == #t or i + 1 == #t then return nil, nil, nil, ERR_SYNTAX_ERROR end
 
 	local c = t[i].sym
-	local p = {}
+	local p = ""
 
 	if t[i + 1].typ ~= "openbracket" then return nil, nil, nil, ERR_SYNTAX_ERROR end
 	
@@ -1375,12 +1397,12 @@ function GetFunction(t, i)
 			break
 		elseif t[j].typ == "closebracket" then
 			cb = cb + 1
-			table.insert(p, t[j].sym)
+			p = p .. t[j].sym
 		elseif t[j].typ == "openbracket" then
 			ob = ob + 1
-			table.insert(p, t[j].sym)
+			p = p .. t[j].sym
 		else
-			table.insert(p, t[j].sym)
+			p = p .. t[j].sym
 		end
 	end
 	
