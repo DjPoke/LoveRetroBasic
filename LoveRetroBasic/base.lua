@@ -400,11 +400,15 @@ function AssignToVar(var, vType, s)
 end
 
 -- fonction privée
-function PrivateInc(indice, indiceMax, commande, liste)
+function PrivateInc(indice, indiceMax, commande, liste, numparam)
+	if numparam == nil then numparam = "" end
+
 	indice = indice + 1
 	
 	-- exécuter une commande isolée, sans paramètres
 	if indice > indiceMax then
+		if numparam ~= "" then table.insert(liste, numparam) end
+		
 		local e = ExecOne(commande, liste)
 		
 		-- erreur ?
@@ -476,6 +480,7 @@ function Exec(t, l)
 	local i = 1
 	local lst = {}
 	local sig = nil
+	local nexp = ""
 	local stp = false
 
 	if t[i].typ == "command" then
@@ -504,9 +509,9 @@ function Exec(t, l)
 			local cm = false
 
 			while true do
-				if t[i].typ == "whitespace" then
+				if t[i].typ == "whitespace" and nexp == "" then
 					-- vérifier la suite
-					i, e, stp = PrivateInc(i, #t, cs, lst)
+					i, e, stp = PrivateInc(i, #t, cs, lst, nexp)
 					if e ~= OK then return e end
 					if stp then
 						if cm == true then return ERR_SYNTAX_ERROR end
@@ -531,10 +536,19 @@ function Exec(t, l)
 					end
 				end
 				
+				-- ajouter les chaines de caractère à la liste
 				if cmd[cs].ptype[1] == VAR_POLY or cmd[cs].ptype[1] == VAR_STRING then
 					if t[i].typ == "poly" or t[i].typ == "string" then
+						-- si des valeurs numériques précèdent, alors...
+						if nexp ~= "" then return ERR_SYNTAX_ERROR end
+						
 						table.insert(lst, t[i].sym)
 						
+						cm = false
+					-- ajouter les valeurs numériques à un buffer
+					elseif t[i].typ == "number" then
+						nexp = nexp .. t[i].sym
+
 						cm = false
 					else
 						return ERR_SYNTAX_ERROR
@@ -544,15 +558,25 @@ function Exec(t, l)
 				end
 
 				-- vérifier la suite
-				i, e, stp = PrivateInc(i, #t, cs, lst)
+				i, e, stp = PrivateInc(i, #t, cs, lst, nexp)
 				if e ~= OK then return e end
 				if stp then return OK end
 						
 				-- chercher une virgule de séparation
 				if t[i].typ == "comma" then
-					if not cm then						
+					-- fin d'expression numérique
+					if nexp ~= "" then
+						local s, e = EvalFloat(nexp)
+						if e ~= OK then return e end
+						
+						table.insert(lst, s)
+						
+						nexp = ""
+					end
+					
+					if not cm then
 						-- vérifier la suite
-						i, e, stp = PrivateInc(i, #t, cs, lst)
+						i, e, stp = PrivateInc(i, #t, cs, lst, nexp)
 						if e ~= OK then return e end
 						if stp then return ERR_SYNTAX_ERROR end
 					
@@ -563,13 +587,13 @@ function Exec(t, l)
 					else
 						return ERR_SYNTAX_ERROR
 					end
-				elseif t[i].typ == "plus" then
+				elseif t[i].typ == "plus" and nexp == "" then
 					if not cm then
 						-- mélanges de plus et de point-virgule
 						if sig == "semicolon" then return ERR_SYNTAX_ERROR end
 
 						-- vérifier la suite
-						i, e, stp = PrivateInc(i, #t, cs, lst)
+						i, e, stp = PrivateInc(i, #t, cs, lst, nexp)
 						if e ~= OK then return e end
 						if stp then return OK end
 
@@ -577,13 +601,13 @@ function Exec(t, l)
 					else
 						return ERR_SYNTAX_ERROR
 					end
-				elseif t[i].typ == "semicolon" then
+				elseif t[i].typ == "semicolon" and nexp == "" then
 					if not cm then
 						-- mélanges de plus et de point-virgule
 						if sig == "plus" then return ERR_SYNTAX_ERROR end
 
 						-- vérifier la suite
-						i, e, stp = PrivateInc(i, #t, cs, lst)
+						i, e, stp = PrivateInc(i, #t, cs, lst, nexp)
 						if e ~= OK then return e end
 						if stp then return OK end
 
