@@ -564,7 +564,11 @@ function Exec(t, l)
 				if param ~= nil and param ~= "" then
 					local p, e = EvalParam(param, cmd[cs].ptype)
 					if e ~= OK then return e end
-					table.insert(lst, p)
+					if p ~= nil then
+						for ti = 1, #p do
+							table.insert(lst, p[ti])
+						end
+					end
 					param = ""
 				end
 
@@ -576,7 +580,7 @@ function Exec(t, l)
 				-- on cherche un espace après une commande mais on trouve ni espace ni deux-points
 				--
 				-- gestion des paramètres 'chaîne de caractère' tout de suite après la commande
-				if cmd[cs].ptype == VAR_POLY or cmd[cs].ptype == VAR_STRING then
+				if cmd[cs].ptype[1] == VAR_POLY or cmd[cs].ptype[1] == VAR_STRING then
 					if t[i].typ == "poly" then
 						action = "find_first_parameter"
 						param = t[i].sym
@@ -600,7 +604,11 @@ function Exec(t, l)
 				action = "find_next_parameter"
 				local p, e = EvalParam(param, cmd[cs].ptype)
 				if e ~= OK then return e end
-				table.insert(lst, p)
+				if p ~= nil then
+					for ti = 1, #p do
+						table.insert(lst, p[ti])
+					end
+				end
 				param = ""
 				comma = true
 			elseif t[i].typ == "colon" then
@@ -608,7 +616,11 @@ function Exec(t, l)
 				action = ""
 				local p, e = EvalParam(param, cmd[cs].ptype)
 				if e ~= OK then return e end
-				table.insert(lst, p)
+				if p ~= nil then
+					for ti = 1, #p do
+						table.insert(lst, p[ti])
+					end
+				end
 				param = ""
 
 				e = ExecOne(cs, lst)
@@ -630,14 +642,22 @@ function Exec(t, l)
 				-- on rencontre une virgule, on va chercher le paramètres suivant
 				local p, e = EvalParam(param, cmd[cs].ptype)
 				if e ~= OK then return e end
-				table.insert(lst, p)
+				if p ~= nil then
+					for ti = 1, #p do
+						table.insert(lst, p[ti])
+					end
+				end
 				param = ""
 				comma = true
 			else
 				action = ""
 				local p, e = EvalParam(param, cmd[cs].ptype)
 				if e ~= OK then return e end
-				table.insert(lst, p)
+				if p ~= nil then
+					for ti = 1, #p do
+						table.insert(lst, p[ti])
+					end
+				end
 				param = ""
 				
 				e = ExecOne(cs, lst)
@@ -693,7 +713,7 @@ function Exec(t, l)
 				if e ~= OK then return nil, e end
 
 				-- quel est le type de paramètres requis par la commande ?
-				if cmd[c].ptype == VAR_STRING then
+				if cmd[c].ptype[1] == VAR_STRING then
 					p, e = EvalString(p)
 					if e ~= OK then return nil, e end
 					local lst = {Trim(p, "\"")}
@@ -701,7 +721,7 @@ function Exec(t, l)
 					if e ~= OK then return nil, e end
 
 					param = param .. ch
-				elseif cmd[c].ptype == VAR_FLOAT then
+				elseif cmd[c].ptype[1] == VAR_FLOAT then
 					if tostring(Val(p)) ~= p then
 						p, e = EvalFloat(p)
 						if e ~= OK then return nil, e end
@@ -712,7 +732,7 @@ function Exec(t, l)
 					if e ~= OK then return nil, e end
 					
 					param = param .. ch
-				elseif cmd[c].ptype == VAR_INTEGER then
+				elseif cmd[c].ptype[1] == VAR_INTEGER then
 					if tostring(Val(p)) ~= p then
 						p, e = EvalInteger(p)
 						if e ~= OK then return nil, e end
@@ -723,7 +743,7 @@ function Exec(t, l)
 					if e ~= OK then return nil, e end
 					
 					param = param .. ch
-				elseif cmd[c].ptype == VAR_NUM then
+				elseif cmd[c].ptype[1] == VAR_NUM then
 					if tostring(Val(p)) ~= p then
 						p, e = EvalFloat(p)
 						if e ~= OK then
@@ -753,7 +773,12 @@ function Exec(t, l)
 				if param ~= "" then
 					local p, e = EvalParam(param, cmd[cs].ptype)
 					if e ~= OK then return e end
-					table.insert(lst, p)
+
+					if p ~= nil then
+						for ti = 1, #p do
+							table.insert(lst, p[ti])
+						end
+					end
 				end
 				
 				e = ExecOne(cs, lst)
@@ -770,51 +795,93 @@ function Exec(t, l)
 	return OK
 end
 
--- évaluer le paramètres fourni et retourner sa valeur en fonction
+-- évaluer le paramètres fourni et retourner la valeur due à son type
 function EvalParam(param, typ)
-	if typ == VAR_INTEGER then
-		l, e = EvalInteger(param)
-		return tostring(l), e
-	elseif typ == VAR_FLOAT then
-		l, e = EvalFloat(param)
-		return tostring(l), e
-	elseif typ == VAR_NUM then
-		-- tous les paramètres numériques sont possibles
-		local l, e = EvalFloat(param)
-		if e ~= OK then
+	local retValue = {}
+	local e = nil
+	for i = 1, #typ do
+		if typ[i] == VAR_INTEGER then
 			l, e = EvalInteger(param)
-		end
-		return tostring(l), e
-	elseif typ == VAR_STRING then
-		l, e = EvalString(param)
-		return l, e
-	elseif typ == VAR_POLY then
-		-- tous les paramètres sont possibles
-		local l, e = EvalString(param)
-		if e ~= OK and e == ERR_TYPE_MISMATCH then
+
+			-- ajouter le parametre de retour
+			if e == OK then
+				table.insert(retValue, tostring(l))
+			else
+				return nil, e
+			end
+		elseif typ[i] == VAR_FLOAT then
 			l, e = EvalFloat(param)
+			
+			-- ajouter le parametre de retour
+			if e == OK then
+				table.insert(retValue, tostring(l))
+			else
+				return nil, e
+			end
+		elseif typ[i] == VAR_NUM then
+			-- tous les paramètres numériques sont possibles
+			local l, e = EvalFloat(param)
 			if e ~= OK then
 				l, e = EvalInteger(param)
-				-- impossible d'évaluer le paramètre
-				if e ~= OK then
-					return nil, e
-				end
 			end
-			l = tostring(l)
-		elseif e ~= OK then
-			return nil, e
+			
+			-- ajouter le parametre de retour
+			if e == OK then
+				table.insert(retValue, tostring(l))
+			else
+				return nil, e
+			end
+		elseif typ[i] == VAR_STRING then
+			l, e = EvalString(param)
+
+			-- ajouter le parametre de retour
+			if e == OK then
+				table.insert(retValue, l)
+			else
+				return nil, e
+			end
+		elseif typ[i] == VAR_POLY then
+			-- tous les paramètres sont possibles
+			local l, e = EvalString(param)
+			if e ~= OK and e == ERR_TYPE_MISMATCH then
+				l, e = EvalFloat(param)
+				if e ~= OK then
+					l, e = EvalInteger(param)
+					-- impossible d'évaluer le paramètre
+					if e ~= OK then
+						return nil, e
+					end
+				end
+				
+				l = tostring(l)
+			elseif e ~= OK then
+				return nil, e
+			end
+
+			-- ajouter le parametre de retour
+			if e == OK then
+				table.insert(retValue, l)
+			else
+				return nil, e
+			end
+		elseif typ[i] == VAR_LABEL then
+			l, e = EvalLabel(param)
+
+			-- ajouter le parametre de retour
+			if e == OK then
+				table.insert(retValue, l)
+			else
+				return nil, e
+			end
+
+		-- TODO:
+		--elseif typ[i] == VAR_CONDITION then
+		--elseif typ[i] == VAR_VAR then
+		--elseif typ[i] == VAR_CONSTANT then
 		end
-		return l, e
-	elseif typ == VAR_LABEL then
-		l, e = EvalLabel(param)
-		return l, e
-	-- TODO:
-	--elseif typ == VAR_CONDITION then
-	--elseif typ == VAR_VAR then
-	--elseif typ == VAR_CONSTANT then
 	end
-	
-	return nil, ERR_SYNTAX_ERROR
+		
+	return retValue, OK
 end
 
 -- évaluer une expression integer
@@ -859,7 +926,7 @@ function EvalFloat(s)
 			if e ~= OK then return nil, e end
 
 			-- quel est le type de paramètres requis par la commande ?
-			if cmd[c].ptype == VAR_STRING then
+			if cmd[c].ptype[1] == VAR_STRING then
 				p, e = EvalString(p)
 				if e ~= OK then return nil, e end
 
@@ -869,7 +936,7 @@ function EvalFloat(s)
 				if e ~= OK then return nil, e end
 
 				s = s .. tostring(value)
-			elseif cmd[c].ptype == VAR_FLOAT then
+			elseif cmd[c].ptype[1] == VAR_FLOAT then
 				if tostring(Val(p)) ~= p then
 					p, e = EvalFloat(p)
 					if e ~= OK then return nil, e end
@@ -881,7 +948,7 @@ function EvalFloat(s)
 				if e ~= OK then return nil, e end
 				
 				s = s .. tostring(value)
-			elseif cmd[c].ptype == VAR_INTEGER then
+			elseif cmd[c].ptype[1] == VAR_INTEGER then
 				if tostring(Val(p)) ~= p then
 					p, e = EvalInteger(p)
 					if e ~= OK then return nil, e end
@@ -893,7 +960,7 @@ function EvalFloat(s)
 				if e ~= OK then return nil, e end
 				
 				s = s .. tostring(value)
-			elseif cmd[c].ptype == VAR_NUM then
+			elseif cmd[c].ptype[1] == VAR_NUM then
 				if tostring(Val(p)) ~= p then
 					p, e = EvalFloat(p)
 					if e ~= OK then
@@ -1146,7 +1213,7 @@ function EvalString(s, assign)
 				if e ~= OK then return nil, e end
 
 				-- quel est le type de paramètres requis par la commande ?
-				if cmd[c].ptype == VAR_STRING then
+				if cmd[c].ptype[1] == VAR_STRING then
 					p, e = EvalString(p)
 					if e ~= OK then return nil, e end
 
@@ -1157,7 +1224,7 @@ function EvalString(s, assign)
 					s = s .. ch
 					
 					waitsym = true
-				elseif cmd[c].ptype == VAR_FLOAT then
+				elseif cmd[c].ptype[1] == VAR_FLOAT then
 					p, e = EvalFloat(p)
 					if e ~= OK then return nil, e end
 					
@@ -1168,7 +1235,7 @@ function EvalString(s, assign)
 					s = s .. ch
 					
 					waitsym = true
-				elseif cmd[c].ptype == VAR_INTEGER then
+				elseif cmd[c].ptype[1] == VAR_INTEGER then
 					p, e = EvalInteger(p)
 					if e ~= OK then return nil, e end
 
@@ -1179,7 +1246,7 @@ function EvalString(s, assign)
 					s = s .. ch
 					
 					waitsym = true
-				elseif cmd[c].ptype == VAR_NUM then
+				elseif cmd[c].ptype[1] == VAR_NUM then
 					p, e = EvalFloat(p)
 					if e ~= OK then
 						p, e = EvalInteger(p)

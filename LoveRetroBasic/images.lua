@@ -39,6 +39,9 @@ function LoadBOB(filename, path, n)
 	if path == nil or path == "" then return end
 	if n < 0 or n > MAX_BOB then return end
 
+	-- vérifier si le fichier existe
+	if not GetFileExists(path, filename) then return end
+
 	-- supprimer l'ancienne image
 	bob[n] = {}
 	
@@ -164,8 +167,137 @@ function LoadBOB(filename, path, n)
 	return bob[n]
 end
 
+-- charger une image png et le placer en fond d'écran
+function LoadImage(filename, path)
+	if filename == nil or filename == "" then return end
+	if path == nil or path == "" then return end
+	
+	-- vérifier si le fichier existe
+	if not GetFileExists(path, filename) then return end
+
+	-- mémoriser le chemin
+	local memPath = love.filesystem.getIdentity()
+	
+	-- établir le bon chemin
+	love.filesystem.setIdentity(path)
+
+	-- créer une image data de la même taille
+	local data = love.image.newImageData(filename) -- TODO : remplacer par encoded data
+	
+	local mgp = gpen
+	
+	for y = 0, data:getHeight() - 1 do
+		for x = 0, data:getWidth() - 1 do
+			local r, g, b = data:getPixel(x, y)
+			r = math.floor(r * 255)
+			g = math.floor(g * 255)
+			b = math.floor(b * 255)
+			local found = false
+			local c1 = r + g + b
+			local c2 = 0
+			local dist = 255 * 3
+			local memDist = 255 * 3
+			local c = 0
+
+			-- trouver la couleur exacte
+			for i = 0, 63 do
+				if scnPal[i][0] == r and scnPal[i][1] == g and scnPal[i][2] == b then
+					c = i
+					found = true
+					break
+				end
+			end
+
+			-- trouver deux valeurs sur trois
+			if not found then
+				for i = 0, 63 do
+					c2 = scnPal[i][0] + scnPal[i][1] + scnPal[i][2]
+					dist = math.abs(c1 - c2)
+					
+					if scnPal[i][0] == r and scnPal[i][1] == g then						
+						if dist < memDist then
+							memDist = dist
+							c = i
+							found = true
+						end
+					elseif scnPal[i][0] == r and scnPal[i][2] == b then
+						if dist < memDist then
+							memDist = dist
+							c = i
+							found = true
+						end
+					elseif scnPal[i][1] == g and scnPal[i][2] == b then
+						if dist < memDist then
+							memDist = dist
+							c = i
+							found = true
+						end
+					end
+				end
+			end
+			
+			-- trouver une valeur sur trois
+			if not found then
+				for i = 0, 63 do
+					c2 = scnPal[i][0] + scnPal[i][1] + scnPal[i][2]
+					dist = math.abs(c1 - c2)
+
+					if scnPal[i][0] == r then
+						if dist < memDist then
+							memDist = dist
+							c = i
+							found = true
+						end
+					elseif scnPal[i][1] == g then
+						if dist < memDist then
+							memDist = dist
+							c = i
+							found = true
+						end
+					elseif scnPal[i][2] == b then
+						if dist < memDist then
+							memDist = dist
+							c = i
+							found = true
+						end
+					end
+				end
+			end
+			
+			-- trouver une valeur sur trois
+			if not found then
+				for i = 0, 63 do
+					c2 = scnPal[i][0] + scnPal[i][1] + scnPal[i][2]
+					dist = math.abs(c1 - c2)
+
+					if dist < memDist then
+						memDist = dist
+						c = i
+						found = true
+					end
+				end
+			end
+			
+			-- remplacer la couleur par celle trouvée
+			if found then
+				gpen = c
+				PlotPixel(x, y)
+			end			
+		end
+	end
+	
+	gpen = mgp
+	
+	-- supprimer l'image data
+	data:release()
+	
+	-- rétablir le chemin
+	love.filesystem.setIdentity(memPath)
+end
+
 -- afficher un BOB à l'écran
 function PasteBOB(n, x, y)
+	if n < 0 or n > MAX_BOB then return end
 	if bob[n] == nil then return end
 	
 	for yp = 0, bob[n][2] - 1 do

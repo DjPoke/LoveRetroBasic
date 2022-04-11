@@ -64,17 +64,17 @@ commands = {
 			"CASE", "CHR$", "CLS",
 			"DRAW", "DRAWR",
 			"ELSEIF", "ELSE", "ENDIF", "ENDSELECT", "END",
-			"FOR",
+			"FOR", "FREEBOB",
 			"GETBORDER", "GETLOCX", "GETLOCY", "GETPAPER", "GETPEN", "GETGRAPHPEN", "GOSUB", "GOTO", "GRAPHPEN", "GRAPHPRINT",
 			"HEX$", "HOTSPOT",
 			"IF", "INKEY$", "INPUT",
-			"LINE", "LOCATE",
+			"LINE", "LOADBOB", "LOADIMAGE", "LOCATE",
 			"MODE", "MOVE", "MOVER", "MUSIC",
 			"NEXT",
 			"OVAL",
-			"PAPER", "PEN", "PLOT", "PLOTR", "PRINT",
+			"PAPER", "PASTEBOB", "PEN", "PLOT", "PLOTR", "PRINT",
 			"RECT", "REPEAT", "RETURN",
-			"SELECT", "SGN", "SPRITEIMG", "SPRITEOFF", "SPRITEON", "SPRITEPOS", "SPRITESCALE", "SPRITETRANSP", "STOPMUSIC","STR$",
+			"SAVEBOB", "SELECT", "SGN", "SPRITEIMG", "SPRITEOFF", "SPRITEON", "SPRITEPOS", "SPRITESCALE", "SPRITETRANSP", "STOPMUSIC","STR$",
 			"UNTIL",
 			"VAL",
 			"WAITVBL", "WEND", "WHILE"
@@ -85,7 +85,7 @@ cmd = {}
 
 -- entrées des fonctions dans une table
 for i = 1, #commands do
-	cmd[commands[i]] = {fn = nil, ret = 0, pmin = 0, pmax = 0, ptype = VAR_INTEGER, word2 = "", word3 = "", wmin = 1, wmax = 1}
+	cmd[commands[i]] = {fn = nil, ret = 0, pmin = 0, pmax = 0, ptype = {VAR_INTEGER}, word2 = "", word3 = "", wmin = 1, wmax = 1}
 end
 
 -- définir le type de valeur retournée pour chaque instruction BASIC
@@ -102,6 +102,7 @@ cmd["GETPEN"].ret = VAR_INTEGER
 cmd["HEX$"].ret = VAR_STRING
 cmd["INKEY$"].ret = VAR_STRING
 cmd["INPUT"].ret = VAR_STRING
+cmd["LOADBOB"].ret = VAR_INTEGER
 cmd["SGN"].ret = VAR_NUM
 cmd["STR$"].ret = VAR_STRING
 cmd["VAL"].ret = VAR_NUM
@@ -111,11 +112,13 @@ cmd["ABS"].pmin, cmd["ABS"].pmax = 1, 1
 cmd["ASC"].pmin, cmd["ASC"].pmax = 1, 1
 cmd["BIN$"].pmin, cmd["BIN$"].pmax = 1, 1
 cmd["BORDER"].pmin, cmd["BORDER"].pmax = 1, 1
+cmd["CASE"].pmin, cmd["CASE"].pmax = 1, 1
 cmd["CHR$"].pmin, cmd["CHR$"].pmax = 1, 1
 cmd["DRAW"].pmin, cmd["DRAW"].pmax = 2, 2
 cmd["DRAWR"].pmin, cmd["DRAWR"].pmax = 2, 2
 cmd["ELSEIF"].pmin, cmd["ELSEIF"].pmax = 1, 1
 cmd["FOR"].pmin, cmd["FOR"].pmax = 2, 3
+cmd["FREEBOB"].pmin, cmd["FREEBOB"].pmax = 1, 1
 cmd["GOSUB"].pmin, cmd["GOSUB"].pmax = 1, 1
 cmd["GOTO"].pmin, cmd["GOTO"].pmax = 1, 1
 cmd["GRAPHPEN"].pmin, cmd["GRAPHPEN"].pmax = 1, 1
@@ -124,6 +127,8 @@ cmd["HEX$"].pmin, cmd["HEX$"].pmax = 1, 1
 cmd["HOTSPOT"].pmin, cmd["HOTSPOT"].pmax = 2, 2
 cmd["IF"].pmin, cmd["IF"].pmax = 1, 1
 cmd["LINE"].pmin, cmd["LINE"].pmax = 4, 4
+cmd["LOADBOB"].pmin, cmd["LOADBOB"].pmax = 2, 2
+cmd["LOADIMAGE"].pmin, cmd["LOADIMAGE"].pmax = 1, 1
 cmd["LOCATE"].pmin, cmd["LOCATE"].pmax = 2, 2
 cmd["MODE"].pmin, cmd["MODE"].pmax = 1, 1
 cmd["MOVE"].pmin, cmd["MOVE"].pmax = 2, 2
@@ -131,13 +136,14 @@ cmd["MOVER"].pmin, cmd["MOVER"].pmax = 2, 2
 cmd["MUSIC"].pmin, cmd["MUSIC"].pmax = 1, 1
 cmd["OVAL"].pmin, cmd["OVAL"].pmax = 5, 5
 cmd["PAPER"].pmin, cmd["PAPER"].pmax = 1, 1
+cmd["PASTEBOB"].pmin, cmd["PASTEBOB"].pmax = 3, 3
 cmd["PEN"].pmin, cmd["PEN"].pmax = 1, 1
 cmd["PLOT"].pmin, cmd["PLOT"].pmax = 2, 2
 cmd["PLOTR"].pmin, cmd["PLOTR"].pmax = 2, 2
 cmd["PRINT"].pmin, cmd["PRINT"].pmax = 0, -1
 cmd["RECT"].pmin, cmd["RECT"].pmax = 5, 5
 cmd["SELECT"].pmin, cmd["SELECT"].pmax = 1, 1
-cmd["CASE"].pmin, cmd["CASE"].pmax = 1, 1
+cmd["SAVEBOB"].pmin, cmd["SAVEBOB"].pmax = 2, 2
 cmd["SGN"].pmin, cmd["SGN"].pmax = 1, 1
 cmd["SPRITEIMG"].pmin, cmd["SPRITEIMG"].pmax = 2, 2
 cmd["SPRITEOFF"].pmin, cmd["SPRITEOFF"].pmax = 1, 1
@@ -151,24 +157,29 @@ cmd["VAL"].pmin, cmd["VAL"].pmax = 1, 1
 cmd["WHILE"].pmin, cmd["WHILE"].pmax = 1, 1
 
 -- définir le type de valeur du paramètre en entrée pour chaque instruction BASIC
-cmd["ABS"].ptype = VAR_NUM
-cmd["ASC"].ptype = VAR_STRING
-cmd["CHR$"].ptype = VAR_NUM
-cmd["ELSEIF"].ptype = VAR_CONDITION
-cmd["FOR"].ptype = VAR_INTEGER
-cmd["GOSUB"].ptype = VAR_LABEL
-cmd["GOTO"].ptype = VAR_LABEL
-cmd["GRAPHPRINT"].ptype = VAR_POLY
-cmd["IF"].ptype = VAR_CONDITION
-cmd["MODE"].ptype = VAR_INTEGER
-cmd["PRINT"].ptype = VAR_POLY
-cmd["SELECT"].ptype = VAR_VAR
-cmd["CASE"].ptype = VAR_CONSTANT
-cmd["SGN"].ptype = VAR_NUM
-cmd["UNTIL"].ptype = VAR_CONDITION
-cmd["STR$"].ptype = VAR_NUM
-cmd["VAL"].ptype = VAR_STRING
-cmd["WHILE"].ptype = VAR_CONDITION
+cmd["ABS"].ptype = {VAR_NUM}
+cmd["ASC"].ptype = {VAR_STRING}
+cmd["CASE"].ptype = {VAR_CONSTANT}
+cmd["CHR$"].ptype = {VAR_NUM}
+cmd["ELSEIF"].ptype = {VAR_CONDITION}
+cmd["FOR"].ptype = {VAR_INTEGER}
+cmd["FREEBOB"].ptype = {VAR_INTEGER}
+cmd["GOSUB"].ptype = {VAR_LABEL}
+cmd["GOTO"].ptype = {VAR_LABEL}
+cmd["GRAPHPRINT"].ptype = {VAR_POLY}
+cmd["IF"].ptype = {VAR_CONDITION}
+cmd["LOADIMAGE"].ptype = {VAR_STRING}
+cmd["LOADBOB"].ptype = {VAR_STRING, VAR_INTEGER}
+cmd["MODE"].ptype = {VAR_INTEGER}
+cmd["PASTEBOB"].ptype = {VAR_INTEGER, VAR_FLOAT, VAR_FLOAT}
+cmd["PRINT"].ptype = {VAR_POLY}
+cmd["SAVEBOB"].ptype = {VAR_STRING, VAR_INTEGER}
+cmd["SELECT"].ptype = {VAR_VAR}
+cmd["SGN"].ptype = {VAR_NUM}
+cmd["UNTIL"].ptype = {VAR_CONDITION}
+cmd["STR$"].ptype = {VAR_NUM}
+cmd["VAL"].ptype = {VAR_STRING}
+cmd["WHILE"].ptype = {VAR_CONDITION}
 
 -- mots additionnels pour certaines commandes BASIC
 cmd["FOR"].word2, cmd["FOR"].word3, cmd["FOR"].wmin, cmd["FOR"].wmax = "TO", "STEP", 2, 3

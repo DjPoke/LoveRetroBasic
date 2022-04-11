@@ -111,6 +111,17 @@ cmd["FOR"].fn = function(lst)
 	return OK
 end
 
+-- commande 'FREEBOB'
+cmd["FREEBOB"].fn = function(lst)
+	v, e = EvalInteger(lst[1])
+	if e ~= OK then return ERR_SYNTAX_ERROR end
+	
+	FreeBOB(v)
+	
+	return OK, retValue
+end
+
+
 -- commande 'GETBORDER'
 cmd["GETBORDER"].fn = function(lst)
 	c = GetBorderColor()
@@ -269,6 +280,20 @@ cmd["LINE"].fn = function(lst)
 	return OK
 end
 
+-- commande 'LOADBOB'
+cmd["LOADBOB"].fn = function(lst)
+	retValue = LoadBOB(lst[1], currentRelativeFolder .. imageFolder, lst[2])
+	
+	return OK, retValue
+end
+
+-- commande 'LOADIMAGE'
+cmd["LOADIMAGE"].fn = function(lst)
+	LoadImage(lst[1], currentRelativeFolder .. imageFolder)
+	
+	return OK
+end
+
 -- commande 'LOCATE'
 cmd["LOCATE"].fn = function(lst)
 	x, e = EvalInteger(lst[1])
@@ -399,6 +424,22 @@ cmd["PAPER"].fn = function(lst)
 	return OK
 end
 
+-- commande 'PASTEBOB'
+cmd["PASTEBOB"].fn = function(lst)
+	v1, e = EvalInteger(lst[1])
+	if e ~= OK then return ERR_SYNTAX_ERROR end
+
+	v2, e = EvalFloat(lst[2])
+	if e ~= OK then return ERR_SYNTAX_ERROR end
+
+	v3, e = EvalFloat(lst[3])
+	if e ~= OK then return ERR_SYNTAX_ERROR end
+	
+	PasteBOB(v1, v2, v3)
+	
+	return OK
+end
+
 -- commande 'PEN'
 cmd["PEN"].fn = function(lst)
 	v, e = EvalInteger(lst[1])
@@ -508,6 +549,19 @@ cmd["RETURN"].fn = function(lst)
 	end
 	
 	return ERR_UNDEFINED_LABEL
+end
+
+-- commande 'SAVEBOB'
+cmd["SAVEBOB"].fn = function(lst)
+	v1, e = EvalString(lst[1])
+	if e ~= OK then return ERR_SYNTAX_ERROR end
+
+	v2, e = EvalInteger(lst[3])
+	if e ~= OK then return ERR_SYNTAX_ERROR end
+	
+	SaveBOB(v1, currentRelativeFolder .. imageFolder, v2)
+	
+	return OK
 end
 
 -- commande 'SELECT'
