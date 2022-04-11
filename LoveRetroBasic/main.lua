@@ -69,7 +69,7 @@ commands = {
 			"HEX$", "HOTSPOT",
 			"IF", "INKEY$", "INPUT",
 			"LINE", "LOADBOB", "LOADIMAGE", "LOCATE",
-			"MODE", "MOVE", "MOVER", "MUSIC",
+			"MOD", "MODE", "MOVE", "MOVER", "MUSIC",
 			"NEXT",
 			"OVAL",
 			"PAPER", "PASTEBOB", "PEN", "PLOT", "PLOTR", "PRINT",
@@ -77,7 +77,7 @@ commands = {
 			"SAVEBOB", "SELECT", "SGN", "SPRITEIMG", "SPRITEOFF", "SPRITEON", "SPRITEPOS", "SPRITESCALE", "SPRITETRANSP", "STOPMUSIC","STR$",
 			"UNTIL",
 			"VAL",
-			"WAITVBL", "WEND", "WHILE"
+			"WAITKEY", "WAITVBL", "WEND", "WHILE"
 		}
 
 -- liste des identifiants de commandes
@@ -102,6 +102,7 @@ cmd["GETPEN"].ret = VAR_INTEGER
 cmd["HEX$"].ret = VAR_STRING
 cmd["INKEY$"].ret = VAR_STRING
 cmd["INPUT"].ret = VAR_STRING
+cmd["MOD"].ret = VAR_INTEGER
 cmd["SGN"].ret = VAR_NUM
 cmd["STR$"].ret = VAR_STRING
 cmd["VAL"].ret = VAR_NUM
@@ -129,6 +130,7 @@ cmd["LINE"].pmin, cmd["LINE"].pmax = 4, 4
 cmd["LOADBOB"].pmin, cmd["LOADBOB"].pmax = 2, 2
 cmd["LOADIMAGE"].pmin, cmd["LOADIMAGE"].pmax = 1, 1
 cmd["LOCATE"].pmin, cmd["LOCATE"].pmax = 2, 2
+cmd["MOD"].pmin, cmd["MOD"].pmax = 2, 2
 cmd["MODE"].pmin, cmd["MODE"].pmax = 1, 1
 cmd["MOVE"].pmin, cmd["MOVE"].pmax = 2, 2
 cmd["MOVER"].pmin, cmd["MOVER"].pmax = 2, 2
@@ -169,6 +171,7 @@ cmd["GRAPHPRINT"].ptype = {VAR_POLY}
 cmd["IF"].ptype = {VAR_CONDITION}
 cmd["LOADIMAGE"].ptype = {VAR_STRING}
 cmd["LOADBOB"].ptype = {VAR_STRING, VAR_INTEGER}
+cmd["MOD"].ptype = {VAR_INTEGER}
 cmd["MODE"].ptype = {VAR_INTEGER}
 cmd["PASTEBOB"].ptype = {VAR_INTEGER, VAR_FLOAT, VAR_FLOAT}
 cmd["PRINT"].ptype = {VAR_POLY}

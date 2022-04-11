@@ -757,52 +757,59 @@ function Exec(t, l)
 				local c, p, e
 				c, p, i, e = GetFunction(t, i)
 				if e ~= OK then return nil, e end
+				
+				local pn = 0
+				
+				for j = 1, #p do
+					pn = pn + 1
+					if #cmd[c].ptype == 1 then pn = 1 end
 
-				-- quel est le type de paramètres requis par la commande ?
-				if cmd[c].ptype[pnum] == VAR_STRING then
-					p, e = EvalString(p)
-					if e ~= OK then return nil, e end
-					local lst = {Trim(p, "\"")}
-					local e, ch = ExecOne(c, lst)
-					if e ~= OK then return nil, e end
-
-					param = param .. ch
-				elseif cmd[c].ptype[pnum] == VAR_FLOAT then
-					if tostring(Val(p)) ~= p then
-						p, e = EvalFloat(p)
+					-- quel est le type de paramètres requis par la commande ?
+					if cmd[c].ptype[pn] == VAR_STRING then
+						p[j], e = EvalString(p[j])
 						if e ~= OK then return nil, e end
-					end
-					
-					local lst = {tostring(p)}
-					local e, ch = ExecOne(c, lst)
-					if e ~= OK then return nil, e end
-					
-					param = param .. ch
-				elseif cmd[c].ptype[pnum] == VAR_INTEGER then
-					if tostring(Val(p)) ~= p then
-						p, e = EvalInteger(p)
+						local lst = {Trim(p[j], "\"")}
+						local e, ch = ExecOne(c, lst)
 						if e ~= OK then return nil, e end
-					end
-
-					local lst = {tostring(p)}
-					local e, ch = ExecOne(c, lst)
-					if e ~= OK then return nil, e end
-					
-					param = param .. ch
-				elseif cmd[c].ptype[pnum] == VAR_NUM then
-					if tostring(Val(p)) ~= p then
-						p, e = EvalFloat(p)
-						if e ~= OK then
-							p, e = EvalInteger(p)
+	
+						param = param .. ch
+					elseif cmd[c].ptype[pn] == VAR_FLOAT then
+						if tostring(Val(p[j])) ~= p[j] then
+							p[j], e = EvalFloat(p[j])
+							if e ~= OK then return nil, e end
 						end
+						
+						local lst = {tostring(p[j])}
+						local e, ch = ExecOne(c, lst)
 						if e ~= OK then return nil, e end
+						
+						param = param .. ch
+					elseif cmd[c].ptype[pn] == VAR_INTEGER then
+						if tostring(Val(p[j])) ~= p[j] then
+							p[j], e = EvalInteger(p[j])
+							if e ~= OK then return nil, e end
+						end
+	
+						local lst = {tostring(p[j])}
+						local e, ch = ExecOne(c, lst)
+						if e ~= OK then return nil, e end
+						
+						param = param .. ch
+					elseif cmd[c].ptype[pn] == VAR_NUM then
+						if tostring(Val(p[j])) ~= p[j] then
+							p[j], e = EvalFloat(p[j])
+							if e ~= OK then
+								p[j], e = EvalInteger(p[j])
+							end
+							if e ~= OK then return nil, e end
+						end
+						
+						local lst = {tostring(p[j])}
+						local e, ch = ExecOne(c, lst)
+						if e ~= OK then return nil, e end
+						
+						param = param .. ch
 					end
-					
-					local lst = {tostring(p)}
-					local e, ch = ExecOne(c, lst)
-					if e ~= OK then return nil, e end
-					
-					param = param .. ch
 				end
 			elseif t[i].typ == "number" then
 				param = param .. t[i].sym
@@ -846,7 +853,7 @@ end
 -- évaluer le paramètre fourni et retourner la valeur due à son type
 function EvalParam(param, typ)
 	local e = nil
-
+	
 	if typ == VAR_INTEGER then
 		l, e = EvalInteger(param)
 		if e == OK then return l, e end
@@ -900,7 +907,7 @@ function EvalInteger(s)
 	local v, e = EvalFloat(s)
 	
 	if e == OK then	return Round(v), OK end
-	
+
 	return nil, e
 end
 
@@ -1021,6 +1028,8 @@ function EvalFloat(s)
 			s = s .. t[i].sym
 		elseif t[i].typ == "closebracket" then
 			s = s .. t[i].sym
+		--elseif t[i].typ == "comma" then -- TODO: à supprimer ?
+			--s = s .. t[i].sym
 		elseif t[i].typ ~= "poly" then
 			-- symbole non autorisé ? erreur de syntaxe !
 			return nil, ERR_SYNTAX_ERROR
@@ -1028,7 +1037,7 @@ function EvalFloat(s)
 				
 		i = i + 1
 	end
-
+	
 	-- valeur de retour
 	local v = 0
 
@@ -1350,7 +1359,7 @@ function GetFunction(t, i)
 	if i == #t or i + 1 == #t then return nil, nil, nil, ERR_SYNTAX_ERROR end
 
 	local c = t[i].sym
-	local p = ""
+	local p = {}
 
 	if t[i + 1].typ ~= "openbracket" then return nil, nil, nil, ERR_SYNTAX_ERROR end
 	
@@ -1366,12 +1375,12 @@ function GetFunction(t, i)
 			break
 		elseif t[j].typ == "closebracket" then
 			cb = cb + 1
-			p = p .. t[j].sym
+			table.insert(p, t[j].sym)
 		elseif t[j].typ == "openbracket" then
 			ob = ob + 1
-			p = p .. t[j].sym
+			table.insert(p, t[j].sym)
 		else
-			p = p .. t[j].sym
+			table.insert(p, t[j].sym)
 		end
 	end
 	

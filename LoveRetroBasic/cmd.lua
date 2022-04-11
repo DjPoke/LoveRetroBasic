@@ -246,6 +246,11 @@ cmd["LOCATE"].fn = function(lst)
 	return OK
 end
 
+-- commande 'MOD'
+cmd["MOD"].fn = function(lst)
+	return OK, lst[1] % lst[2]
+end
+
 -- commande 'MODE'
 cmd["MODE"].fn = function(lst)
 	SetMode(lst[1])
@@ -475,6 +480,13 @@ cmd["VAL"].fn = function(lst)
 	if lst[1] == nil or lst[1] == "" then return OK, 0 end
 
 	return OK, Val(lst[1])
+end
+
+-- commande 'WAITKEY'
+cmd["WAITKEY"].fn = function(lst)
+	WaitKey()
+
+	return OK
 end
 
 -- commande 'WAITVBL'

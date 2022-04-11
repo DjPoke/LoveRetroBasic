@@ -9,6 +9,10 @@ function GetCharacter()
 	return Chr(0)
 end
 
+-- attendre la frappe d'une touche
+function WaitKey()
+end
+
 -- effacer le buffer clavier
 function ClearKeyboardBuffer()
 	kb_buffer = ""
