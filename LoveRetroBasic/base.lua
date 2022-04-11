@@ -509,10 +509,10 @@ function Exec(t, l)
 			local cm = false
 
 			while true do
-				if t[i].typ == "whitespace" and nexp == "" then
+				if t[i].typ == "whitespace" and (nexp == "" or i == #t) then
 					-- vérifier la suite
 					i, e, stp = PrivateInc(i, #t, cs, lst, nexp)
-					if e ~= OK then return e end
+					if e ~= OK then return e end	
 					if stp then
 						if cm == true then return ERR_SYNTAX_ERROR end
 						
