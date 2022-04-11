@@ -102,7 +102,6 @@ cmd["GETPEN"].ret = VAR_INTEGER
 cmd["HEX$"].ret = VAR_STRING
 cmd["INKEY$"].ret = VAR_STRING
 cmd["INPUT"].ret = VAR_STRING
-cmd["LOADBOB"].ret = VAR_INTEGER
 cmd["SGN"].ret = VAR_NUM
 cmd["STR$"].ret = VAR_STRING
 cmd["VAL"].ret = VAR_NUM

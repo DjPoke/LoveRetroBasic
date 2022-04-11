@@ -282,9 +282,9 @@ end
 
 -- commande 'LOADBOB'
 cmd["LOADBOB"].fn = function(lst)
-	retValue = LoadBOB(lst[1], currentRelativeFolder .. imageFolder, lst[2])
+	LoadBOB(lst[1], currentRelativeFolder .. imageFolder, lst[2])
 	
-	return OK, retValue
+	return OK
 end
 
 -- commande 'LOADIMAGE'

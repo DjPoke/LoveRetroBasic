@@ -429,11 +429,12 @@ function Exec(t, l)
 	local comma = false
 	local cs = ""
 	local param = ""
+	local pnum = 1
 	local lst = {}
 	local var = ""
 	local varVal = nil
 	local varType = nil
-	
+
 	while i <= #t do
 		-- détecter les erreurs
 		if t[i].typ == "err" then
@@ -446,6 +447,7 @@ function Exec(t, l)
 				startAction = "command"
 				action = "find_whitespace" -- on recherche ensuite un symbole 'espace'
 				cs = t[i].sym
+
 				-- erreur si une fonction est trouvée en tant que commande, sans assignation à une variable
 				if cmd[cs].ret > 0 then
 					return ERR_SYNTAX_ERROR
@@ -580,7 +582,10 @@ function Exec(t, l)
 				-- on cherche un espace après une commande mais on trouve ni espace ni deux-points
 				--
 				-- gestion des paramètres 'chaîne de caractère' tout de suite après la commande
-				if cmd[cs].ptype[1] == VAR_POLY or cmd[cs].ptype[1] == VAR_STRING then
+
+				if cmd[cs].ptype[pnum] == VAR_POLY or cmd[cs].ptype[pnum] == VAR_STRING then
+					pnum = pnum + 1
+					
 					if t[i].typ == "poly" then
 						action = "find_first_parameter"
 						param = t[i].sym
@@ -713,7 +718,9 @@ function Exec(t, l)
 				if e ~= OK then return nil, e end
 
 				-- quel est le type de paramètres requis par la commande ?
-				if cmd[c].ptype[1] == VAR_STRING then
+				if cmd[c].ptype[pnum] == VAR_STRING then
+					pnum = pnum + 1
+					
 					p, e = EvalString(p)
 					if e ~= OK then return nil, e end
 					local lst = {Trim(p, "\"")}
@@ -721,7 +728,9 @@ function Exec(t, l)
 					if e ~= OK then return nil, e end
 
 					param = param .. ch
-				elseif cmd[c].ptype[1] == VAR_FLOAT then
+				elseif cmd[c].ptype[pnum] == VAR_FLOAT then
+					pnum = pnum + 1
+					
 					if tostring(Val(p)) ~= p then
 						p, e = EvalFloat(p)
 						if e ~= OK then return nil, e end
@@ -732,7 +741,9 @@ function Exec(t, l)
 					if e ~= OK then return nil, e end
 					
 					param = param .. ch
-				elseif cmd[c].ptype[1] == VAR_INTEGER then
+				elseif cmd[c].ptype[pnum] == VAR_INTEGER then
+					pnum = pnum + 1
+
 					if tostring(Val(p)) ~= p then
 						p, e = EvalInteger(p)
 						if e ~= OK then return nil, e end
@@ -743,7 +754,9 @@ function Exec(t, l)
 					if e ~= OK then return nil, e end
 					
 					param = param .. ch
-				elseif cmd[c].ptype[1] == VAR_NUM then
+				elseif cmd[c].ptype[pnum] == VAR_NUM then
+					pnum = pnum + 1
+
 					if tostring(Val(p)) ~= p then
 						p, e = EvalFloat(p)
 						if e ~= OK then
@@ -799,7 +812,9 @@ end
 function EvalParam(param, typ)
 	local retValue = {}
 	local e = nil
+
 	for i = 1, #typ do
+		print(typ[i])
 		if typ[i] == VAR_INTEGER then
 			l, e = EvalInteger(param)
 
@@ -880,7 +895,7 @@ function EvalParam(param, typ)
 		--elseif typ[i] == VAR_CONSTANT then
 		end
 	end
-		
+
 	return retValue, OK
 end
 
@@ -899,6 +914,8 @@ end
 function EvalFloat(s)
 	if s == nil or s == "" then return nil, ERR_SYNTAX_ERROR end
 
+	local pnum = 1
+	
 	-- analyser l'expression
 	local t = Parser(Lexer(RemoveLabels(s)))
 	s = ""
@@ -926,7 +943,9 @@ function EvalFloat(s)
 			if e ~= OK then return nil, e end
 
 			-- quel est le type de paramètres requis par la commande ?
-			if cmd[c].ptype[1] == VAR_STRING then
+			if cmd[c].ptype[pnum] == VAR_STRING then
+				pnum = pnum + 1
+				
 				p, e = EvalString(p)
 				if e ~= OK then return nil, e end
 
@@ -936,7 +955,9 @@ function EvalFloat(s)
 				if e ~= OK then return nil, e end
 
 				s = s .. tostring(value)
-			elseif cmd[c].ptype[1] == VAR_FLOAT then
+			elseif cmd[c].ptype[pnum] == VAR_FLOAT then
+				pnum = pnum + 1
+
 				if tostring(Val(p)) ~= p then
 					p, e = EvalFloat(p)
 					if e ~= OK then return nil, e end
@@ -948,7 +969,9 @@ function EvalFloat(s)
 				if e ~= OK then return nil, e end
 				
 				s = s .. tostring(value)
-			elseif cmd[c].ptype[1] == VAR_INTEGER then
+			elseif cmd[c].ptype[pnum] == VAR_INTEGER then
+				pnum = pnum + 1
+
 				if tostring(Val(p)) ~= p then
 					p, e = EvalInteger(p)
 					if e ~= OK then return nil, e end
@@ -960,7 +983,9 @@ function EvalFloat(s)
 				if e ~= OK then return nil, e end
 				
 				s = s .. tostring(value)
-			elseif cmd[c].ptype[1] == VAR_NUM then
+			elseif cmd[c].ptype[pnum] == VAR_NUM then
+				pnum = pnum + 1
+
 				if tostring(Val(p)) ~= p then
 					p, e = EvalFloat(p)
 					if e ~= OK then
@@ -1166,6 +1191,8 @@ end
 -- évaluer une expression chaîne de caractères
 function EvalString(s, assign)
 	if s == nil or s == "" then return "", OK end
+	
+	local pnum = 1
 
 	-- évaluer la chaîne dans le cadre d'une assignation de valeur à une variable ?
 	if assign == nil then assign = false end
@@ -1174,13 +1201,14 @@ function EvalString(s, assign)
 	s = ""
 	
 	-- ne pas attendre le prochain symbole d'assemblage des chaînes
+	-- si waitsym est à false
 	local waitsym = false
 	
 	-- symbole d'assemblage indéfini au départ
-	local a = ""
+	local asym = ""
 	
 	-- ou fixé à '+' si une variable reçoit la chaîne en paramètre
-	if assign then a = "+" end
+	if assign then asym = "+" end
 	
 	-- assembler les valeurs
 	local i = 1
@@ -1203,6 +1231,12 @@ function EvalString(s, assign)
 				s = s .. value
 
 				waitsym = true
+			elseif t[i].typ == "number" then
+				local value = t[i].sym
+
+				s = s .. value
+				
+				waitsym = true
 			elseif t[i].typ == "command" then
 				-- vérifier que la commande retourne bien une chaîne de caractères
 				if cmd[t[i].sym].ret ~= VAR_STRING then return nil, ERR_TYPE_MISMATCH end
@@ -1211,9 +1245,11 @@ function EvalString(s, assign)
 				local c, p, e
 				c, p, i, e = GetFunction(t, i)
 				if e ~= OK then return nil, e end
-
+				
 				-- quel est le type de paramètres requis par la commande ?
-				if cmd[c].ptype[1] == VAR_STRING then
+				if cmd[c].ptype[pnum] == VAR_STRING then
+					pnum = pnum + 1
+					
 					p, e = EvalString(p)
 					if e ~= OK then return nil, e end
 
@@ -1224,7 +1260,9 @@ function EvalString(s, assign)
 					s = s .. ch
 					
 					waitsym = true
-				elseif cmd[c].ptype[1] == VAR_FLOAT then
+				elseif cmd[c].ptype[pnum] == VAR_FLOAT then
+					pnum = pnum + 1
+					
 					p, e = EvalFloat(p)
 					if e ~= OK then return nil, e end
 					
@@ -1235,7 +1273,9 @@ function EvalString(s, assign)
 					s = s .. ch
 					
 					waitsym = true
-				elseif cmd[c].ptype[1] == VAR_INTEGER then
+				elseif cmd[c].ptype[pnum] == VAR_INTEGER then
+					pnum = pnum + 1
+					
 					p, e = EvalInteger(p)
 					if e ~= OK then return nil, e end
 
@@ -1246,7 +1286,9 @@ function EvalString(s, assign)
 					s = s .. ch
 					
 					waitsym = true
-				elseif cmd[c].ptype[1] == VAR_NUM then
+				elseif cmd[c].ptype[pnum] == VAR_NUM then
+					pnum = pnum + 1
+					
 					p, e = EvalFloat(p)
 					if e ~= OK then
 						p, e = EvalInteger(p)
@@ -1266,27 +1308,27 @@ function EvalString(s, assign)
 			else
 				return nil, ERR_TYPE_MISMATCH
 			end
-		elseif a == ";" and t[i].typ == "plus"  then
+		elseif asym == ";" and t[i].typ == "plus"  then
 			return nil, ERR_SYNTAX_ERROR
-		elseif a == "+" and t[i].typ == "semicolon" then
+		elseif asym == "+" and t[i].typ == "semicolon" then
 			return nil, ERR_SYNTAX_ERROR
-		elseif a == ";" and t[i].typ == "semicolon"  then
+		elseif asym == ";" and t[i].typ == "semicolon"  then
 			waitsym = false
-		elseif a == "+" and t[i].typ == "plus" then
+		elseif asym == "+" and t[i].typ == "plus" then
 			waitsym = false
-		elseif a == "" then
+		elseif asym == "" then
 			if t[i].typ == "semicolon" then
-				a = ";"
+				asym = ";"
 			elseif t[i].typ == "plus" then
-				a = "+"
+				asym = "+"
 			end
 			
 			waitsym = false
 		end
-
+		
 		i = i + 1
 	end
-	
+
 	-- si il y a un plus de trop en fin de ligne alors erreur
 	if t[#t].typ == "plus" then
 		return nil, ERR_SYNTAX_ERROR

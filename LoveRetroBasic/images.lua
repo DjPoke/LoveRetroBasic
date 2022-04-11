@@ -163,8 +163,6 @@ function LoadBOB(filename, path, n)
 	
 	-- rétablir le chemin
 	love.filesystem.setIdentity(memPath)
-
-	return bob[n]
 end
 
 -- charger une image png et le placer en fond d'écran
