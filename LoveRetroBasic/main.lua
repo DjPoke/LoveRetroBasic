@@ -708,6 +708,7 @@ function love.load()
 
 	-- charger le son de bip touches
 	beepSound = love.audio.newSource("audio/beep.ogg", "static")
+	validateSound = love.audio.newSource("audio/click.ogg", "static")
 
 	-- créer les renderers
 	CreateRenderers()
@@ -1359,7 +1360,7 @@ function love.update(dt)
 
 					SaveProgram()
 					
-					[1] = cursor[1]
+					safeCursor[1] = cursor[1]
 					safeCursor[2] = cursor[2]
 					appState = LEVEL_MODE
 					LevelEditor()
@@ -1478,19 +1479,26 @@ function love.update(dt)
 					-- remise à zéro d'un éventuel message texte
 					msg = nil
 
-					ShowCursor(false)
+					local title = "Question"
+					local message = "Delete your program ?"
+					local buttons = {"Yes", "No", "Cancel", escapebutton = 2}
 
-					ResetEditor()
+					local pressedbutton = love.window.showMessageBox(title, message, buttons)
+					if pressedbutton == 1 then
+						ShowCursor(false)
 
-					-- effacer la RAM
-					for i = 0, MAX_RAM - 1 do
-						ram[i] = ""
-					end
-					ramLine = 1
+						ResetEditor()
 
-					Locate(1, 1)
+						-- effacer la RAM
+						for i = 0, MAX_RAM - 1 do
+							ram[i] = ""
+						end
+						ramLine = 1
+
+						Locate(1, 1)
 					
-					ShowCursor(true)
+						ShowCursor(true)
+					end
 
 					return
 				elseif x == 39 then
@@ -2490,6 +2498,49 @@ function love.draw()
 	if appState == EDIT_MODE then
 		-- afficher la ligne et colonne courante, ainsi que le nombre de lignes saisies
 		PrintInfosString("Ln " .. tostring(ramLine) .. " Col " .. tostring(cursor[1] + editorOffsetX), 2, "black")
+		
+		local nfo = ""
+		
+		x = math.floor(mx / 8)
+		y = math.floor(my / 8)
+		
+		if y == 0 then
+			if x == 0 then
+				nfo = "Sprite Editor"
+				PrintInfosString(nfo, 2, "orange", 17)
+			elseif x == 2 then
+				nfo = "Level Editor"
+				PrintInfosString(nfo, 2, "orange", 17)
+			elseif x == 4 then
+				nfo = "Noise Editor"
+				PrintInfosString(nfo, 2, "orange", 17)
+			elseif x == 6 then
+				nfo = "Tracker"
+				PrintInfosString(nfo, 2, "orange", 17)
+			elseif x == 8 then
+				nfo = "Help"
+				PrintInfosString(nfo, 2, "green", 17)
+			elseif x == 11 then
+				nfo = "Run Program"
+				PrintInfosString(nfo, 2, "red", 17)
+			elseif x == 13 then
+				nfo = "Debug Program"
+				PrintInfosString(nfo, 2, "red", 17)
+			elseif x == 16 then
+				nfo = "Save Program"
+				PrintInfosString(nfo, 2, "black", 17)
+			elseif x == 18 then
+				nfo = "Load Program"
+				PrintInfosString(nfo, 2, "black", 17)
+			elseif x == 21 then
+				nfo = "Import/Export Program"
+				PrintInfosString(nfo, 2, "blue", 17)
+			elseif x == 24 then
+				nfo = "Delete Program"
+				PrintInfosString(nfo, 2, "red", 17)
+			end
+		end
+
 	end
 
 	-- afficher la position de la souris
