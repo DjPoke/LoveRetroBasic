@@ -401,27 +401,6 @@ function AssignToVar(var, vType, s)
 	return ERR_TYPE_MISMATCH
 end
 
--- fonction privée
-function PrivateIncExec(indice, indiceMax, commande, liste, numparam)
-	if numparam == nil then numparam = "" end
-
-	local value = nil
-	
-	indice = indice + 1
-	
-	-- exécuter une commande isolée, sans paramètres
-	if indice > indiceMax then
-		if numparam ~= "" then table.insert(liste, numparam) end
-		
-		e, value = ExecOne(commande, liste)
-		
-		-- erreur ?
-		if e ~= OK then return indice, e, true, value else return indice, OK, true, value end
-	end
-	
-	return indice, OK, false, value
-end
-
 -- exploser la ligne de commande et l'exécuter
 function Exec(t, l)
 	-- retourner si la table est vide
@@ -431,6 +410,7 @@ function Exec(t, l)
 	local obracket = 0
 	local cbracket = 0
 	local cln = 0
+	local lst = {}
 	
 	for i = 1, #t do
 		if t[i].typ == "openbracket" then
@@ -491,9 +471,14 @@ function Exec(t, l)
 		if cmd[cs].ret > 0 then return ERR_SYNTAX_ERROR end
 		
 		-- vérifier la suite
-		i, e, stp = PrivateIncExec(i, #t, cs, {})
-		if e ~= OK then return e, nil end
-		if stp then return OK, nil end
+		i = i + 1
+
+		if i > #t then
+			-- exécuter la commande
+			local e = ExecOne(cs, lst)
+						
+			return e
+		end
 
 		-- vérifier le type de paramètres admis par cette commande
 		if #cmd[cs].ptype > 1 then
@@ -502,28 +487,21 @@ function Exec(t, l)
 			maxpnum = cmd[cs].pmax
 		end
 		
-		-- si l'expression est de type chaîne poly...
 		if maxpnum < 0 then
+			-- si l'expression est de type chaîne poly...
 			e, lst = EvalExpression(t, tp, i, cs, maxpnum)
-
-			-- exécuter la commande
-			local e, value = ExecOne(cs, lst)
-						
-			return e
-		-- si c'est une liste de paramètres
 		elseif t[i].typ == "whitespace" then
-			e, lst = EvalParamList(t, i, cs, maxpnum)
-			
-			-- exécuter la commande
-			local e, value = ExecOne(cs, lst)
-						
-			return e
+			-- si c'est une liste de paramètres
+			e, lst = EvalParamList(t, i, cs, maxpnum)			
 		else
-			return ERR_SYNTAX_ERROR, nil
+			return ERR_SYNTAX_ERROR
 		end
 	end
 
-	return OK
+	-- exécuter la commande
+	local e = ExecOne(cs, lst)
+						
+	return e
 end
 
 -- évaluer toute une expression chaîne de caractère
@@ -549,7 +527,7 @@ function EvalExpression(t, tp, i, cs, maxpnum)
 				for j = 1, #lst do
 					p = p .. lst[j]
 				end
-	
+				
 				p, e = EvalString(p)
 				if e ~= OK then return e, lst end
 	
@@ -606,12 +584,12 @@ function EvalExpression(t, tp, i, cs, maxpnum)
 				table.remove(t, i)
 
 				-- évaluer l'expression
-				e, lst = EvalParamList(t, i, cs2, maxpnum)
+				e, lst2 = EvalParamList(t, i, cs2, maxpnum)
 
 				-- exécuter la commande
-				local e, value = ExecOne(cs2, lst)
-
-				lst = {"\"" .. value .. "\""}
+				local e, value = ExecOne(cs2, lst2)
+				
+				table.insert(lst, "\"" .. value .. "\"")
 				
 				return e, lst
 			else
@@ -638,7 +616,7 @@ function EvalExpression(t, tp, i, cs, maxpnum)
 			if nexp ~= "" then
 				local s, e = EvalFloat(nexp)
 				if e ~= OK then return e, nil end
-				
+
 				table.insert(lst, s)
 				
 				nexp = ""
