@@ -517,15 +517,15 @@ function Exec(t, l)
 				if e ~= OK then return e end
 			elseif t[i].typ == "whitespace" then
 				-- si c'est une liste de paramètres
-				e, lst = EvalParamList(t, i, cs, maxpnum)			
+				e, lst = EvalParamList(t, i, cs, maxpnum)
 
 				if e ~= OK then return e end
 			else
 				return ERR_SYNTAX_ERROR
 			end
 		end
-		
-		-- exécuter la commande
+
+		-- exécuter la commande avec ses paramètres
 		local e = ExecOne(cs, lst)
 
 		return e
@@ -680,6 +680,12 @@ function AssembleString(t, cs, lst, sig)
 			if sig == "plus" then break end
 
 			sig = "semicolon"
+		elseif t[i].typ == "word" then
+			local ln, e = GetLabelLine(t[i].sym)
+
+			table.insert(lst, ln)
+			
+			if e~= OK then return ERR_UNDEFINED_LABEL, nil, sig end
 		else
 			break
 		end
@@ -749,16 +755,19 @@ function EvalParamList(t, i, cs, maxpnum)
 	local lst = {}
 	local sig = nil
 	local nexp = ""
-	local value = ""
-	
+	local value = ""	
 	local cm = false
+	local limit = #cmd[cs].ptype
 
 	-- scanner les types de paramètres d'entrées nécessaires
 	for j = 1, maxpnum do
+		local k = math.min(j, limit)
+		
 		-- ignorer les espaces
 		while t[i].typ == "whitespace" do
 			-- vérifier la suite
 			i = i + 1
+			
 			if i > #t then return OK, lst end
 		end
 				
@@ -779,7 +788,7 @@ function EvalParamList(t, i, cs, maxpnum)
 		end
 
 		-- détecter les paramètres numériques entiers
-		if cmd[cs].ptype[j] == VAR_INTEGER then
+		if cmd[cs].ptype[k] == VAR_INTEGER then
 			if t[i].typ == "number" then
 				cm = true
 
@@ -791,11 +800,20 @@ function EvalParamList(t, i, cs, maxpnum)
 				-- vérifier la suite
 				i = i + 1
 				if i > #t then return OK, lst end
+			elseif t[i].typ == "word" then
+				local value, e = GetVarValue(t[i].sym, VAR_INTEGER)
+				if e ~= OK then return e, nil end
+				
+				table.insert(lst, value)
+
+				-- vérifier la suite
+				i = i + 1
+				if i > #t then return OK, lst end
 			else
 				return ERR_TYPE_MISMATCH, nil
 			end
 		-- détecter les paramètres numériques réels
-		elseif cmd[cs].ptype[j] == VAR_FLOAT then
+		elseif cmd[cs].ptype[k] == VAR_FLOAT then
 			if t[i].typ == "number" then
 				cm = true
 				local n, e = EvalFloat(t[i].sym)
@@ -806,10 +824,19 @@ function EvalParamList(t, i, cs, maxpnum)
 				-- vérifier la suite
 				i = i + 1
 				if i > #t then return OK, lst end
+			elseif t[i].typ == "word" then
+				local value, e = GetVarValue(t[i].sym, VAR_FLOAT)
+				if e ~= OK then return e, nil end
+				
+				table.insert(lst, value)
+
+				-- vérifier la suite
+				i = i + 1
+				if i > #t then return OK, lst end
 			else
 				return ERR_TYPE_MISMATCH, nil
 			end
-		elseif cmd[cs].ptype[j] == VAR_NUM then
+		elseif cmd[cs].ptype[k] == VAR_NUM then
 			if t[i].typ == "number" then
 				cm = true
 
@@ -821,10 +848,19 @@ function EvalParamList(t, i, cs, maxpnum)
 				-- vérifier la suite
 				i = i + 1
 				if i > #t then return OK, lst end
+			elseif t[i].typ == "word" then
+				local value, e = GetVarValue(t[i].sym, VAR_FLOAT)
+				if e ~= OK then return e, nil end
+				
+				table.insert(lst, value)
+
+				-- vérifier la suite
+				i = i + 1
+				if i > #t then return OK, lst end
 			else
 				return ERR_TYPE_MISMATCH, nil
 			end
-		elseif cmd[cs].ptype[j] == VAR_POLY or cmd[cs].ptype[j] == VAR_STRING then
+		elseif cmd[cs].ptype[k] == VAR_POLY or cmd[cs].ptype[k] == VAR_STRING then
 			if t[i].typ == "poly" or t[i].typ == "string" then
 				cm = true
 
@@ -836,485 +872,28 @@ function EvalParamList(t, i, cs, maxpnum)
 				-- vérifier la suite
 				i = i + 1
 				if i > #t then return OK, lst end
+			elseif t[i].typ == "word" then
+				local value, e = GetVarValue(t[i].sym, VAR_STRING)
+				if e ~= OK then return e, nil end
+				
+				table.insert(lst, value)
+
+				-- vérifier la suite
+				i = i + 1
+				if i > #t then return OK, lst end
 			else
 				return ERR_TYPE_MISMATCH, nil
 			end
+		elseif cmd[cs].ptype[k] == VAR_LABEL then
+			local ln, e = GetLabelLine(t[i].sym)
+
+			table.insert(lst, ln)
+			
+			if e~= OK then return ERR_UNDEFINED_LABEL, nil end
 		end
 	end
-
+	
 	return OK, lst
-end
-
--- exécuter les instructions basic présentes sur une ligne
--- TODO : à supprimer dès que c'est prêt
-function Explode(t, l)
-	-- retourner si la table est vide
-	if t == nil or #t == 0 then return OK end
-		
-	-- retourner si le nombre de parenthèses est impair
-	local b, ob, cb = 0, 0, 0
-	for i = 1, #t do
-		if t[i].typ == "openbracket" then
-			b = b + 1
-			ob = ob + 1
-		elseif t[i].typ == "closebracket" then
-			cb = cb + 1
-			b = b - 1
-		end
-		
-		if b < 0 then return ERR_SYNTAX_ERROR end
-	end
-	if ob ~= cb then return ERR_SYNTAX_ERROR end
-
-	-- interpréter les morceaux de ligne
-	local i = 1
-	local c = 0
-	local startAction = ""
-	local action = ""
-	local comma = false
-	local cs = ""
-	local param = ""
-	local pnum = 1
-	local lst = {}
-	local var = ""
-	local varVal = nil
-	local varType = nil
-
-	while i <= #t do
-		-- détecter les erreurs
-		if t[i].typ == "err" then
-			return ERR_SYNTAX_ERROR
-		end
-		
-		if action == "" then
-			if t[i].typ == "command" then
-				-- une commande a été trouvée
-				startAction = "command"
-				action = "find_whitespace" -- on recherche ensuite un symbole 'espace'
-				cs = t[i].sym
-
-				-- erreur si une fonction est trouvée en tant que commande, sans assignation à une variable
-				if cmd[cs].ret > 0 then
-					return ERR_SYNTAX_ERROR
-				end
-			elseif t[i].typ == "word"  then
-				-- une variable integer a peut-être été trouvée,
-				-- il faut voir si elle existe en vram ou la créer sinon
-				for j = 1, #vram do
-					if vram[j][1] == string.upper(t[i].sym) then
-						var = t[j].sym
-						varVal = vram[j][2]
-						varType = VAR_INTEGER
-						break
-					elseif j == #vram then
-						if #vram < MAX_RAM then
-							var = t[j].sym
-							varVal = 0
-							varType = VAR_INTEGER
-							table.insert(vram, {string.upper(var), varVal, varType})
-							break
-						else
-							return nil, ERR_MEMORY_FULL
-						end
-					end
-				end
-				
-				-- si la mémoire de stockage des variables est vide, enregistrer directement
-				if #vram == 0 then
-					var = t[i].sym
-					varVal = 0
-					varType = VAR_INTEGER
-					table.insert(vram, {string.upper(var), varVal, varType})
-				end
-				
-				-- chercher ensuite le signe égal pour une assignation
-				startAction = "assign"
-				action = "find_equal"
-				param = ""
-			elseif t[i].typ == "integer"  then
-				-- une variable integer a peut-être été trouvée,
-				-- il faut voir si elle existe en vram ou la créer sinon
-				for j = 1, #vram do
-					if vram[j][1] == string.upper(t[i].sym) then
-						var = t[j].sym
-						varVal = vram[j][2]
-						varType = VAR_INTEGER
-						break
-					elseif j == #vram then
-						if #vram < MAX_RAM then
-							var = t[j].sym
-							varVal = 0
-							varType = VAR_INTEGER
-							table.insert(vram, {string.upper(var), varVal, varType})
-							break
-						else
-							return nil, ERR_MEMORY_FULL
-						end
-					end
-				end
-				
-				-- si la mémoire de stockage des variables est vide, enregistrer directement
-				if #vram == 0 then
-					var = t[i].sym
-					varVal = 0
-					varType = VAR_INTEGER
-					table.insert(vram, {string.upper(var), varVal, varType})
-				end
-				
-				-- chercher ensuite le signe égal pour une assignation
-				startAction = "assign"
-				action = "find_equal"
-				param = ""
-			elseif t[i].typ == "float"  then
-				-- une variable float a peut-être été trouvée,
-				-- il faut voir si elle existe en vram ou la créer sinon
-				for j = 1, #vram do
-					if vram[j][1] == string.upper(t[i].sym) then
-						var = t[j].sym
-						varVal = vram[j][2]
-						varType = VAR_FLOAT
-						break
-					elseif j == #vram then
-						if #vram < MAX_RAM then
-							var = t[j].sym
-							varVal = 0.0
-							varType = VAR_FLOAT
-							table.insert(vram, {string.upper(var), varVal, varType})
-							break
-						else
-							return nil, ERR_MEMORY_FULL
-						end
-					end
-				end
-				
-				-- si la mémoire de stockage des variables est vide, enregistrer directement
-				if #vram == 0 then
-					var = t[i].sym
-					varVal = 0.0
-					varType = VAR_FLOAT
-					table.insert(vram, {string.upper(var), varVal, varType})
-				end
-				
-				-- chercher ensuite le signe égal pour une assignation
-				startAction = "assign"
-				action = "find_equal"
-				param = ""
-			elseif t[i].typ == "string" then
-				-- une variable string a peut-être été trouvée,
-				-- il faut voir si elle existe en vram ou la créer sinon
-				for j = 1, #vram do
-					if vram[j][1] == string.upper(t[i].sym) then
-						var = t[j].sym
-						varVal = vram[j][2]
-						varType = VAR_STRING
-						break
-					elseif j == #vram then
-						if #vram < MAX_RAM then
-							var = t[i].sym
-							varVal = ""
-							varType = VAR_STRING
-							table.insert(vram, {string.upper(var), varVal, varType})
-							break
-						else
-							return nil, ERR_MEMORY_FULL
-						end
-					end
-				end
-				
-				-- si la mémoire de stockage des variables est vide, enregistrer directement
-				if #vram == 0 then
-					var = t[i].sym
-					varVal = ""
-					varType = VAR_STRING
-					table.insert(vram, {string.upper(var), varVal, varType})
-				end
-				
-				-- chercher ensuite le signe égal pour une assignation
-				startAction = "assign"
-				action = "find_equal"
-				param = ""
-			end
-		elseif action == "find_whitespace" then
-			if t[i].typ == "whitespace" then
-				-- on a trouvé un espace après une commande
-				action = "find_first_parameter" -- on cherche maintenant le 1er paramètre éventuel
-				param = ""
-			elseif t[i].typ == "colon" then
-				-- on rencontre deux points après une commande, la commande s'arrête à ce paramètre
-				action = ""
-				if param ~= nil and param ~= "" then
-					local p, e = EvalParam(param, cmd[cs].ptype[pnum])
-					
-					pnum = pnum + 1
-					if #cmd[cs].ptype == 1 then pnum = 1 end
-					
-					if e ~= OK then return e end
-					if p ~= nil then
-						table.insert(lst, p)
-					end
-					param = ""
-				end
-
-				e = ExecOne(cs, lst)
-				if e ~= OK then return e end
-				cs = ""
-				lst = {}
-			else
-				-- on cherche un espace après une commande mais on trouve ni espace ni deux-points
-				--
-				-- gestion des paramètres 'chaîne de caractère' tout de suite après la commande
-				if cmd[cs].ptype[pnum] == VAR_POLY or cmd[cs].ptype[pnum] == VAR_STRING then	
-					if t[i].typ == "poly" then
-						action = "find_first_parameter"
-						param = t[i].sym
-					else
-						return ERR_SYNTAX_ERROR
-					end
-				else
-					return ERR_SYNTAX_ERROR
-				end
-			end
-		elseif action == "find_first_parameter" then
-			if t[i].typ ~= "comma" and t[i].typ ~= "whitespace" and t[i].typ ~= "colon" then
-				-- assemblage du premier paramètre
-				param = param .. t[i].sym
-			elseif t[i].typ == "comma" then
-				-- on rencontre une virgule sans paramètre
-				if param == nil or param == "" then
-					return ERR_OPERAND_MISSING
-				end
-				
-				-- on rencontre une virgule, on va chercher le paramètres suivant
-				action = "find_next_parameter"
-				local p, e = EvalParam(param, cmd[cs].ptype[pnum])
-
-				pnum = pnum + 1
-				if #cmd[cs].ptype == 1 then pnum = 1 end
-				
-				if e ~= OK then return e end
-				if p ~= nil then
-					table.insert(lst, p)
-				end
-				param = ""
-				comma = true
-			elseif t[i].typ == "colon" then
-				-- on rencontre deux points, la commande s'arrête à ce paramètre
-				action = ""
-				local p, e = EvalParam(param, cmd[cs].ptype[pnum])
-
-				pnum = pnum + 1
-				if #cmd[cs].ptype == 1 then pnum = 1 end
-				
-				if e ~= OK then return e end
-				if p ~= nil then
-					table.insert(lst, p)
-				end
-				param = ""
-
-				e = ExecOne(cs, lst)
-				if e ~= OK then return e end
-				cs = ""
-				lst = {}
-			else
-				-- assemblage du premier paramètre
-				param = param .. t[i].sym
-			end
-		elseif action == "find_next_parameter" then
-			if t[i].typ ~= "comma" and t[i].typ ~= "whitespace" and t[i].typ ~= "colon" then
-				param = param .. t[i].sym
-			elseif t[i].typ == "comma" then
-				-- on rencontre une virgule sans paramètre
-				if param == nil or param == "" then
-					return ERR_OPERAND_MISSING
-				end
-				-- on rencontre une virgule, on va chercher le paramètres suivant
-				local p, e = EvalParam(param, cmd[cs].ptype[pnum])
-
-				pnum = pnum + 1
-				if #cmd[cs].ptype == 1 then pnum = 1 end
-				
-				if e ~= OK then return e end
-				if p ~= nil then
-					table.insert(lst, p)
-				end
-				param = ""
-				comma = true
-			else
-				action = ""
-				local p, e = EvalParam(param, cmd[cs].ptype[pnum])
-
-				pnum = pnum + 1
-				if #cmd[cs].ptype == 1 then pnum = 1 end
-				
-				if e ~= OK then return e end
-				if p ~= nil then
-					table.insert(lst, p)
-				end
-				param = ""
-
-				e = ExecOne(cs, lst)
-				if e ~= OK then return e end
-				cs = ""
-				lst = {}
-			end
-		elseif action == "find_equal" then
-			if t[i].typ ~= "whitespace" and t[i].typ ~= "equal" then
-				return ERR_SYNTAX_ERROR
-			elseif t[i].typ == "equal" then
-				action = "find_expression"
-				param = ""
-			end
-		elseif action == "find_expression" then
-			if t[i].typ == "colon" then
-				e = AssignToVar(var, varType, param)
-				if e ~= OK then return e end
-				action = ""
-				param = ""
-			elseif t[i].typ == "whitespace" then
-				-- ne rien faire
-			elseif t[i].typ == "plus" then
-				param = param .. t[i].sym
-			elseif t[i].typ == "integer" or t[i].typ == "word" then
-				if varType == VAR_INTEGER or varType == VAR_FLOAT then
-					param = param .. t[i].sym
-				end
-			elseif t[i].typ == "float" then
-				if varType == VAR_INTEGER or varType == VAR_FLOAT then
-					param = param .. t[i].sym
-				end
-			elseif t[i].typ == "string" or t[i].typ == "poly" then
-				if varType == VAR_STRING then
-					param = param .. t[i].sym
-				end
-			elseif t[i].typ == "minus" or t[i].typ == "mult" or t[i].typ == "div" then
-				if varType == VAR_INTEGER or varType == VAR_FLOAT then
-					param = param .. t[i].sym
-				end
-			elseif t[i].typ == "openbracket" or t[i].typ == "closebracket" then
-				if varType == VAR_INTEGER or varType == VAR_FLOAT then
-					param = param .. t[i].sym
-				end
-			elseif t[i].typ == "command" then
-				-- vérifier que la commande retourne bien le même type que la variable assignée
-				if varType == VAR_STRING and cmd[t[i].sym].ret ~= VAR_STRING then return nil, ERR_TYPE_MISMATCH end
-				if varType ~= VAR_STRING and cmd[t[i].sym].ret == VAR_STRING then return nil, ERR_TYPE_MISMATCH end
-
-				-- récupérer la commande et ses paramètres
-				local c, p, e
-				c, p, i, e = GetFunction(t, i)
-				if e ~= OK then return nil, e end
-
-				-- exploser la chaine 'p' en plusieurs paramètres évaluables
-				--[[ TODO !!!
-				local t = ???
-				
-				local pn = 1
-				
-				for j = 1, #t do
-					if cmd[c].ptype[pn] == VAR_INTEGER then
-						print(c)
-					end
-
-					local p2, e2 = EvalParam(p[j], cmd[c].ptype[pn])
-
-					pn = pn + 1
-					if #cmd[c].ptype == 1 then pn = 1 end
-				
-					if e2 ~= OK then return nil, e end
-					if p2 ~= nil then
-						table.insert(lst, p2)
-					end
-					
-					local e2, ch = ExecOne(c, lst)
-					if e2 ~= OK then return nil, e2 end
-				end
-				--]]
-				--[[
-					-- quel est le type de paramètres requis par la commande ?
-					if cmd[c].ptype[pn] == VAR_STRING then
-						p[j], e = EvalString(p[j])
-						if e ~= OK then return nil, e end
-						local lst = {Trim(p[j], "\"")}
-						local e, ch = ExecOne(c, lst)
-						if e ~= OK then return nil, e end
-	
-						param = param .. ch
-					elseif cmd[c].ptype[pn] == VAR_FLOAT then
-						if tostring(Val(p[j])) ~= p[j] then
-							p[j], e = EvalFloat(p[j])
-							if e ~= OK then return nil, e end
-						end
-						
-						local lst = {tostring(p[j])}
-						local e, ch = ExecOne(c, lst)
-						if e ~= OK then return nil, e end
-						
-						param = param .. ch
-					elseif cmd[c].ptype[pn] == VAR_INTEGER then
-						if tostring(Val(p[j])) ~= p[j] then
-							p[j], e = EvalInteger(p[j])
-							if e ~= OK then return nil, e end
-						end
-	
-						local lst = {tostring(p[j])}
-						local e, ch = ExecOne(c, lst)
-						if e ~= OK then return nil, e end
-						
-						param = param .. ch
-					elseif cmd[c].ptype[pn] == VAR_NUM then
-						if tostring(Val(p[j])) ~= p[j] then
-							p[j], e = EvalFloat(p[j])
-							if e ~= OK then
-								p[j], e = EvalInteger(p[j])
-							end
-							if e ~= OK then return nil, e end
-						end
-						
-						local lst = {tostring(p[j])}
-						local e, ch = ExecOne(c, lst)
-						if e ~= OK then return nil, e end
-						
-						param = param .. ch
-					end
-				end
-				--}]]
-			elseif t[i].typ == "number" then
-				param = param .. t[i].sym
-			else
-				--TODO return ERR_SYNTAX_ERROR
-			end
-		end
-		
-		i = i + 1
-
-		-- dernière action à faire sur cette ligne de code
-		if i > #t and action ~= "" then
-			if startAction == "command" then
-				if param ~= "" then
-					-- un paramètre de clôture a été trouvé...
-					local p, e = EvalParam(param, cmd[cs].ptype[pnum])
-
-					pnum = pnum + 1
-					if #cmd[cs].ptype == 1 then pnum = 1 end
-					
-					if e ~= OK then return e end
-					if p ~= nil then
-						table.insert(lst, p)
-					end
-				end
-
-				e = ExecOne(cs, lst)
-				if e ~= OK then return e end
-			elseif startAction == "assign" then
-				e = AssignToVar(var, varType, param)
-				if e ~= OK then return e end
-			end
-		end
-		
-		comma = false
-	end
-
-	return OK
 end
 
 -- évaluer le paramètre fourni et retourner la valeur due à son type
@@ -1807,10 +1386,26 @@ function EvalString(s, assign)
 	return s, OK
 end
 
+-- vérifier si le label est fonctionnel
 function EvalLabel(s)
 	if s == nil or s == "" then return nil, ERR_SYNTAX_ERROR end
 
 	return s, OK
+end
+
+function GetLabelLine(s)
+	local l, e = EvalLabel(s)
+	
+	if e == OK then
+		-- chercher le label dans la mémoire
+		for i = 1, labCount do
+			if string.lower(labels[i]) == string.lower(s) then
+				return i, OK
+			end
+		end
+	end
+	
+	return nil, e
 end
 
 -- évaluer une condition TODO!
