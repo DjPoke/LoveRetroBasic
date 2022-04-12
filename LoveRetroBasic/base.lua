@@ -504,9 +504,7 @@ function Exec(t, l)
 end
 
 -- assembler un tronçon de chaîne de caractère
-function AssembleString(t, cs, lst)
-	local cm = false
-	local sig = nil
+function AssembleString(t, cs, lst, sig)
 	local i = 1
 
 	while i <= #t do
@@ -516,9 +514,6 @@ function AssembleString(t, cs, lst)
 
 			-- dernière commande après un espace
 			if i > #t then
-				-- si l'expression se termine par une virgule...
-				if cm == true then break end
-							
 				-- mixer tout de suite la chaîne et l'analyser
 				local p = ""
 							
@@ -527,7 +522,7 @@ function AssembleString(t, cs, lst)
 				end
 					
 				p, e = EvalString(p)
-				if e ~= OK then return e, lst end
+				if e ~= OK then return e, lst, sig end
 	
 				lst = {p}
 			
@@ -535,17 +530,13 @@ function AssembleString(t, cs, lst)
 				local e = ExecOne(cs, lst)
 				
 				-- erreur ?
-				if e ~= OK then return e, nil else return OK, lst end
+				if e ~= OK then return e, nil, sig else return OK, lst, sig end
 			end
 		-- ajouter les chaînes de caractère à la liste
 		elseif t[i].typ == "poly" or t[i].typ == "string" then
-			cm = false
-	
 			table.insert(lst, t[i].sym)
 		-- ajouter les valeurs numériques à un buffer
 		elseif t[i].typ == "number" then
-			cm = false
-
 			table.insert(lst, t[i].sym)
 		-- une commande de fonction est trouvée
 		elseif t[i].typ == "command" then
@@ -553,11 +544,11 @@ function AssembleString(t, cs, lst)
 			local cs2 = t[i].sym
 		
 			-- erreur si une fonction n'est pas trouvée en tant que commande
-			if cmd[cs2].ret == 0 then return ERR_SYNTAX_ERROR, nil end
+			if cmd[cs2].ret == 0 then return ERR_SYNTAX_ERROR, nil, sig end
 		
 			-- vérifier la suite
 			i = i + 1
-			if i > #t then return OK, lst end
+			if i > #t then return OK, lst, sig end
 				
 			-- vérifier le type de paramètres admis par cette commande
 			if #cmd[cs2].ptype > 1 then
@@ -578,7 +569,7 @@ function AssembleString(t, cs, lst)
 			e, lst2 = EvalParamList(t, i, cs2, maxpnum)
 				
 			-- erreur ?
-			if e ~= OK then return e, lst end
+			if e ~= OK then return e, lst, sig end
 
 			-- exécuter la commande
 			local e, value = ExecOne(cs2, lst2)
@@ -586,50 +577,34 @@ function AssembleString(t, cs, lst)
 			-- ajouter le résultat à la liste de retour
 			table.insert(lst, "\"" .. value .. "\"")
 				
-			return e, lst
+			return e, lst, sig
 		-- chercher un symbole de concaténation de chaînes (plus ou point virgule)
 		elseif t[i].typ == "plus" then
-			if not cm then
-				-- mélanges de plus et de point-virgule
-				if sig == "semicolon" then break end
+			-- mélanges de plus et de point-virgule
+			if sig == "semicolon" then break end
 
-				-- vérifier la suite
-				i = i + 1
-			
-				if i > #t then return OK, lst end
-				sig = "plus"
-			else
-				break
-			end
+			sig = "plus"
 		elseif t[i].typ == "semicolon" then
-			if not cm then
-				-- éviter les mélanges du plus et du point-virgule
-				if sig == "plus" then break end
+			-- éviter les mélanges du plus et du point-virgule
+			if sig == "plus" then break end
 
-				-- vérifier la suite
-				i = i + 1
-			
-				if i > #t then return OK, lst end
-
-				sig = "semicolon"
-			else
-				break
-			end
+			sig = "semicolon"
 		else
 			break
 		end
 		
 		i = i + 1
 		
-		if i > #t then return OK, lst end
+		if i > #t then return OK, lst, sig end
 	end
 
-	return ERR_SYNTAX_ERROR, nil
+	return ERR_SYNTAX_ERROR, nil, sig
 end
 
 -- évaluer toute une expression chaîne de caractère
 function EvalExpression(t, tp, i, cs, maxpnum)
 	local lst = {}
+	local sig = nil
 
 	-- supprimer les espaces de début et de fin
 	if t[i].typ == "whitespace" then table.remove(t, i) end
@@ -652,7 +627,7 @@ function EvalExpression(t, tp, i, cs, maxpnum)
 			table.insert(t2, t[i2])
 
 			-- assembler les morceaux de chaîne entre-eux
-			local e, lst = AssembleString(t2, cs, lst)
+			local e, lst, sig = AssembleString(t2, cs, lst, sig)
 			
 			-- erreur ?
 			if e ~= OK then return e, nill end
@@ -663,7 +638,7 @@ function EvalExpression(t, tp, i, cs, maxpnum)
 			table.insert(t2, t[i2])
 		elseif t[i2].typ == "comma" then
 			-- assembler les morceaux de chaîne entre-eux
-			local e, lst = AssembleString(t2, cs, lst)
+			local e, lst, sig = AssembleString(t2, cs, lst, sig)
 			
 			-- erreur ?
 			if e ~= OK then return e, nill end
