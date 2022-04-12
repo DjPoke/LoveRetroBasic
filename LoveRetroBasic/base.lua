@@ -365,7 +365,7 @@ function RemoveLabels(s)
 end
 
 -- exécuter une seule commande
-function ExecOne(cs, lst, comma)
+function ExecOne(cs, lst)
 	-- erreurs sur le nombre de paramètres ?
 	if cmd[cs].pmin == 0 and cmd[cs].pmax == 0 and #lst > 0 then
 		return ERR_SYNTAX_ERROR, nil
@@ -373,11 +373,11 @@ function ExecOne(cs, lst, comma)
 		return ERR_OPERAND_MISSING, nil
 	elseif cmd[cs].pmax >= 0 and #lst > cmd[cs].pmax then
 		return ERR_TOO_MANY_OPERANDS, nil
-	elseif cmd[cs].pmax >= 0 and #lst == cmd[cs].pmax and comma then
-		return ERR_SYNTAX_ERROR, nil
 	end
-			
-	return cmd[cs].fn(lst)
+
+	local e, value = cmd[cs].fn(lst)
+
+	return OK, value
 end
 
 -- assigne une valeur à une variable
@@ -403,25 +403,27 @@ end
 function PrivateInc(indice, indiceMax, commande, liste, numparam)
 	if numparam == nil then numparam = "" end
 
+	local value = nil
+	
 	indice = indice + 1
 	
 	-- exécuter une commande isolée, sans paramètres
 	if indice > indiceMax then
 		if numparam ~= "" then table.insert(liste, numparam) end
 		
-		local e = ExecOne(commande, liste)
+		e, value = ExecOne(commande, liste)
 		
 		-- erreur ?
-		if e ~= OK then return indice, e, true else return indice, OK, true end
+		if e ~= OK then return indice, e, true, value else return indice, OK, true, value end
 	end
 	
-	return indice, OK, false
+	return indice, OK, false, value
 end
 
--- exploser la ligne de commande et l'exécuter (TODO !!! WIP)
+-- exploser la ligne de commande et l'exécuter
 function Exec(t, l)
 	-- retourner si la table est vide
-	if t == nil or #t == 0 then return OK end
+	if t == nil or #t == 0 then return OK, nil end
 
 	-- retourner si le nombre de parenthèses est impair
 	local obracket = 0
@@ -438,7 +440,7 @@ function Exec(t, l)
 		end
 	end
 	
-	if obracket ~= cbracket then return ERR_SYNTAX_ERROR end
+	if obracket ~= cbracket then return ERR_SYNTAX_ERROR, nil end
 	
 	-- exécuter les morceau de code en fonction des séparateurs 'deux points'
 	local t2 = {}
@@ -478,24 +480,18 @@ function Exec(t, l)
 	-- le début est une commande ?
 	local maxpnum = 0
 	local i = 1
-	local lst = {}
-	local sig = nil
-	local nexp = ""
-	local stp = false
 
 	if t[i].typ == "command" then
 		-- mémoriser la commande dans cs
 		cs = t[i].sym
 		
 		-- erreur si une fonction est trouvée en tant que commande, sans assignation à une variable
-		if cmd[cs].ret > 0 then
-			return ERR_SYNTAX_ERROR
-		end
+		if cmd[cs].ret > 0 then return ERR_SYNTAX_ERROR end
 		
 		-- vérifier la suite
-		i, e, stp = PrivateInc(i, #t, cs, lst)
-		if e ~= OK then return e end
-		if stp then return OK end
+		i, e, stp = PrivateInc(i, #t, cs, {})
+		if e ~= OK then return e, nil end
+		if stp then return OK, nil end
 
 		-- vérifier le type de paramètres admis par cette commande
 		if #cmd[cs].ptype > 1 then
@@ -504,228 +500,305 @@ function Exec(t, l)
 			maxpnum = cmd[cs].pmax
 		end
 		
-		-- si le nombre de paramètres est infini, alors...
+		-- si l'expression est de type chaîne poly...
 		if maxpnum < 0 then
-			local cm = false
-
-			while true do
-				if t[i].typ == "whitespace" and (nexp == "" or i == #t) then
-					-- vérifier la suite
-					i, e, stp = PrivateInc(i, #t, cs, lst, nexp)
-					if e ~= OK then return e end	
-					if stp then
-						if cm == true then return ERR_SYNTAX_ERROR end
-						
-						-- mixer tout de suite la chaîne et l'analyser
-						local p = ""
-						
-						for j = 1, #lst do
-							p = p .. lst[j]
-						end
-	
-						p, e = EvalString(p)
-						if e ~= OK then return e end
-	
-						lst = {p}
-
-						-- exécuter la commande
-						local e = ExecOne(cs, lst)
-						
-						-- erreur ?
-						if e ~= OK then return e else return OK end
-					end
-				end
-				
-				-- ajouter les chaines de caractère à la liste
-				if cmd[cs].ptype[1] == VAR_POLY or cmd[cs].ptype[1] == VAR_STRING then
-					if t[i].typ == "poly" or t[i].typ == "string" then
-						-- si des valeurs numériques précèdent, alors...
-						if nexp ~= "" then return ERR_SYNTAX_ERROR end
-						
-						table.insert(lst, t[i].sym)
-						
-						cm = false
-					-- ajouter les valeurs numériques à un buffer
-					elseif t[i].typ == "number" then
-						nexp = nexp .. t[i].sym
-
-						cm = false
-					else
-						return ERR_SYNTAX_ERROR
-					end
-				else
-					return ERR_SYNTAX_ERROR
-				end
-
-				-- vérifier la suite
-				i, e, stp = PrivateInc(i, #t, cs, lst, nexp)
-				if e ~= OK then return e end
-				if stp then return OK end
-						
-				-- chercher une virgule de séparation
-				if t[i].typ == "comma" then
-					-- fin d'expression numérique
-					if nexp ~= "" then
-						local s, e = EvalFloat(nexp)
-						if e ~= OK then return e end
-						
-						table.insert(lst, s)
-						
-						nexp = ""
-					end
-					
-					if not cm then
-						-- vérifier la suite
-						i, e, stp = PrivateInc(i, #t, cs, lst, nexp)
-						if e ~= OK then return e end
-						if stp then return ERR_SYNTAX_ERROR end
-					
-						-- insérer un blanc lors de la virgule  TODO ?
-						table.insert(lst, " ")
-						
-						cm = true
-					else
-						return ERR_SYNTAX_ERROR
-					end
-				elseif t[i].typ == "plus" and nexp == "" then
-					if not cm then
-						-- mélanges de plus et de point-virgule
-						if sig == "semicolon" then return ERR_SYNTAX_ERROR end
-
-						-- vérifier la suite
-						i, e, stp = PrivateInc(i, #t, cs, lst, nexp)
-						if e ~= OK then return e end
-						if stp then return OK end
-
-						sig = "plus"
-					else
-						return ERR_SYNTAX_ERROR
-					end
-				elseif t[i].typ == "semicolon" and nexp == "" then
-					if not cm then
-						-- mélanges de plus et de point-virgule
-						if sig == "plus" then return ERR_SYNTAX_ERROR end
-
-						-- vérifier la suite
-						i, e, stp = PrivateInc(i, #t, cs, lst, nexp)
-						if e ~= OK then return e end
-						if stp then return OK end
-
-						sig = "semicolon"
-					else
-						return ERR_SYNTAX_ERROR
-					end
-				end
-			end
+			e, r = EvalExpression(t, tp, i, cs, maxpnum)
+			
+			return e, r
+		-- si c'est une liste de paramètres
+		elseif t[i].typ == "whitespace" then
+			e, r = EvalParamList(t, tp, i, cs, maxpnum)
+			
+			return e, r
 		else
-			local cm = false
-			
-			-- scanner les types de paramètres d'entrées nécessaires
-			for j = 1, maxpnum do
-				-- ignorer les espaces
-				while t[i].typ == "whitespace" do
-					-- vérifier la suite
-					i, e, stp = PrivateInc(i, #t, cs, lst)
-					if e ~= OK then return e end
-					if stp then return OK end
-				end
-				
-				-- pas de virgule tout de suite après une commande
-				-- qui nécessite des paramètres
-				if t[i].typ == "comma" then
-					if cm == false then
-						return ERR_SYNTAX_ERROR
-					else
-						cm = false
-						
-						-- vérifier la suite
-						i, e, stp = PrivateInc(i, #t, cs, lst)
-						if e ~= OK then return e end
-						if stp then return OK end
-						
-						-- virgule à la fin de la ligne
-						if i > #t then return ERR_SYNTAX_ERROR end
-					end
-				end
-
-				-- détecter les paramètres numériques entiers
-				if cmd[cs].ptype[j] == VAR_INTEGER then
-					if t[i].typ == "number" then
-						cm = true
-
-						local n, e = EvalInteger(t[i].sym)
-						if e ~= OK then return e end
-
-						table.insert(lst, n)
-
-						-- vérifier la suite
-						i, e, stp = PrivateInc(i, #t, cs, lst)
-						if e ~= OK then return e end
-						if stp then return OK end						
-					else
-						return ERR_TYPE_MISMATCH
-					end
-				-- détecter les paramètres numériques réels
-				elseif cmd[cs].ptype[j] == VAR_FLOAT then
-					if t[i].typ == "number" then
-						cm = true
-
-						local n, e = EvalFloat(t[i].sym)
-						if e ~= OK then return e end
-						
-						table.insert(lst, n)
-						
-						-- vérifier la suite
-						i, e, stp = PrivateInc(i, #t, cs, lst)
-						if e ~= OK then return e end
-						if stp then return OK end
-					else
-						return ERR_TYPE_MISMATCH
-					end
-				elseif cmd[cs].ptype[j] == VAR_NUMBER then
-					if t[i].typ == "number" then
-						cm = true
-
-						local n, e = EvalFloat(t[i].sym)
-						if e ~= OK then return e end
-
-						table.insert(lst, n)
-						
-						-- vérifier la suite
-						i, e, stp = PrivateInc(i, #t, cs, lst)
-						if e ~= OK then return e end
-						if stp then return OK end
-					else
-						return ERR_TYPE_MISMATCH
-					end
-				elseif cmd[cs].ptype[j] == VAR_POLY or cmd[cs].ptype[j] == VAR_STRING then
-					if t[i].typ == "poly" or t[i].typ == "string" then
-						cm = true
-
-						local s, e = EvalString(t[i].sym)
-						if e ~= OK then return e end
-
-						table.insert(lst, s)
-						
-						-- vérifier la suite
-						i, e, stp = PrivateInc(i, #t, cs, lst)
-						if e ~= OK then return e end
-						if stp then return OK end
-					else
-						return ERR_TYPE_MISMATCH
-					end
-				end
-			end
-			
-			-- exécuter la commande
-			local e = ExecOne(cs, lst)
-						
-			-- erreur ?
-			if e ~= OK then return e end
-		end		
+			return ERR_SYNTAX_ERROR, nil
+		end
 	end
 
-	return OK
+	return OK, nil
+end
+
+-- évaluer toute une expression
+function EvalExpression(t, tp, i, cs, maxpnum)
+	local lst = {}
+	local sig = nil
+	local nexp = ""
+	local stp = false
+	local value = ""
+	
+	-- trouver la valeur de l'expression à retourner
+	for j = i, #t do
+		value = value .. t[j].sym
+	end
+	
+	local cm = false
+
+	while true do
+		if t[i].typ == "whitespace" and (nexp == "" or i == #t) then
+			-- vérifier la suite
+			i, e, stp, value = PrivateInc(i, #t, cs, lst, nexp)
+			if e ~= OK then return e, value end
+			if stp then
+				if cm == true then return ERR_SYNTAX_ERROR, value end
+						
+				-- mixer tout de suite la chaîne et l'analyser
+				local p = ""
+						
+				for j = 1, #lst do
+					p = p .. lst[j]
+				end
+	
+				p, e = EvalString(p)
+				if e ~= OK then return e, value end
+	
+				lst = {p}
+
+				-- exécuter la commande
+				local e = ExecOne(cs, lst)
+					
+				-- erreur ?
+				if e ~= OK then return e, value else return OK, value end
+			end
+		end
+				
+		-- ajouter les chaînes de caractère à la liste
+		if cmd[cs].ptype[1] == VAR_POLY or cmd[cs].ptype[1] == VAR_STRING then
+			if t[i].typ == "poly" or t[i].typ == "string" then
+				-- si des valeurs numériques précèdent, alors...
+				if nexp ~= "" then return ERR_SYNTAX_ERROR, value end
+				
+				table.insert(lst, t[i].sym)
+						
+				cm = false
+					
+			-- ajouter les valeurs numériques à un buffer
+			elseif t[i].typ == "number" then
+				nexp = nexp .. t[i].sym
+
+				cm = false
+			-- une commande de fonction est trouvée
+			elseif t[i].typ == "command" then
+				-- mémoriser la commande dans cs2
+				cs2 = t[i].sym
+		
+				-- erreur si une fonction n'est pas trouvée en tant que commande
+				if cmd[cs2].ret == 0 then return ERR_SYNTAX_ERROR, value end
+		
+				-- vérifier la suite
+				local i, e, stp, value = PrivateInc(i, #t, cs2, {})
+				if e ~= OK then return e, value end
+				if stp then return OK, value end
+
+				-- vérifier le type de paramètres admis par cette commande
+				if #cmd[cs2].ptype > 1 then
+					maxpnum = #cmd[cs2].ptype
+				else
+					maxpnum = cmd[cs2].pmax
+				end
+					
+				-- commande fonction trouvée
+				r = t[i].sym
+
+				-- sil l'expression a une commande en amont...
+				if t[i].typ ~= "openbracket" then return ERR_SYNTAX_ERROR, value end
+				if t[#t].typ ~= "closebracket" then return ERR_SYNTAX_ERROR, value end
+					
+				-- supprimer les parenthèses
+				table.remove(t, #t)
+				table.remove(t, i)
+				
+				-- évaluer l'expression
+				e, value = EvalParamList(t, tp, i, cs2, maxpnum)
+				
+				return e, value
+			else
+				return ERR_SYNTAX_ERROR, value
+			end
+		else
+			return ERR_SYNTAX_ERROR, value
+		end
+
+		-- vérifier la suite
+		i, e, stp, value = PrivateInc(i, #t, cs, lst, nexp)
+		if e ~= OK then return e, value end
+		if stp then return OK, value end
+					
+		-- chercher une virgule de séparation
+		if t[i].typ == "comma" then
+			-- fin d'expression numérique
+			if nexp ~= "" then
+				local s, e = EvalFloat(nexp)
+				if e ~= OK then return e, value end
+				
+				table.insert(lst, s)
+				
+				nexp = ""
+			end
+				
+			if not cm then
+				-- vérifier la suite
+				i, e, stp, value = PrivateInc(i, #t, cs, lst, nexp)
+				if e ~= OK then return e, value end
+				if stp then return ERR_SYNTAX_ERROR, value end
+				
+				-- insérer un blanc lors de la virgule  TODO ?
+				table.insert(lst, " ")
+					
+				cm = true
+			else
+				return ERR_SYNTAX_ERROR, value
+			end
+		elseif t[i].typ == "plus" and nexp == "" then
+			if not cm then
+				-- mélanges de plus et de point-virgule
+				if sig == "semicolon" then return ERR_SYNTAX_ERROR, value end
+
+				-- vérifier la suite
+				i, e, stp, value = PrivateInc(i, #t, cs, lst, nexp)
+				if e ~= OK then return e, value end
+				if stp then return OK, value end
+				sig = "plus"
+			else
+				return ERR_SYNTAX_ERROR, value
+			end
+		elseif t[i].typ == "semicolon" and nexp == "" then
+			if not cm then
+				-- mélanges de plus et de point-virgule
+				if sig == "plus" then return ERR_SYNTAX_ERROR, value end
+
+				-- vérifier la suite
+				i, e, stp, value = PrivateInc(i, #t, cs, lst, nexp)
+				if e ~= OK then return e, value end
+				if stp then return OK, value end
+
+				sig = "semicolon"
+			else
+				return ERR_SYNTAX_ERROR, value
+			end
+		end
+	end		
+
+	return OK, value
+end
+
+-- évaluer une liste de paramètres et exécuter la commande qui les invoque
+function EvalParamList(t, tp, i, cs, maxpnum)
+	local lst = {}
+	local sig = nil
+	local nexp = ""
+	local stp = false
+	local value = ""
+	
+	-- trouver la valeur de l'expression à retourner
+	for j = i, #t do
+		value = value .. t[j].sym
+	end
+
+	local cm = false
+			
+	-- scanner les types de paramètres d'entrées nécessaires
+	for j = 1, maxpnum do
+		-- ignorer les espaces
+		while t[i].typ == "whitespace" do
+			-- vérifier la suite
+			i, e, stp, value = PrivateInc(i, #t, cs, lst)
+			if e ~= OK then return e, value end
+			if stp then return OK, value end
+		end
+				
+		-- pas de virgule tout de suite après une commande
+		-- qui nécessite des paramètres
+		if t[i].typ == "comma" then
+			if cm == false then
+				return ERR_SYNTAX_ERROR, value
+			else
+				cm = false
+						
+				-- vérifier la suite
+				i, e, stp, value = PrivateInc(i, #t, cs, lst)
+				if e ~= OK then return e, value end
+				if stp then return OK, value end
+						
+				-- virgule à la fin de la ligne
+				if i > #t then return ERR_SYNTAX_ERROR, value end
+			end
+		end
+
+		-- détecter les paramètres numériques entiers
+		if cmd[cs].ptype[j] == VAR_INTEGER then
+			if t[i].typ == "number" then
+				cm = true
+
+				local n, e = EvalInteger(t[i].sym)
+				if e ~= OK then return e, value end
+
+				table.insert(lst, n)
+
+				-- vérifier la suite
+				i, e, stp, value = PrivateInc(i, #t, cs, lst)
+				if e ~= OK then return e, value end
+				if stp then return OK, value end
+			else
+				return ERR_TYPE_MISMATCH, value
+			end
+		-- détecter les paramètres numériques réels
+		elseif cmd[cs].ptype[j] == VAR_FLOAT then
+			if t[i].typ == "number" then
+				cm = true
+				local n, e = EvalFloat(t[i].sym)
+				if e ~= OK then return e, value end
+						
+				table.insert(lst, n)
+						
+				-- vérifier la suite
+				i, e, stp, value = PrivateInc(i, #t, cs, lst)
+				if e ~= OK then return e, value end
+				if stp then return OK, value end
+			else
+				return ERR_TYPE_MISMATCH, value
+			end
+		elseif cmd[cs].ptype[j] == VAR_NUM then
+			if t[i].typ == "number" then
+				cm = true
+
+				local n, e = EvalFloat(t[i].sym)
+				if e ~= OK then return e, value end
+
+				table.insert(lst, n)
+						
+				-- vérifier la suite
+				i, e, stp, value = PrivateInc(i, #t, cs, lst)
+				if e ~= OK then return e, value end
+				if stp then return OK, value end
+			else
+				return ERR_TYPE_MISMATCH, value
+			end
+		elseif cmd[cs].ptype[j] == VAR_POLY or cmd[cs].ptype[j] == VAR_STRING then
+			if t[i].typ == "poly" or t[i].typ == "string" then
+				cm = true
+
+				local s, e = EvalString(t[i].sym)
+				if e ~= OK then return e, value end
+
+				table.insert(lst, s)
+				
+				-- vérifier la suite
+				i, e, stp, value = PrivateInc(i, #t, cs, lst)
+				if e ~= OK then return e, value end
+				if stp then return OK, value end
+			else
+				return ERR_TYPE_MISMATCH, value
+			end
+		end
+	end
+	
+	-- exécuter la commande
+	local e, value = ExecOne(cs, lst)
+						
+	-- erreur ?
+	if e ~= OK then return e, value end
+
+	return OK, value
 end
 
 -- exécuter les instructions basic présentes sur une ligne

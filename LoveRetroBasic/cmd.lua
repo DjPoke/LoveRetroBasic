@@ -5,7 +5,7 @@ end
 
 -- commande 'ASC'
 cmd["ASC"].fn = function(lst)
-	return OK, Asc(lst[1])
+	return OK, tostring(Asc(lst[1]))
 end
 
 -- commande 'BIN$'
