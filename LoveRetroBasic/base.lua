@@ -583,7 +583,7 @@ function Exec(t, l)
 		for j = i, #t do
 			s = s .. t[j].sym
 		end
-		
+
 		-- assigner l'expression à la variable
 		local e = AssignToVar(var, vType, s)
 		
@@ -942,7 +942,7 @@ function EvalFloat(s)
 	for i = 1, #t do	
 		if t[i].typ == "operator" then
 			if t[i].sym == "MOD" then
-				t[i].sym = "²"
+				t[i].sym = "M"
 			end			
 		end
 	end
@@ -954,7 +954,7 @@ function EvalFloat(s)
 			-- détecter les erreurs
 			return nil, ERR_SYNTAX_ERROR
 		elseif t[i].typ == "whitespace" then
-			i = i + 1
+			--s = s .. t[i].sym
 		elseif t[i].typ == "command" then
 			-- vérifier que la commande ne retourne pas une chaîne de caractères
 			if cmd[t[i].sym].ret == VAR_STRING then return nil, ERR_TYPE_MISMATCH end
@@ -1146,13 +1146,13 @@ function EvalFloat(s)
 	end
 			
 	-- recalculer les morceaux d'expression dans l'ordre des priorités d'opérations
-	s, e = Calc(s, "²")
-	if e ~= OK then return nil, e end
-
 	s, e = Calc(s, "*")	
 	if e ~= OK then return nil, e end
 
 	s, e = Calc(s, "/")	
+	if e ~= OK then return nil, e end
+
+	s, e = Calc(s, "M")
 	if e ~= OK then return nil, e end
 
 	s, e = Calc(s, "-")	
@@ -1604,7 +1604,7 @@ function Calc(s, op)
 			else
 				s = string.sub(s, 1, p1 - 1) .. tostring(v1 / v2) .. string.sub(s, p2 + 1)
 			end
-		elseif op == "²" then
+		elseif op == "M" then
 			s = string.sub(s, 1, p1 - 1) .. tostring(v1 % v2) .. string.sub(s, p2 + 1)
 		end
 
