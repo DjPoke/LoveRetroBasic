@@ -366,12 +366,14 @@ end
 
 -- exécuter une seule commande
 function ExecOne(cs, lst)
+	paramsCount = #lst
+	
 	-- erreurs sur le nombre de paramètres ?
-	if cmd[cs].pmin == 0 and cmd[cs].pmax == 0 and #lst > 0 then
+	if cmd[cs].pmin == 0 and cmd[cs].pmax == 0 and paramsCount > 0 then
 		return ERR_SYNTAX_ERROR, nil
-	elseif cmd[cs].pmin >= 0 and #lst < cmd[cs].pmin then
+	elseif cmd[cs].pmin >= 0 and paramsCount < cmd[cs].pmin then
 		return ERR_OPERAND_MISSING, nil
-	elseif cmd[cs].pmax >= 0 and #lst > cmd[cs].pmax then
+	elseif cmd[cs].pmax >= 0 and paramsCount > cmd[cs].pmax then
 		return ERR_TOO_MANY_OPERANDS, nil
 	end
 
@@ -400,7 +402,7 @@ function AssignToVar(var, vType, s)
 end
 
 -- fonction privée
-function PrivateInc(indice, indiceMax, commande, liste, numparam)
+function PrivateIncExec(indice, indiceMax, commande, liste, numparam)
 	if numparam == nil then numparam = "" end
 
 	local value = nil
@@ -489,7 +491,7 @@ function Exec(t, l)
 		if cmd[cs].ret > 0 then return ERR_SYNTAX_ERROR end
 		
 		-- vérifier la suite
-		i, e, stp = PrivateInc(i, #t, cs, {})
+		i, e, stp = PrivateIncExec(i, #t, cs, {})
 		if e ~= OK then return e, nil end
 		if stp then return OK, nil end
 
@@ -502,23 +504,31 @@ function Exec(t, l)
 		
 		-- si l'expression est de type chaîne poly...
 		if maxpnum < 0 then
-			e, r = EvalExpression(t, tp, i, cs, maxpnum)
-			
-			return e, r
+			e, value = EvalExpression(t, tp, i, cs, maxpnum)
+
+			lst = {value}
+
+			-- exécuter la commande
+			local e, value = ExecOne(cs, lst)
+						
+			return e
 		-- si c'est une liste de paramètres
 		elseif t[i].typ == "whitespace" then
-			e, r = EvalParamList(t, tp, i, cs, maxpnum)
+			e, lst = EvalParamList(t, i, cs, maxpnum)
 			
-			return e, r
+			-- exécuter la commande
+			local e, value = ExecOne(cs, lst)
+						
+			return e
 		else
 			return ERR_SYNTAX_ERROR, nil
 		end
 	end
 
-	return OK, nil
+	return OK
 end
 
--- évaluer toute une expression
+-- évaluer toute une expression chaîne de caractère
 function EvalExpression(t, tp, i, cs, maxpnum)
 	local lst = {}
 	local sig = nil
@@ -536,7 +546,7 @@ function EvalExpression(t, tp, i, cs, maxpnum)
 	while true do
 		if t[i].typ == "whitespace" and (nexp == "" or i == #t) then
 			-- vérifier la suite
-			i, e, stp, value = PrivateInc(i, #t, cs, lst, nexp)
+			i, e, stp, value = PrivateIncExec(i, #t, cs, lst, nexp)
 			if e ~= OK then return e, value end
 			if stp then
 				if cm == true then return ERR_SYNTAX_ERROR, value end
@@ -585,19 +595,15 @@ function EvalExpression(t, tp, i, cs, maxpnum)
 				if cmd[cs2].ret == 0 then return ERR_SYNTAX_ERROR, value end
 		
 				-- vérifier la suite
-				local i, e, stp, value = PrivateInc(i, #t, cs2, {})
-				if e ~= OK then return e, value end
-				if stp then return OK, value end
-
+				i = i + 1
+				if i > #t then return OK, value end
+				
 				-- vérifier le type de paramètres admis par cette commande
 				if #cmd[cs2].ptype > 1 then
 					maxpnum = #cmd[cs2].ptype
 				else
 					maxpnum = cmd[cs2].pmax
 				end
-					
-				-- commande fonction trouvée
-				r = t[i].sym
 
 				-- sil l'expression a une commande en amont...
 				if t[i].typ ~= "openbracket" then return ERR_SYNTAX_ERROR, value end
@@ -606,20 +612,23 @@ function EvalExpression(t, tp, i, cs, maxpnum)
 				-- supprimer les parenthèses
 				table.remove(t, #t)
 				table.remove(t, i)
-				
+
 				-- évaluer l'expression
-				e, value = EvalParamList(t, tp, i, cs2, maxpnum)
-				
-				return e, value
+				e, lst = EvalParamList(t, i, cs2, maxpnum)
+
+				-- exécuter la commande
+				local e, value = ExecOne(cs2, lst)
+
+				return e, "\"" .. value .. "\""
 			else
 				return ERR_SYNTAX_ERROR, value
 			end
 		else
 			return ERR_SYNTAX_ERROR, value
 		end
-
+		
 		-- vérifier la suite
-		i, e, stp, value = PrivateInc(i, #t, cs, lst, nexp)
+		i, e, stp, value = PrivateIncExec(i, #t, cs, lst, nexp)
 		if e ~= OK then return e, value end
 		if stp then return OK, value end
 					
@@ -637,7 +646,7 @@ function EvalExpression(t, tp, i, cs, maxpnum)
 				
 			if not cm then
 				-- vérifier la suite
-				i, e, stp, value = PrivateInc(i, #t, cs, lst, nexp)
+				i, e, stp, value = PrivateIncExec(i, #t, cs, lst, nexp)
 				if e ~= OK then return e, value end
 				if stp then return ERR_SYNTAX_ERROR, value end
 				
@@ -654,7 +663,7 @@ function EvalExpression(t, tp, i, cs, maxpnum)
 				if sig == "semicolon" then return ERR_SYNTAX_ERROR, value end
 
 				-- vérifier la suite
-				i, e, stp, value = PrivateInc(i, #t, cs, lst, nexp)
+				i, e, stp, value = PrivateIncExec(i, #t, cs, lst, nexp)
 				if e ~= OK then return e, value end
 				if stp then return OK, value end
 				sig = "plus"
@@ -667,7 +676,7 @@ function EvalExpression(t, tp, i, cs, maxpnum)
 				if sig == "plus" then return ERR_SYNTAX_ERROR, value end
 
 				-- vérifier la suite
-				i, e, stp, value = PrivateInc(i, #t, cs, lst, nexp)
+				i, e, stp, value = PrivateIncExec(i, #t, cs, lst, nexp)
 				if e ~= OK then return e, value end
 				if stp then return OK, value end
 
@@ -682,45 +691,37 @@ function EvalExpression(t, tp, i, cs, maxpnum)
 end
 
 -- évaluer une liste de paramètres et exécuter la commande qui les invoque
-function EvalParamList(t, tp, i, cs, maxpnum)
+function EvalParamList(t, i, cs, maxpnum)
 	local lst = {}
 	local sig = nil
 	local nexp = ""
 	local stp = false
 	local value = ""
 	
-	-- trouver la valeur de l'expression à retourner
-	for j = i, #t do
-		value = value .. t[j].sym
-	end
-
 	local cm = false
-			
+
 	-- scanner les types de paramètres d'entrées nécessaires
 	for j = 1, maxpnum do
 		-- ignorer les espaces
 		while t[i].typ == "whitespace" do
 			-- vérifier la suite
-			i, e, stp, value = PrivateInc(i, #t, cs, lst)
-			if e ~= OK then return e, value end
-			if stp then return OK, value end
+			i = i + 1
+			if i > #t then return OK, lst end
 		end
 				
 		-- pas de virgule tout de suite après une commande
 		-- qui nécessite des paramètres
 		if t[i].typ == "comma" then
 			if cm == false then
-				return ERR_SYNTAX_ERROR, value
+				return ERR_SYNTAX_ERROR, nil
 			else
 				cm = false
 						
 				-- vérifier la suite
-				i, e, stp, value = PrivateInc(i, #t, cs, lst)
-				if e ~= OK then return e, value end
-				if stp then return OK, value end
+				i = i + 1
 						
 				-- virgule à la fin de la ligne
-				if i > #t then return ERR_SYNTAX_ERROR, value end
+				if i > #t then return ERR_SYNTAX_ERROR, nil end
 			end
 		end
 
@@ -730,75 +731,65 @@ function EvalParamList(t, tp, i, cs, maxpnum)
 				cm = true
 
 				local n, e = EvalInteger(t[i].sym)
-				if e ~= OK then return e, value end
+				if e ~= OK then return e, nil end
 
 				table.insert(lst, n)
 
 				-- vérifier la suite
-				i, e, stp, value = PrivateInc(i, #t, cs, lst)
-				if e ~= OK then return e, value end
-				if stp then return OK, value end
+				i = i + 1
+				if i > #t then return OK, lst end
 			else
-				return ERR_TYPE_MISMATCH, value
+				return ERR_TYPE_MISMATCH, nil
 			end
 		-- détecter les paramètres numériques réels
 		elseif cmd[cs].ptype[j] == VAR_FLOAT then
 			if t[i].typ == "number" then
 				cm = true
 				local n, e = EvalFloat(t[i].sym)
-				if e ~= OK then return e, value end
+				if e ~= OK then return e, nil end
 						
 				table.insert(lst, n)
 						
 				-- vérifier la suite
-				i, e, stp, value = PrivateInc(i, #t, cs, lst)
-				if e ~= OK then return e, value end
-				if stp then return OK, value end
+				i = i + 1
+				if i > #t then return OK, lst end
 			else
-				return ERR_TYPE_MISMATCH, value
+				return ERR_TYPE_MISMATCH, nil
 			end
 		elseif cmd[cs].ptype[j] == VAR_NUM then
 			if t[i].typ == "number" then
 				cm = true
 
 				local n, e = EvalFloat(t[i].sym)
-				if e ~= OK then return e, value end
+				if e ~= OK then return e, nil end
 
 				table.insert(lst, n)
 						
 				-- vérifier la suite
-				i, e, stp, value = PrivateInc(i, #t, cs, lst)
-				if e ~= OK then return e, value end
-				if stp then return OK, value end
+				i = i + 1
+				if i > #t then return OK, lst end
 			else
-				return ERR_TYPE_MISMATCH, value
+				return ERR_TYPE_MISMATCH, nil
 			end
 		elseif cmd[cs].ptype[j] == VAR_POLY or cmd[cs].ptype[j] == VAR_STRING then
 			if t[i].typ == "poly" or t[i].typ == "string" then
 				cm = true
 
 				local s, e = EvalString(t[i].sym)
-				if e ~= OK then return e, value end
+				if e ~= OK then return e, nil end
 
 				table.insert(lst, s)
-				
+
 				-- vérifier la suite
-				i, e, stp, value = PrivateInc(i, #t, cs, lst)
-				if e ~= OK then return e, value end
-				if stp then return OK, value end
+				i = i + 1
+				if i > #t then return OK, lst end
 			else
-				return ERR_TYPE_MISMATCH, value
+				return ERR_TYPE_MISMATCH, nil
 			end
 		end
 	end
-	
-	-- exécuter la commande
-	local e, value = ExecOne(cs, lst)
-						
-	-- erreur ?
-	if e ~= OK then return e, value end
 
-	return OK, value
+	return OK, lst
 end
 
 -- exécuter les instructions basic présentes sur une ligne
