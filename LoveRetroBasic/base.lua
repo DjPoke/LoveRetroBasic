@@ -473,84 +473,83 @@ function Exec(t, l)
 		-- vérifier la suite
 		i = i + 1
 
-		if i > #t then
-			-- exécuter la commande
-			local e = ExecOne(cs, lst)
-						
-			return e
-		end
-
-		-- vérifier le type de paramètres admis par cette commande
-		if #cmd[cs].ptype > 1 then
-			maxpnum = #cmd[cs].ptype
-		else
-			maxpnum = cmd[cs].pmax
-		end
+		if i <= #t then
+			-- vérifier le type de paramètre admis par cette commande
+			if #cmd[cs].ptype > 1 then
+				maxpnum = #cmd[cs].ptype
+			else
+				maxpnum = cmd[cs].pmax
+			end
 		
-		if maxpnum < 0 then
-			-- si l'expression est de type chaîne poly...
-			e, lst = EvalExpression(t, tp, i, cs, maxpnum)			
-		elseif t[i].typ == "whitespace" then
-			-- si c'est une liste de paramètres
-			e, lst = EvalParamList(t, i, cs, maxpnum)			
-		else
-			return ERR_SYNTAX_ERROR
+			if maxpnum < 0 then
+				-- si l'expression est de type chaîne poly...
+				e, lst = EvalExpression(t, tp, i, cs, maxpnum)
+
+				if e ~= OK then return e end
+			elseif t[i].typ == "whitespace" then
+				-- si c'est une liste de paramètres
+				e, lst = EvalParamList(t, i, cs, maxpnum)			
+
+				if e ~= OK then return e end
+			else
+				return ERR_SYNTAX_ERROR
+			end
 		end
 	end
 
 	-- exécuter la commande
 	local e = ExecOne(cs, lst)
-						
+
 	return e
 end
 
--- évaluer toute une expression chaîne de caractère
-function EvalExpression(t, tp, i, cs, maxpnum)
-	local lst = {}
-	local sig = nil
+-- assembler un tronçon de chaîne de caractère
+function AssembleString(t, cs, lst)
 	local nexp = ""
-	local stp = false
-	
 	local cm = false
+	local sig = nil
+	local i = 1
 
-	while true do
+	while true do		
 		if t[i].typ == "whitespace" and (nexp == "" or i == #t) then
 			-- vérifier la suite
 			i = i + 1
-			
+
+			-- dernière commande après un espace
 			if i > #t then
-				if cm == true then return ERR_SYNTAX_ERROR, nil end
-						
+				-- si l'expression se termine par une virgule...
+				if cm == true then break end
+							
 				-- mixer tout de suite la chaîne et l'analyser
 				local p = ""
-						
+							
 				for j = 1, #lst do
 					p = p .. lst[j]
 				end
-				
+					
 				p, e = EvalString(p)
 				if e ~= OK then return e, lst end
 	
 				lst = {p}
-
+			
 				-- exécuter la commande
 				local e = ExecOne(cs, lst)
-					
+				
 				-- erreur ?
 				if e ~= OK then return e, nil else return OK, lst end
 			end
 		end
-				
+		
 		-- ajouter les chaînes de caractère à la liste
 		if cmd[cs].ptype[1] == VAR_POLY or cmd[cs].ptype[1] == VAR_STRING then
 			if t[i].typ == "poly" or t[i].typ == "string" then
 				-- si des valeurs numériques précèdent, alors...
 				if nexp ~= "" then return ERR_SYNTAX_ERROR, nil end
-				
+
 				table.insert(lst, t[i].sym)
-						
-				cm = false
 					
+				cm = false
+				
 			-- ajouter les valeurs numériques à un buffer
 			elseif t[i].typ == "number" then
 				nexp = nexp .. t[i].sym
@@ -559,7 +558,7 @@ function EvalExpression(t, tp, i, cs, maxpnum)
 			-- une commande de fonction est trouvée
 			elseif t[i].typ == "command" then
 				-- mémoriser la commande dans cs2
-				cs2 = t[i].sym
+				local cs2 = t[i].sym
 		
 				-- erreur si une fonction n'est pas trouvée en tant que commande
 				if cmd[cs2].ret == 0 then return ERR_SYNTAX_ERROR, nil end
@@ -574,10 +573,10 @@ function EvalExpression(t, tp, i, cs, maxpnum)
 				else
 					maxpnum = cmd[cs2].pmax
 				end
-
+				
 				-- sil l'expression a une commande en amont...
-				if t[i].typ ~= "openbracket" then return ERR_SYNTAX_ERROR, nil end
-				if t[#t].typ ~= "closebracket" then return ERR_SYNTAX_ERROR, nil end
+				if t[i].typ ~= "openbracket" then break end
+				if t[#t].typ ~= "closebracket" then break end
 					
 				-- supprimer les parenthèses
 				table.remove(t, #t)
@@ -585,6 +584,9 @@ function EvalExpression(t, tp, i, cs, maxpnum)
 
 				-- évaluer l'expression
 				e, lst2 = EvalParamList(t, i, cs2, maxpnum)
+				
+				-- erreur ?
+				if e ~= OK then return e, lst end
 
 				-- exécuter la commande
 				local e, value = ExecOne(cs2, lst2)
@@ -594,15 +596,15 @@ function EvalExpression(t, tp, i, cs, maxpnum)
 				
 				return e, lst
 			else
-				return ERR_SYNTAX_ERROR, nil
+				break
 			end
 		else
-			return ERR_SYNTAX_ERROR, nil
+			break
 		end
 		
 		-- vérifier la suite
 		i = i + 1
-
+		
 		if i > #t then
 			if nexp ~= "" then
 				table.insert(lst, nexp)
@@ -610,36 +612,12 @@ function EvalExpression(t, tp, i, cs, maxpnum)
 			
 			return OK, lst
 		end
-					
-		-- chercher une virgule de séparation
-		if t[i].typ == "comma" then
-			-- fin d'expression numérique
-			if nexp ~= "" then
-				local s, e = EvalFloat(nexp)
-				if e ~= OK then return e, nil end
-
-				table.insert(lst, s)
-				
-				nexp = ""
-			end
-				
-			if not cm then
-				-- vérifier la suite
-				i = i + 1
-
-				if i > #t then return ERR_SYNTAX_ERROR, nil end
-				
-				-- insérer un blanc lors de la virgule  TODO ?
-				table.insert(lst, " ")
-					
-				cm = true
-			else
-				return ERR_SYNTAX_ERROR, nil
-			end
-		elseif t[i].typ == "plus" and nexp == "" then
+		
+		-- chercher un symbole de concaténation de chaînes (plus ou point virgule)
+		if t[i].typ == "plus" and nexp == "" then
 			if not cm then
 				-- mélanges de plus et de point-virgule
-				if sig == "semicolon" then return ERR_SYNTAX_ERROR, nil end
+				if sig == "semicolon" then break end
 
 				-- vérifier la suite
 				i = i + 1
@@ -647,12 +625,12 @@ function EvalExpression(t, tp, i, cs, maxpnum)
 				if i > #t then return OK, lst end
 				sig = "plus"
 			else
-				return ERR_SYNTAX_ERROR, nil
+				break
 			end
 		elseif t[i].typ == "semicolon" and nexp == "" then
 			if not cm then
 				-- mélanges de plus et de point-virgule
-				if sig == "plus" then return ERR_SYNTAX_ERROR, nil end
+				if sig == "plus" then break end
 
 				-- vérifier la suite
 				i = i + 1
@@ -661,8 +639,57 @@ function EvalExpression(t, tp, i, cs, maxpnum)
 
 				sig = "semicolon"
 			else
-				return ERR_SYNTAX_ERROR, nil
+				break
 			end
+		end
+	end
+
+	return ERR_SYNTAX_ERROR, nil
+end
+
+-- évaluer toute une expression chaîne de caractère
+function EvalExpression(t, tp, i, cs, maxpnum)
+	local lst = {}
+
+	-- supprimer les espaces de début et de fin
+	if t[i].typ == "whitespace" then table.remove(t, i) end
+	if t[#t].typ == "whitespace" then table.remove(t, #t) end
+
+	-- erreur si le terme commence ou se termine par une virgule
+	if t ~= nil then
+		if t[i].typ == "comma" or t[#t].typ == "comma" then
+			return ERR_SYNTAX_ERROR, nil
+		end
+	end
+	
+	-- séparer les morceaux de textes par les virgules
+	t2 = {}
+	
+	for i2 = i, #t do
+		if t[i2].typ ~= "comma" and i2 == #t then
+			table.insert(t2, t[i2])
+
+			-- assembler les morceaux de chaîne entre-eux
+			local e, lst = AssembleString(t2, cs, lst)
+			
+			-- erreur ?
+			if e ~= OK then return e, nill end
+			
+			i = i2 + 1
+			t2 = {}
+		elseif t[i2].typ ~= "comma" then
+			table.insert(t2, t[i2])
+		elseif t[i2].typ == "comma" then
+			-- assembler les morceaux de chaîne entre-eux
+			local e, lst = AssembleString(t2, cs, lst)
+			
+			-- erreur ?
+			if e ~= OK then return e, nill end
+			
+			table.insert(lst, " ")
+			
+			i = i2 + 1
+			t2 = {}
 		end
 	end
 	
@@ -674,7 +701,6 @@ function EvalParamList(t, i, cs, maxpnum)
 	local lst = {}
 	local sig = nil
 	local nexp = ""
-	local stp = false
 	local value = ""
 	
 	local cm = false
