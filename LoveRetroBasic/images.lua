@@ -52,7 +52,7 @@ function LoadBOB(filename, path, n)
 	love.filesystem.setIdentity(path)
 
 	-- créer une image data de la même taille
-	local data = love.image.newImageData(filename) -- TODO : remplacer par encoded data
+	local data = love.image.newImageData(filename)
 	
 	bob[n] = {
 		data:getWidth(),

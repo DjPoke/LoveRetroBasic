@@ -237,6 +237,27 @@ function DrawButton(x, y, w, h, b, c1, c2, c3)
 	gpen = memGPen
 end
 
+-- dessiner une image matrice
+function DrawMatrix(m, x, y, c1, c2)
+	local mgpen = gpen
+	
+	for j = 1, #m do
+		for i = 1, #m[j] do
+			if string.sub(m[j], i, i) == "1" then
+				-- afficher un point de couleur 1
+				gpen = c1
+			else
+				-- afficher un point de couleur 2
+				gpen = c2
+			end
+
+			PlotPixel(x + i - 1, y + j - 1)
+		end
+	end
+	
+	gpen = mgpen
+end
+
 -- faire scroller l'écran vers le haut de 1 caractère
 function ScrollScreenUp()
 	-- scroller
