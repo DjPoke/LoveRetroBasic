@@ -931,7 +931,24 @@ function EvalFloat(s)
 	-- analyser l'expression
 	local t = Parser(Lexer(RemoveLabels(s)))
 	s = ""
-	
+
+	-- évaluer et remplacer les modulos/espaces
+	for i = #t, 1, -1 do
+		if t[i].typ == "operator" then
+			if t[i].sym == "MOD" then
+				t[i].sym = "²"
+				
+				if i < #t and t[i + 1].typ == "whitespace" then
+					table.remove(t, i + 1)
+				end
+
+				if i > 1 and t[i - 1].typ == "whitespace" then
+					table.remove(t, i - 1)
+				end
+			end			
+		end
+	end
+		
 	-- vérifier si c'est un simple nombre
 	if #t == 1 then
 		if t[1].typ == "number" then
@@ -1035,6 +1052,8 @@ function EvalFloat(s)
 			s = s .. t[i].sym
 		elseif t[i].typ == "div" then
 			s = s .. t[i].sym
+		elseif t[i].typ == "operator" then
+			s = s .. t[i].sym
 		elseif t[i].typ == "openbracket" then
 			s = s .. t[i].sym
 		elseif t[i].typ == "closebracket" then
@@ -1134,6 +1153,9 @@ function EvalFloat(s)
 	end
 			
 	-- recalculer les morceaux d'expression dans l'ordre des priorités d'opérations
+	s, e = Calc(s, "²")
+	if e ~= OK then return nil, e end
+
 	s, e = Calc(s, "*")	
 	if e ~= OK then return nil, e end
 
@@ -1589,6 +1611,8 @@ function Calc(s, op)
 			else
 				s = string.sub(s, 1, p1 - 1) .. tostring(v1 / v2) .. string.sub(s, p2 + 1)
 			end
+		elseif op == "²" then
+			s = string.sub(s, 1, p1 - 1) .. tostring(v1 % v2) .. string.sub(s, p2 + 1)
 		end
 
 		pos = string.find(s, op)

@@ -69,7 +69,7 @@ commands = {
 			"HEX$", "HOTSPOT",
 			"IF", "INKEY$", "INPUT",
 			"LINE", "LOADBOB", "LOADIMAGE", "LOCATE",
-			"MOD", "MODE", "MOVE", "MOVER", "MUSIC",
+			"MODE", "MOVE", "MOVER", "MUSIC",
 			"NEXT",
 			"OVAL",
 			"PAPER", "PASTEBOB", "PEN", "PLOT", "PLOTR", "PRINT",
@@ -103,7 +103,6 @@ cmd["GETGRAPHPEN"].ret = VAR_INTEGER
 cmd["HEX$"].ret = VAR_STRING
 cmd["INKEY$"].ret = VAR_STRING
 cmd["INPUT"].ret = VAR_STRING
-cmd["MOD"].ret = VAR_INTEGER
 cmd["SGN"].ret = VAR_NUM
 cmd["STR$"].ret = VAR_STRING
 cmd["VAL"].ret = VAR_NUM
@@ -136,7 +135,6 @@ cmd["LINE"].pmin, cmd["LINE"].pmax = 4, 4
 cmd["LOADBOB"].pmin, cmd["LOADBOB"].pmax = 2, 2
 cmd["LOADIMAGE"].pmin, cmd["LOADIMAGE"].pmax = 1, 1
 cmd["LOCATE"].pmin, cmd["LOCATE"].pmax = 2, 2
-cmd["MOD"].pmin, cmd["MOD"].pmax = 2, 2
 cmd["MODE"].pmin, cmd["MODE"].pmax = 1, 1
 cmd["MOVE"].pmin, cmd["MOVE"].pmax = 2, 2
 cmd["MOVER"].pmin, cmd["MOVER"].pmax = 2, 2
@@ -189,6 +187,9 @@ cmd["WHILE"].ptype = {VAR_CONDITION}
 -- mots additionnels pour certaines commandes BASIC
 cmd["FOR"].word2, cmd["FOR"].word3, cmd["FOR"].wmin, cmd["FOR"].wmax = "TO", "STEP", 2, 3
 cmd["IF"].word2, cmd["IF"].wmin, cmd["IF"].wmax = "THEN", 2, 2
+
+-- opérateurs spéciaux
+operators = {"MOD"}
 
 -- ===================================
 -- = palette de 64 (16 x 4) couleurs =

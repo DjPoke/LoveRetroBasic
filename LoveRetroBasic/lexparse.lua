@@ -107,9 +107,23 @@ function Parser(t)
 	for i = 1, #t do
 		if t[i].typ == "word" then
 			for j = 1, #t[i].sym do
-				if (string.sub(t[i].sym, j, j) == "!" or string.sub(t[i].sym, j, j) == "%"or string.sub(t[i].sym, j, j) == "$") and j < #t[i].sym then
+				if (string.sub(t[i].sym, j, j) == "!" or string.sub(t[i].sym, j, j) == "%" or string.sub(t[i].sym, j, j) == "$") and j < #t[i].sym then
 					t[i].typ = "err"
 					return t
+				end
+			end
+		end
+	end
+	
+	-- trouver les opérateurs spéciaux du BASIC (MOD, etc....)
+	for i = 1, #t do
+		if t[i].typ == "word" then
+			local w = string.upper(t[i].sym)
+			for j = 1, #operators do
+				if string.upper(w) == string.upper(operators[j]) then
+					t[i] = {sym = string.upper(operators[j]), typ = "operator"}
+
+					break
 				end
 			end
 		end
@@ -122,6 +136,8 @@ function Parser(t)
 			for j = 1, #commands do
 				if w == commands[j] then
 					t[i] = {sym = commands[j], typ = "command"}
+					
+					break
 				end
 			end
 		end

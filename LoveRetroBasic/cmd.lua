@@ -247,11 +247,6 @@ cmd["LOCATE"].fn = function(lst)
 	return OK
 end
 
--- commande 'MOD'
-cmd["MOD"].fn = function(lst)
-	return OK, lst[1] % lst[2]
-end
-
 -- commande 'MODE'
 cmd["MODE"].fn = function(lst)
 	SetMode(lst[1])

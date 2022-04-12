@@ -10,6 +10,6 @@ loop:
 spriteimg 0,img
 
 img=img+1
-img=mod(img,4)
+img=img mod 4
 
 goto loop
