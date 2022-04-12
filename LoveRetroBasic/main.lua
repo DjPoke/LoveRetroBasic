@@ -917,10 +917,13 @@ end
 	
 editVolume = false
 showVolumeTrigger = false
-	
+musicPlaying = false
+
 mouseEnabled = true
 
-musicPlaying = false
+setFullscreen = false
+screenScaleX = 1
+screenScaleY = 1
 
 -- ==============================================================================================================================
 -- = fonctions principales =
@@ -929,6 +932,20 @@ function love.load()
 	-- créer la fenêtre graphique
 	love.window.setMode(realScnWidth, realScnHeight, {resizable=false, vsync=true, fullscreen=false})
 	love.window.setTitle("LoveRetroBasic ")
+	
+	-- mettre le programme en plein fenêtre (maximisé)
+	if setFullscreen then love.window.maximize() end
+
+	-- calculer le redimensionnement de l'écran si en 'plein écran'
+	local w = love.graphics.getWidth() -- nouvelle taille écran
+	local h = love.graphics.getHeight()
+	
+	screenScaleX = (w / realScnWidth)
+	screenScaleY = (h / realScnHeight)
+	
+	-- mettre à jour l'écran en fonction de sa mémoire virtuelle
+	borderX = borderX * screenScaleX
+	borderY = borderY * screenScaleY
 
 	-- initialiser le clavier
 	love.keyboard.setKeyRepeat(true)
@@ -2619,7 +2636,7 @@ function love.draw()
 	love.graphics.setColor(1, 1, 1, 1)
 
 	-- afficher le renderer
-	love.graphics.draw(renderer[currentRenderer], borderX, borderY, 0, gmode[currentMode][3], gmode[currentMode][4], 0, 0, 0, 0)
+	love.graphics.draw(renderer[currentRenderer], borderX, borderY, 0, gmode[currentMode][3] * screenScaleX, gmode[currentMode][4] * screenScaleY, 0, 0, 0, 0)
 		
 	-- restaurer l'écran capturé
 	love.graphics.setCanvas(renderer[currentRenderer])
@@ -3041,12 +3058,12 @@ function love.draw()
 
 	-- afficher le renderer d'infos en mode édition de texte
 	if appState == EDIT_MODE or (appState == RUN_MODE and stepsMode) or appState == SPRITE_MODE or appState == NOISE_MODE or appState == TRACKER_MODE then
-		love.graphics.draw(renderer[2], borderX, borderY + ((gmode[currentMode][2] + 8) * 2), 0, 2, 2, 0, 0, 0, 0)
+		love.graphics.draw(renderer[2], borderX, borderY + ((gmode[currentMode][2] + 8) * 2 * screenScaleY), 0, 2 * screenScaleX, 2 * screenScaleY, 0, 0, 0, 0)
 	end
 
 	-- afficher le renderer de message d'erreur
 	if appState == EDIT_MODE or appState == READY_MODE or (appState == RUN_MODE and stepsMode) then
-		love.graphics.draw(renderer[3], borderX, borderY + ((gmode[currentMode][2] + 16) * 2), 0, 2, 2, 0, 0, 0, 0)
+		love.graphics.draw(renderer[3], borderX, borderY + ((gmode[currentMode][2] + 16) * 2 * screenScaleY), 0, 2 * screenScaleX, 2 * screenScaleY, 0, 0, 0, 0)
 	end
 	
 	-- afficher le renderer de menu outils
@@ -3058,7 +3075,7 @@ function love.draw()
 		PrintInfosString(Chr(162), 4, "blue", 21)
 		PrintInfosString(Chr(255), 4, "red", 24)
 		PrintInfosString("X", 4, "black", 39)
-		love.graphics.draw(renderer[4], borderX, borderY - (16 * 2), 0, 2, 2, 0, 0, 0, 0)
+		love.graphics.draw(renderer[4], borderX, borderY - (16 * 2 * screenScaleY), 0, 2 * screenScaleX, 2 * screenScaleY, 0, 0, 0, 0)
 	end
 
 	-- afficher un message de débogage
