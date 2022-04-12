@@ -99,6 +99,7 @@ cmd["GETLOCX"].ret = VAR_INTEGER
 cmd["GETLOCY"].ret = VAR_INTEGER
 cmd["GETPAPER"].ret = VAR_INTEGER
 cmd["GETPEN"].ret = VAR_INTEGER
+cmd["GETGRAPHPEN"].ret = VAR_INTEGER
 cmd["HEX$"].ret = VAR_STRING
 cmd["INKEY$"].ret = VAR_STRING
 cmd["INPUT"].ret = VAR_STRING
@@ -114,9 +115,14 @@ cmd["BIN$"].pmin, cmd["BIN$"].pmax = 1, 1
 cmd["BORDER"].pmin, cmd["BORDER"].pmax = 1, 1
 cmd["CASE"].pmin, cmd["CASE"].pmax = 1, 1
 cmd["CHR$"].pmin, cmd["CHR$"].pmax = 1, 1
+-- CLS
 cmd["DRAW"].pmin, cmd["DRAW"].pmax = 2, 2
 cmd["DRAWR"].pmin, cmd["DRAWR"].pmax = 2, 2
+-- ENDIF
+-- ENDSELECT
+-- END
 cmd["ELSEIF"].pmin, cmd["ELSEIF"].pmax = 1, 1
+-- ELSE
 cmd["FOR"].pmin, cmd["FOR"].pmax = 2, 3
 cmd["FREEBOB"].pmin, cmd["FREEBOB"].pmax = 1, 1
 cmd["GOSUB"].pmin, cmd["GOSUB"].pmax = 1, 1

@@ -488,7 +488,7 @@ function Exec(t, l)
 	-- n'exécuter que les morceaux de code unique
 	if cln > 0 then return OK end
 
-	-- le début est une commande ?
+	-- le début du tronçon de texte est une commande ?
 	local maxpnum = 0
 	local i = 1
 
