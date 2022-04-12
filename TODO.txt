@@ -1,14 +1,10 @@
 BUGS :
 ------
 - PRINT : le point-virgule en fin de ligne ne fonctionne pas
-- PRINT : combiner les chaînes et les nombres avec point virgule ne fonctionne pas
-- STR$  : pas entièrement fonctionnel
 
 FONCTIONS A AJOUTER :
 ---------------------
-- Ajouter un bouton carré pour passer en Fullscreen
 - Créer des fonctions de sauvegarde et de chargement de configuration
-- Stocker l'état fullscreen ou windowed dans la configuration
 
 - Cliquer sur le menu d'en haut doit allumer le verbe d'action sélectionné.
 - Sauvegarder les sprites doit informer l'utilisateur, de même que si l'utilisateur quitte

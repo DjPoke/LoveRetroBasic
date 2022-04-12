@@ -467,7 +467,7 @@ end
 cmd["STR$"].fn = function(lst)
 	if lst[1] == "" then return OK, "" end
 
-	return OK, "\"" .. tostring(lst[1]) .. "\""
+	return OK, tostring(lst[1])
 end
 
 -- commande 'UNTIL'
