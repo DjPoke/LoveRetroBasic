@@ -529,7 +529,7 @@ function Exec(t, l)
 		local e = ExecOne(cs, lst)
 
 		return e
-	-- variable éventuellement trouvée
+	-- variable ou label éventuellements trouvés
 	elseif t[i].typ == "word" then
 		local var = t[i].sym
 		
@@ -537,7 +537,6 @@ function Exec(t, l)
 
 		-- variable sans assignation... erreur
 		if i > #t then return ERR_SYNTAX_ERROR end
-		
 		
 		-- vérifier si la variable possède un symbole à la fin
 		-- afin de définir le type de variable
@@ -681,11 +680,27 @@ function AssembleString(t, cs, lst, sig)
 
 			sig = "semicolon"
 		elseif t[i].typ == "word" then
-			local l, e = EvalLabel(t[i].sym)
-
-			table.insert(lst, l)
+			-- vérifier si c'est un label
+			for j = 1, labCount do
+				if string.lower(labels[j]) == string.lower(t[i].sym) then
+					-- si oui...
+					local l, e = EvalLabel(t[i].sym)
 			
-			if e~= OK then return ERR_UNDEFINED_LABEL, nil, sig end
+					table.insert(lst, l)
+						
+					if e~= OK then return ERR_UNDEFINED_LABEL, nil, sig else return OK, lst, sig end
+				end
+			end
+			
+			-- sinon, récupérer la valeur de la variable
+			local var = t[i].sym
+			local vType = GetVarType(var)
+			local value, e = GetVarValue(var, vType)
+			if e ~= OK then return e, nil end
+
+			table.insert(lst, value)
+			
+			return OK, lst, sig
 		else
 			break
 		end
@@ -1393,21 +1408,6 @@ function EvalLabel(s)
 	return s, OK
 end
 
-function GetLabelLine(s)
-	local l, e = EvalLabel(s)
-	
-	if e == OK then
-		-- chercher le label dans la mémoire
-		for i = 1, labCount do
-			if string.lower(labels[i]) == string.lower(s) then
-				return i, OK
-			end
-		end
-	end
-	
-	return nil, e
-end
-
 -- évaluer une condition TODO!
 function EvalCondition(s)
 	if s == nil or s == "" then return nil, ERR_SYNTAX_ERROR end
@@ -1451,6 +1451,17 @@ function GetFunction(t, i)
 	if not flag then return nil, nil, nil, ERR_SYNTAX_ERROR end
 
 	return c, p, i, OK
+end
+
+-- récupère le type d'une variable
+function GetVarType(var)
+	for j = 1, #vram do
+		if vram[j][1] == string.upper(var) then
+			return vram[j][3]
+		end
+	end
+	
+	return 0
 end
 
 -- récupère la valeur d'une variable

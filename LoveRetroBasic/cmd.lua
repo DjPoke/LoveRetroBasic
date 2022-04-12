@@ -161,6 +161,7 @@ cmd["GOTO"].fn = function(lst)
 	for i = 1, labCount do
 		if labels[i] == lst[1] then
 			ProgramCounter = labPC[i]
+
 			return OK
 		end
 	end
