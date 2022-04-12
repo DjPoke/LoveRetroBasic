@@ -368,10 +368,6 @@ end
 function ExecOne(cs, lst)
 	paramsCount = #lst
 	
-	print(cmd[cs].pmin)
-	print(cmd[cs].pmax)
-	print(#lst)
-	
 	-- erreurs sur le nombre de paramètres ?
 	if cmd[cs].pmin == 0 and cmd[cs].pmax == 0 and paramsCount > 0 then
 		return ERR_SYNTAX_ERROR, nil
@@ -1706,11 +1702,10 @@ end
 function PrintList(lst)
 	if lst == nil then return end
 	
-	m = 1
-	mlong = #lst
-
-	ln = ""
-	
+	local m = 1
+	local mlong = #lst
+	local ln = ""
+	local p = 6
 
 	while m <= mlong do
 		while #ln <= 40 do
@@ -1725,8 +1720,14 @@ function PrintList(lst)
 	
 		if ln ~= "" then
 			c = cursor[2]
+			
+			pen = p
+			if p == 6 then p = 5 else p = 6 end
+			
 			PrintString(ln)
+			
 			ln = ""
+			
 			if c ~= cursor[2] then
 				cursor[1] = 1
 			else
@@ -1972,4 +1973,154 @@ function SetCanvas(f)
 
 		love.graphics.pop()	
 	end
+end
+
+-- afficher l'aide
+function UI_Help()
+	-- remise à zéro d'un éventuel message texte
+	msg = nil
+
+	SaveProgram()
+	safeCursor[1] = cursor[1]
+	safeCursor[2] = cursor[2]
+	appState = HELP_MODE
+	HelpManager()
+
+	return
+end
+
+-- exécuter le programme
+function UI_Run()
+	-- remise à zéro d'un éventuel message texte
+	msg = nil
+
+	stepsMode = false
+	SaveProgram()
+	
+	err = GetError(ScanLabels())
+	
+	if err == "Ok" then
+		err = nil
+		ClearScreen()
+		safeCursor[1] = cursor[1]
+		safeCursor[2] = cursor[2]
+		Locate(1, 1)
+		kb_buffer = ""
+		for i = 0, MAX_HARD_SPRITES - 1 do
+			hardspr[i].x = 0.0
+			hardspr[i].y = 0.0
+			hardspr[i].img = 0
+			hardspr[i].hotspot = 0
+			hardspr[i].scale = 0
+		end
+		execStep = true
+		appState = RUN_MODE -- exécuter le code source basic
+	end
+	
+	return
+end
+
+-- déboguer le programme
+function UI_Debug()
+	-- remise à zéro d'un éventuel message texte
+	msg = nil
+
+	stepsMode = true
+	
+	SaveProgram()
+	err = GetError(ScanLabels())
+	
+	if err == "Ok" then
+		err = nil
+		ClearScreen()
+		safeCursor[1] = cursor[1]
+		safeCursor[2] = cursor[2]
+
+		Locate(1, 1)
+		kb_buffer = ""
+
+		for i = 0, MAX_HARD_SPRITES - 1 do
+			hardspr[i].x = 0.0
+			hardspr[i].y = 0.0
+			hardspr[i].img = 0
+			hardspr[i].hotspot = 0
+			hardspr[i].scale = 0
+		end
+
+		execStep = true
+		appState = RUN_MODE -- exécuter le code source basic en mode 'debug'
+	end
+
+	return
+end
+
+-- sauvegarder le programme
+function UI_Save()
+	-- remise à zéro d'un éventuel message texte
+	msg = nil
+
+	SaveProgram()
+
+	return
+end
+
+-- charger le programme
+function UI_Load()
+	-- remise à zéro d'un éventuel message texte
+	msg = nil
+
+	ShowCursor(false)
+	ClearScreen()
+	LoadDisc(currentRelativeFolder)
+
+	return
+end
+
+-- importer/exporter le programme
+function UI_Export()
+	-- remise à zéro d'un éventuel message texte
+	msg = nil
+
+	ImportExportProgram()
+
+	return
+end
+
+-- supprimer le programme
+function KillProgram()
+	-- remise à zéro d'un éventuel message texte
+	msg = nil
+
+	local title = "Question"
+	local message = "Delete your program ?"
+	local buttons = {"Yes", "No", "Cancel", escapebutton = 2}
+
+	local pressedbutton = love.window.showMessageBox(title, message, buttons)
+	
+	if pressedbutton == 1 then
+		ShowCursor(false)
+
+		ResetEditor()
+
+		-- effacer la RAM
+		for i = 0, MAX_RAM - 1 do
+			ram[i] = ""
+		end
+	
+		ramLine = 1
+
+		Locate(1, 1)
+					
+		ShowCursor(true)
+	end
+
+	return
+end
+
+-- quitter le programme
+function CloseProgram()
+	SaveProgram()
+	QuitProgram()
+
+	return
 end

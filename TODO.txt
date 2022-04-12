@@ -4,9 +4,6 @@ BUGS :
 
 FONCTIONS A AJOUTER :
 ---------------------
-- Créer des fonctions de sauvegarde et de chargement de configuration
-
-- Cliquer sur le menu d'en haut doit allumer le verbe d'action sélectionné.
 - Sauvegarder les sprites doit informer l'utilisateur, de même que si l'utilisateur quitte
 l'éditeur de sprites sans sauvegarder.
 
@@ -17,9 +14,9 @@ l'éditeur de sprites sans sauvegarder.
 - Conditions : IF THEN/ELSE/ENDIF, SELECT/CASE/ENDSELECT
 (empiler numéro et type d'instruction dans une pile dédiée afin de vérifier au dépilement si il n'y a pas d'erreur)
 
-- Musique et son : Porter le source de mon tracker dans LoveRetroBasic (w.i.p)
+- Musique et son : Déboguer le tracker (sons qui ne s'arrêtent pas parfois)
 - Musique et son : SOUND num (Noise Editor -> vibrato et trémolo ? bruits ?)
 
 - Générer éventuellement des interruptions virtuelles toutes les X frames
 
-- Disques virtuels : donner la possibilité de changer de disque du projet courant. (par numéro de disque)
+- Disques virtuels : donner la possibilité de changer de disque du projet courant... (par numéro de disque)

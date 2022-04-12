@@ -1020,13 +1020,13 @@ function love.keyreleased(key, scancode, isrepeat)
 	if appState == HELP_MODE then
 		if helpPage == 0 then
 			-- montrer les mots clés du basic
-			if key == "1" then
+			if key == "1" or key == "kp1" then
 				helpPage = 1
 				HelpManager()
 
 				return
 			-- voir les raccourcis claviers de l'éditeur
-			elseif key == "2" then
+			elseif key == "2" or key == "kp2" then
 				helpPage = 2
 				HelpManager()
 
@@ -1217,6 +1217,22 @@ function love.keypressed(key, scancode, isrepeat)
 			--
 			cursor[1] = 1
 			ShowCursor(true)
+		elseif key == "f1" then
+			UI_Help()
+		elseif key == "f5" then
+			UI_Run()
+		elseif key == "f6" then
+			UI_Debug()
+		elseif key == "f7" then
+			UI_Save()
+		elseif key == "f8" then
+			UI_Load()
+		elseif key == "f10" then
+			UI_Export()
+		elseif key == "delete" and love.keyboard.isDown("lctrl", "rctrl") then
+			KillProgram()
+		elseif key == "q" and love.keyboard.isDown("lctrl", "rctrl") then
+			CloseProgram()
 		end
 	elseif appState == SPRITE_MODE then	
 		if key == "s" and love.keyboard.isDown("lctrl", "rctrl") then
@@ -1617,123 +1633,21 @@ function love.update(dt)
 
 					return
 				elseif x == 8 then -- lancer l'aide
-					-- remise à zéro d'un éventuel message texte
-					msg = nil
-
-					SaveProgram()
-					safeCursor[1] = cursor[1]
-					safeCursor[2] = cursor[2]
-					appState = HELP_MODE
-					HelpManager()
-
-					return
+					UI_Help()
 				elseif x >= 11 and x <= 11 then -- executer le programme
-					-- remise à zéro d'un éventuel message texte
-					msg = nil
-
-					stepsMode = false
-					SaveProgram()
-					err = GetError(ScanLabels())
-					if err == "Ok" then
-						err = nil
-						ClearScreen()
-						safeCursor[1] = cursor[1]
-						safeCursor[2] = cursor[2]
-						Locate(1, 1)
-						kb_buffer = ""
-						for i = 0, MAX_HARD_SPRITES - 1 do
-							hardspr[i].x = 0.0
-							hardspr[i].y = 0.0
-							hardspr[i].img = 0
-							hardspr[i].hotspot = 0
-							hardspr[i].scale = 0
-						end
-						execStep = true
-						appState = RUN_MODE -- exécuter le code source basic
-					end
-
-					return
+					UI_Run()
 				elseif x >= 13 and x <= 13 then -- déboguer le programme
-					-- remise à zéro d'un éventuel message texte
-					msg = nil
-
-					stepsMode = true
-					SaveProgram()
-					err = GetError(ScanLabels())
-					if err == "Ok" then
-						err = nil
-						ClearScreen()
-						safeCursor[1] = cursor[1]
-						safeCursor[2] = cursor[2]
-						Locate(1, 1)
-						kb_buffer = ""
-						for i = 0, MAX_HARD_SPRITES - 1 do
-							hardspr[i].x = 0.0
-							hardspr[i].y = 0.0
-							hardspr[i].img = 0
-							hardspr[i].hotspot = 0
-							hardspr[i].scale = 0
-						end
-						execStep = true
-						appState = RUN_MODE -- exécuter le code source basic en mode 'debug'
-					end
-
-					return
+					UI_Debug()
 				elseif x >= 16 and x <= 16 then -- sauvegarder le programme
-					-- remise à zéro d'un éventuel message texte
-					msg = nil
-
-					SaveProgram()
-
-					return
+					UI_Save()
 				elseif x >= 18 and x <= 18 then -- charger le programme
-					-- remise à zéro d'un éventuel message texte
-					msg = nil
-
-					ShowCursor(false)
-					ClearScreen()
-					LoadDisc(currentRelativeFolder)
-
-					return
+					UI_Load()
 				elseif x >= 21 and x <= 21 then -- importer/exporter un programme
-					-- remise à zéro d'un éventuel message texte
-					msg = nil
-
-					ImportExportProgram()
-
-					return
+					UI_Export()
 				elseif x >= 24 and x <= 24 then -- effacer le programme
-					-- remise à zéro d'un éventuel message texte
-					msg = nil
-
-					local title = "Question"
-					local message = "Delete your program ?"
-					local buttons = {"Yes", "No", "Cancel", escapebutton = 2}
-
-					local pressedbutton = love.window.showMessageBox(title, message, buttons)
-					if pressedbutton == 1 then
-						ShowCursor(false)
-
-						ResetEditor()
-
-						-- effacer la RAM
-						for i = 0, MAX_RAM - 1 do
-							ram[i] = ""
-						end
-						ramLine = 1
-
-						Locate(1, 1)
-					
-						ShowCursor(true)
-					end
-
-					return
+					KillProgram()
 				elseif x == 39 then
-					--
-					SaveProgram()
-					QuitProgram()					
-
-					return					
+					CloseProgram()
 				end
 			end
 		end
