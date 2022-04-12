@@ -504,9 +504,7 @@ function Exec(t, l)
 		
 		-- si l'expression est de type chaîne poly...
 		if maxpnum < 0 then
-			e, value = EvalExpression(t, tp, i, cs, maxpnum)
-
-			lst = {value}
+			e, lst = EvalExpression(t, tp, i, cs, maxpnum)
 
 			-- exécuter la commande
 			local e, value = ExecOne(cs, lst)
@@ -534,22 +532,16 @@ function EvalExpression(t, tp, i, cs, maxpnum)
 	local sig = nil
 	local nexp = ""
 	local stp = false
-	local value = ""
-	
-	-- trouver la valeur de l'expression à retourner
-	for j = i, #t do
-		value = value .. t[j].sym
-	end
 	
 	local cm = false
 
 	while true do
 		if t[i].typ == "whitespace" and (nexp == "" or i == #t) then
 			-- vérifier la suite
-			i, e, stp, value = PrivateIncExec(i, #t, cs, lst, nexp)
-			if e ~= OK then return e, value end
-			if stp then
-				if cm == true then return ERR_SYNTAX_ERROR, value end
+			i = i + 1
+			
+			if i > #t then
+				if cm == true then return ERR_SYNTAX_ERROR, nil end
 						
 				-- mixer tout de suite la chaîne et l'analyser
 				local p = ""
@@ -559,7 +551,7 @@ function EvalExpression(t, tp, i, cs, maxpnum)
 				end
 	
 				p, e = EvalString(p)
-				if e ~= OK then return e, value end
+				if e ~= OK then return e, lst end
 	
 				lst = {p}
 
@@ -567,7 +559,7 @@ function EvalExpression(t, tp, i, cs, maxpnum)
 				local e = ExecOne(cs, lst)
 					
 				-- erreur ?
-				if e ~= OK then return e, value else return OK, value end
+				if e ~= OK then return e, nil else return OK, lst end
 			end
 		end
 				
@@ -575,7 +567,7 @@ function EvalExpression(t, tp, i, cs, maxpnum)
 		if cmd[cs].ptype[1] == VAR_POLY or cmd[cs].ptype[1] == VAR_STRING then
 			if t[i].typ == "poly" or t[i].typ == "string" then
 				-- si des valeurs numériques précèdent, alors...
-				if nexp ~= "" then return ERR_SYNTAX_ERROR, value end
+				if nexp ~= "" then return ERR_SYNTAX_ERROR, nil end
 				
 				table.insert(lst, t[i].sym)
 						
@@ -592,11 +584,11 @@ function EvalExpression(t, tp, i, cs, maxpnum)
 				cs2 = t[i].sym
 		
 				-- erreur si une fonction n'est pas trouvée en tant que commande
-				if cmd[cs2].ret == 0 then return ERR_SYNTAX_ERROR, value end
+				if cmd[cs2].ret == 0 then return ERR_SYNTAX_ERROR, nil end
 		
 				-- vérifier la suite
 				i = i + 1
-				if i > #t then return OK, value end
+				if i > #t then return OK, lst end
 				
 				-- vérifier le type de paramètres admis par cette commande
 				if #cmd[cs2].ptype > 1 then
@@ -606,8 +598,8 @@ function EvalExpression(t, tp, i, cs, maxpnum)
 				end
 
 				-- sil l'expression a une commande en amont...
-				if t[i].typ ~= "openbracket" then return ERR_SYNTAX_ERROR, value end
-				if t[#t].typ ~= "closebracket" then return ERR_SYNTAX_ERROR, value end
+				if t[i].typ ~= "openbracket" then return ERR_SYNTAX_ERROR, nil end
+				if t[#t].typ ~= "closebracket" then return ERR_SYNTAX_ERROR, nil end
 					
 				-- supprimer les parenthèses
 				table.remove(t, #t)
@@ -619,25 +611,33 @@ function EvalExpression(t, tp, i, cs, maxpnum)
 				-- exécuter la commande
 				local e, value = ExecOne(cs2, lst)
 
-				return e, "\"" .. value .. "\""
+				lst = {"\"" .. value .. "\""}
+				
+				return e, lst
 			else
-				return ERR_SYNTAX_ERROR, value
+				return ERR_SYNTAX_ERROR, nil
 			end
 		else
-			return ERR_SYNTAX_ERROR, value
+			return ERR_SYNTAX_ERROR, nil
 		end
 		
 		-- vérifier la suite
-		i, e, stp, value = PrivateIncExec(i, #t, cs, lst, nexp)
-		if e ~= OK then return e, value end
-		if stp then return OK, value end
+		i = i + 1
+
+		if i > #t then
+			if nexp ~= "" then
+				table.insert(lst, nexp)
+			end
+			
+			return OK, lst
+		end
 					
 		-- chercher une virgule de séparation
 		if t[i].typ == "comma" then
 			-- fin d'expression numérique
 			if nexp ~= "" then
 				local s, e = EvalFloat(nexp)
-				if e ~= OK then return e, value end
+				if e ~= OK then return e, nil end
 				
 				table.insert(lst, s)
 				
@@ -646,48 +646,48 @@ function EvalExpression(t, tp, i, cs, maxpnum)
 				
 			if not cm then
 				-- vérifier la suite
-				i, e, stp, value = PrivateIncExec(i, #t, cs, lst, nexp)
-				if e ~= OK then return e, value end
-				if stp then return ERR_SYNTAX_ERROR, value end
+				i = i + 1
+
+				if i > #t then return ERR_SYNTAX_ERROR, nil end
 				
 				-- insérer un blanc lors de la virgule  TODO ?
 				table.insert(lst, " ")
 					
 				cm = true
 			else
-				return ERR_SYNTAX_ERROR, value
+				return ERR_SYNTAX_ERROR, nil
 			end
 		elseif t[i].typ == "plus" and nexp == "" then
 			if not cm then
 				-- mélanges de plus et de point-virgule
-				if sig == "semicolon" then return ERR_SYNTAX_ERROR, value end
+				if sig == "semicolon" then return ERR_SYNTAX_ERROR, nil end
 
 				-- vérifier la suite
-				i, e, stp, value = PrivateIncExec(i, #t, cs, lst, nexp)
-				if e ~= OK then return e, value end
-				if stp then return OK, value end
+				i = i + 1
+			
+				if i > #t then return OK, lst end
 				sig = "plus"
 			else
-				return ERR_SYNTAX_ERROR, value
+				return ERR_SYNTAX_ERROR, nil
 			end
 		elseif t[i].typ == "semicolon" and nexp == "" then
 			if not cm then
 				-- mélanges de plus et de point-virgule
-				if sig == "plus" then return ERR_SYNTAX_ERROR, value end
+				if sig == "plus" then return ERR_SYNTAX_ERROR, nil end
 
 				-- vérifier la suite
-				i, e, stp, value = PrivateIncExec(i, #t, cs, lst, nexp)
-				if e ~= OK then return e, value end
-				if stp then return OK, value end
+				i = i + 1
+			
+				if i > #t then return OK, lst end
 
 				sig = "semicolon"
 			else
-				return ERR_SYNTAX_ERROR, value
+				return ERR_SYNTAX_ERROR, nil
 			end
 		end
-	end		
-
-	return OK, value
+	end
+	
+	return OK, lst
 end
 
 -- évaluer une liste de paramètres et exécuter la commande qui les invoque
