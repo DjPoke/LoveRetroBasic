@@ -674,11 +674,17 @@ function AssembleString(t, cs, lst, sig)
 			if sig == "semicolon" then break end
 
 			sig = "plus"
+			
+			-- erreur si la partie suivante n'est pas une chaine
+			if i + 1 <= #t and t[i + 1].typ == "number" then return ERR_TYPE_MISMATCH, nil, sig end
 		elseif t[i].typ == "semicolon" then
 			-- éviter les mélanges du plus et du point-virgule
 			if sig == "plus" then break end
 
 			sig = "semicolon"
+			
+			-- erreur si la partie suivante n'est pas une chaine
+			if i + 1 <= #t and t[i + 1].typ == "number" then return ERR_TYPE_MISMATCH, nil, sig end
 		elseif t[i].typ == "word" then
 			-- vérifier si c'est un label
 			for j = 1, labCount do
