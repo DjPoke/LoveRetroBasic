@@ -529,7 +529,7 @@ function Exec(t, l)
 		local e = ExecOne(cs, lst)
 
 		return e
-	-- variable ou label éventuellements trouvés
+	-- variable éventuellement trouvée
 	elseif t[i].typ == "word" then
 		local var = t[i].sym
 		
@@ -581,7 +581,7 @@ function Exec(t, l)
 		local s = ""
 		
 		for j = i, #t do
-			s = s .. t[i].sym
+			s = s .. t[j].sym
 		end
 		
 		-- assigner l'expression à la variable
@@ -909,56 +909,6 @@ function EvalParamList(t, i, cs, maxpnum)
 	end
 	
 	return OK, lst
-end
-
--- évaluer le paramètre fourni et retourner la valeur due à son type
-function EvalParam(param, typ)
-	local e = nil
-	
-	if typ == VAR_INTEGER then
-		l, e = EvalInteger(param)
-		if e == OK then return l, e end
-	elseif typ == VAR_FLOAT then
-		l, e = EvalFloat(param)
-		if e == OK then return l, e end
-	elseif typ == VAR_NUM then
-		-- tous les paramètres numériques sont possibles
-		local l, e = EvalFloat(param)
-		if e ~= OK then l, e = EvalInteger(param) end
-		if e == OK then return l, e end
-	elseif typ == VAR_STRING then
-		l, e = EvalString(param)
-
-		if e == OK then return l, e end
-	elseif typ == VAR_POLY then
-		-- tous les paramètres sont possibles
-		local l, e = EvalString(param)
-		if e ~= OK and e == ERR_TYPE_MISMATCH then
-			l, e = EvalFloat(param)
-			if e ~= OK then
-				l, e = EvalInteger(param)
-				-- impossible d'évaluer le paramètre
-				if e ~= OK then
-					return nil, e
-				end
-			end
-		elseif e ~= OK then
-			return nil, e
-		end
-
-		if e == OK then return l, e end
-	elseif typ == VAR_LABEL then
-		l, e = EvalLabel(param)
-
-		if e == OK then return l, e end
-
-	-- TODO:
-	--elseif typ[i] == VAR_CONDITION then
-	--elseif typ[i] == VAR_VAR then
-	--elseif typ[i] == VAR_CONSTANT then
-	end
-
-	return nil, ERR_SYNTAX_ERROR
 end
 
 -- évaluer une expression integer
