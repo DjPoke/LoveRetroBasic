@@ -43,6 +43,8 @@ function ClearScreen()
 	love.graphics.rectangle("fill", 0, 0, gmode[currentMode][1], gmode[currentMode][2])
 	
 	SetCanvas(false)
+
+	Locate(1, 1)
 end
 
 -- changer la couleur du stylo

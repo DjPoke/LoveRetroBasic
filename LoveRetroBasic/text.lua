@@ -374,7 +374,7 @@ function SetEditorTextColor(ln)
 	-- ajouter l'offset de l'éditeur
 	ln = ln + editorOffsetY
 	
-	-- récupérer la position courante du curseur
+	-- récupérer et sauvegarder la position courante du curseur
 	local xSafe = cursor[1]
 	local ySafe = cursor[2]
 
@@ -417,19 +417,7 @@ function SetEditorTextColor(ln)
 		-- rétablir le stylo par défaut
 		pen = DEFAULT_PEN		
 	end
-
-	-- commentaire trouvé ? on remplace la couleur
-	local com = ScanComments(s)
 	
-	if com ~= nil then
-		local pos = cursor[1]
-		cursor[1] = cursor[1] + #s - #com
-		pen = DEFAULT_COMMENTS_PEN
-		PrintString2(com)
-		pen = DEFAULT_PEN
-		cursor[1] = pos
-	end
-		
 	-- exit si la chaîne est vide
 	if s == nil then
 		-- rétablir la position du curseur texte
@@ -490,11 +478,23 @@ function SetEditorTextColor(ln)
 			word = ""
 		end
 	end
+	
+	-- commentaire trouvé ? on remplace la couleur
+	local com = ScanComments(s)
+	
+	if com ~= nil then
+		local pos = cursor[1]
+		cursor[1] = cursor[1] + #s - #com
+		pen = DEFAULT_COMMENTS_PEN
+		PrintString2(com)
+		pen = DEFAULT_PEN
+		cursor[1] = pos
+	end
 
 	-- rétablir la position du curseur texte
 	cursor[1] = xSafe
 	cursor[2] = ySafe
 
 	-- rétablir le stylo par défaut
-	pen = DEFAULT_PEN		
+	pen = DEFAULT_PEN
 end
