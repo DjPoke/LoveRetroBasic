@@ -505,13 +505,12 @@ end
 
 -- assembler un tronçon de chaîne de caractère
 function AssembleString(t, cs, lst)
-	local nexp = ""
 	local cm = false
 	local sig = nil
 	local i = 1
 
-	while true do		
-		if t[i].typ == "whitespace" and (nexp == "" or i == #t) then
+	while i <= #t do
+		if t[i].typ == "whitespace" and i == #t then
 			-- vérifier la suite
 			i = i + 1
 
@@ -538,83 +537,58 @@ function AssembleString(t, cs, lst)
 				-- erreur ?
 				if e ~= OK then return e, nil else return OK, lst end
 			end
-		end
-		
 		-- ajouter les chaînes de caractère à la liste
-		if cmd[cs].ptype[1] == VAR_POLY or cmd[cs].ptype[1] == VAR_STRING then
-			if t[i].typ == "poly" or t[i].typ == "string" then
-				-- si des valeurs numériques précèdent, alors...
-				if nexp ~= "" then return ERR_SYNTAX_ERROR, nil end
+		elseif t[i].typ == "poly" or t[i].typ == "string" then
+			cm = false
+	
+			table.insert(lst, t[i].sym)
+		-- ajouter les valeurs numériques à un buffer
+		elseif t[i].typ == "number" then
+			cm = false
 
-				table.insert(lst, t[i].sym)
-					
-				cm = false
-				
-			-- ajouter les valeurs numériques à un buffer
-			elseif t[i].typ == "number" then
-				nexp = nexp .. t[i].sym
-
-				cm = false
-			-- une commande de fonction est trouvée
-			elseif t[i].typ == "command" then
-				-- mémoriser la commande dans cs2
-				local cs2 = t[i].sym
+			table.insert(lst, t[i].sym)
+		-- une commande de fonction est trouvée
+		elseif t[i].typ == "command" then
+			-- mémoriser la commande dans cs2
+			local cs2 = t[i].sym
 		
-				-- erreur si une fonction n'est pas trouvée en tant que commande
-				if cmd[cs2].ret == 0 then return ERR_SYNTAX_ERROR, nil end
+			-- erreur si une fonction n'est pas trouvée en tant que commande
+			if cmd[cs2].ret == 0 then return ERR_SYNTAX_ERROR, nil end
 		
-				-- vérifier la suite
-				i = i + 1
-				if i > #t then return OK, lst end
+			-- vérifier la suite
+			i = i + 1
+			if i > #t then return OK, lst end
 				
-				-- vérifier le type de paramètres admis par cette commande
-				if #cmd[cs2].ptype > 1 then
-					maxpnum = #cmd[cs2].ptype
-				else
-					maxpnum = cmd[cs2].pmax
-				end
-				
-				-- sil l'expression a une commande en amont...
-				if t[i].typ ~= "openbracket" then break end
-				if t[#t].typ ~= "closebracket" then break end
-					
-				-- supprimer les parenthèses
-				table.remove(t, #t)
-				table.remove(t, i)
-
-				-- évaluer l'expression
-				e, lst2 = EvalParamList(t, i, cs2, maxpnum)
-				
-				-- erreur ?
-				if e ~= OK then return e, lst end
-
-				-- exécuter la commande
-				local e, value = ExecOne(cs2, lst2)
-				
-				-- ajouter le résultat à la liste de retour
-				table.insert(lst, "\"" .. value .. "\"")
-				
-				return e, lst
+			-- vérifier le type de paramètres admis par cette commande
+			if #cmd[cs2].ptype > 1 then
+				maxpnum = #cmd[cs2].ptype
 			else
-				break
+				maxpnum = cmd[cs2].pmax
 			end
-		else
-			break
-		end
-		
-		-- vérifier la suite
-		i = i + 1
-		
-		if i > #t then
-			if nexp ~= "" then
-				table.insert(lst, nexp)
-			end
-			
-			return OK, lst
-		end
-		
+				
+			-- sil l'expression a une commande en amont...
+			if t[i].typ ~= "openbracket" then break end
+			if t[#t].typ ~= "closebracket" then break end
+					
+			-- supprimer les parenthèses
+			table.remove(t, #t)
+			table.remove(t, i)
+
+			-- évaluer l'expression
+			e, lst2 = EvalParamList(t, i, cs2, maxpnum)
+				
+			-- erreur ?
+			if e ~= OK then return e, lst end
+
+			-- exécuter la commande
+			local e, value = ExecOne(cs2, lst2)
+				
+			-- ajouter le résultat à la liste de retour
+			table.insert(lst, "\"" .. value .. "\"")
+				
+			return e, lst
 		-- chercher un symbole de concaténation de chaînes (plus ou point virgule)
-		if t[i].typ == "plus" and nexp == "" then
+		elseif t[i].typ == "plus" then
 			if not cm then
 				-- mélanges de plus et de point-virgule
 				if sig == "semicolon" then break end
@@ -627,9 +601,9 @@ function AssembleString(t, cs, lst)
 			else
 				break
 			end
-		elseif t[i].typ == "semicolon" and nexp == "" then
+		elseif t[i].typ == "semicolon" then
 			if not cm then
-				-- mélanges de plus et de point-virgule
+				-- éviter les mélanges du plus et du point-virgule
 				if sig == "plus" then break end
 
 				-- vérifier la suite
@@ -641,7 +615,13 @@ function AssembleString(t, cs, lst)
 			else
 				break
 			end
+		else
+			break
 		end
+		
+		i = i + 1
+		
+		if i > #t then return OK, lst end
 	end
 
 	return ERR_SYNTAX_ERROR, nil
@@ -662,6 +642,8 @@ function EvalExpression(t, tp, i, cs, maxpnum)
 		end
 	end
 	
+	if cmd[cs].ptype[1] ~= VAR_POLY and cmd[cs].ptype[1] ~= VAR_STRING then return ERR_TYPE_MISMATCH, nil end
+
 	-- séparer les morceaux de textes par les virgules
 	t2 = {}
 	
