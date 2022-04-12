@@ -368,6 +368,10 @@ end
 function ExecOne(cs, lst)
 	paramsCount = #lst
 	
+	print(cmd[cs].pmin)
+	print(cmd[cs].pmax)
+	print(#lst)
+	
 	-- erreurs sur le nombre de paramètres ?
 	if cmd[cs].pmin == 0 and cmd[cs].pmax == 0 and paramsCount > 0 then
 		return ERR_SYNTAX_ERROR, nil
@@ -780,6 +784,33 @@ function EvalParamList(t, i, cs, maxpnum)
 	local cm = false
 	local limit = #cmd[cs].ptype
 
+	-- commande sans paramètres
+	if maxpnum == 0 then
+		-- erreur !
+		if t[#t].typ == "comma" then return ERR_SYNTAX_ERROR, nil end
+		if t[#t].typ == "whitespace" and #t - 1 > 0 and t[#t - 1].typ == "comma" then return ERR_SYNTAX_ERROR, nil end
+
+		-- paramètres trouvés ?
+		while t[i].typ == "whitespace" do
+			-- vérifier la suite
+			i = i + 1
+			
+			if i > #t then return OK, lst end
+		end
+		
+		local alt = false
+		
+		while i <= #t do
+			if not alt and t[i].typ ~= "number" then return ERR_SYNTAX_ERROR, nil end
+			if alt and t[i].typ ~= "comma" then return ERR_SYNTAX_ERROR, nil end
+			
+			i = i + 1
+			alt = not alt
+		end
+		
+		return ERR_TOO_MANY_OPERANDS, nil
+	end
+	
 	-- scanner les types de paramètres d'entrées nécessaires
 	for j = 1, maxpnum do
 		local k = math.min(j, limit)
@@ -911,6 +942,15 @@ function EvalParamList(t, i, cs, maxpnum)
 			table.insert(lst, l)
 			
 			if e~= OK then return ERR_UNDEFINED_LABEL, nil end
+		end
+		
+		-- erreur !
+		if t[#t].typ == "comma" then return ERR_SYNTAX_ERROR, nil end
+		if t[#t].typ == "whitespace" and #t - 1 > 0 and t[#t - 1].typ == "comma" then return ERR_SYNTAX_ERROR, nil end
+
+		-- trop de paramètres ?
+		if j == maxpnum then
+			if i < #t then return ERR_TOO_MANY_OPERANDS, nil end
 		end
 	end
 	
