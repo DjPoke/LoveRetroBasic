@@ -457,6 +457,10 @@ function Exec(t, l)
 	
 	if obracket ~= cbracket then return ERR_SYNTAX_ERROR, nil end
 	
+	-- supprimer les blancs au début et à la fin de la phrase
+	if #t > 0 and t[#t].typ == "whitespace" then table.remove(t, #t) end
+	if #t > 0 and t[1].typ == "whitespace" then table.remove(t, 1) end
+	
 	-- exécuter les morceau de code en fonction des séparateurs 'deux points'
 	local t2 = {}
 	local e = OK
