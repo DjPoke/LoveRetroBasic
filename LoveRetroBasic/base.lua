@@ -382,23 +382,52 @@ function ExecOne(cs, lst)
 	return OK, value
 end
 
--- assigne une valeur à une variable
+-- assigne une expression à une variable
 function AssignToVar(var, vType, s)
+	local pointer = 0
+	local e = 0
+	
+	-- voir si la variable existe
 	for i = 1, #vram do
 		if vram[i][1] == string.upper(var) then
-			if vType == VAR_INTEGER then
-				vram[i][2], e = EvalInteger(s)
-			elseif vType == VAR_FLOAT then
-				vram[i][2], e = EvalFloat(s)
-			else
-				vram[i][2], e = EvalString(s, true)
-			end
-			
-			return e
+			pointer = i
+
+			break
 		end
 	end
 	
-	return ERR_TYPE_MISMATCH
+	-- si la variable n'existe pas, on l'initialise
+	if pointer == 0 then
+		if #vram < MAX_RAM then
+			local vVal = nil
+					
+			if vType == VAR_INTEGER then
+				vVal = 0
+			elseif vType == VAR_FLOAT then
+				vVal = 0.0
+			elseif vType == VAR_STRING then
+				vVal = ""
+			end
+					
+			table.insert(vram, {string.upper(var), vVal, vType})
+			
+			pointeur = #vram			
+		else
+			-- sauf si la mémoire est pleine...
+			return ERR_MEMORY_FULL
+		end
+	end
+	
+	-- stocker la valeur de l'expression dans la variable
+	if vType == VAR_INTEGER then
+		vram[pointeur][2], e = EvalInteger(s)
+	elseif vType == VAR_FLOAT then
+		vram[pointeur][2], e = EvalFloat(s)
+	else
+		vram[pointeur][2], e = EvalString(s, true)
+	end
+			
+	return e
 end
 
 -- exploser la ligne de commande et l'exécuter
@@ -495,12 +524,74 @@ function Exec(t, l)
 				return ERR_SYNTAX_ERROR
 			end
 		end
+		
+		-- exécuter la commande
+		local e = ExecOne(cs, lst)
+
+		return e
+	-- variable éventuellement trouvée
+	elseif t[i].typ == "word" then
+		local var = t[i].sym
+		
+		i = i + 1
+
+		-- variable sans assignation... erreur
+		if i > #t then return ERR_SYNTAX_ERROR end
+		
+		
+		-- vérifier si la variable possède un symbole à la fin
+		-- afin de définir le type de variable
+		local vType = VAR_INTEGER
+		
+		if t[i].typ == "integer" then
+			var = var .. "!"
+
+			i = i + 1
+			
+			-- variable sans assignation... erreur
+			if i > #t then return ERR_SYNTAX_ERROR end
+		elseif t[i].typ == "float" then
+			var = var .. "%"
+			vType = VAR_FLOAT
+
+			i = i + 1
+			
+			-- variable sans assignation... erreur
+			if i > #t then return ERR_SYNTAX_ERROR end
+		elseif t[i].typ == "string" then
+			var = var .. "$"
+			vType = VAR_STRING
+
+			i = i + 1
+			
+			-- variable sans assignation... erreur
+			if i > #t then return ERR_SYNTAX_ERROR end
+		end
+		
+		-- vérifier la présence du symbol égal pour l'assignation, sinon erreur...
+		if t[i].typ == "equal" then
+			i = i + 1
+			
+			-- variable sans assignation... erreur
+			if i > #t then return ERR_SYNTAX_ERROR end			
+		else
+			return ERR_SYNTAX_ERROR
+		end
+		
+		-- vérifier la présence de données à assigner à la variable
+		local s = ""
+		
+		for j = i, #t do
+			s = s .. t[i].sym
+		end
+		
+		-- assigner l'expression à la variable
+		local e = AssignToVar(var, vType, s)
+		
+		return e
 	end
 
-	-- exécuter la commande
-	local e = ExecOne(cs, lst)
-
-	return e
+	return OK
 end
 
 -- assembler un tronçon de chaîne de caractère
