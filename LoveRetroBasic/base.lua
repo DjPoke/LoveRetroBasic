@@ -931,28 +931,19 @@ function EvalFloat(s)
 	-- analyser l'expression
 	local t = Parser(Lexer(RemoveLabels(s)))
 	s = ""
-
-	-- évaluer et remplacer les modulos/espaces
-	for i = #t, 1, -1 do
-		if t[i].typ == "operator" then
-			if t[i].sym == "MOD" then
-				t[i].sym = "²"
-				
-				if i < #t and t[i + 1].typ == "whitespace" then
-					table.remove(t, i + 1)
-				end
-
-				if i > 1 and t[i - 1].typ == "whitespace" then
-					table.remove(t, i - 1)
-				end
-			end			
-		end
-	end
 		
-	-- vérifier si c'est un simple nombre
+	-- vérifier si l'expression est un simple nombre
 	if #t == 1 then
 		if t[1].typ == "number" then
 			return Val(t[1].sym), OK
+		end
+	end
+
+	for i = 1, #t do	
+		if t[i].typ == "operator" then
+			if t[i].sym == "MOD" then
+				t[i].sym = "²"
+			end			
 		end
 	end
 
@@ -962,6 +953,8 @@ function EvalFloat(s)
 		if t[i].typ == "err" then
 			-- détecter les erreurs
 			return nil, ERR_SYNTAX_ERROR
+		elseif t[i].typ == "whitespace" then
+			i = i + 1
 		elseif t[i].typ == "command" then
 			-- vérifier que la commande ne retourne pas une chaîne de caractères
 			if cmd[t[i].sym].ret == VAR_STRING then return nil, ERR_TYPE_MISMATCH end
