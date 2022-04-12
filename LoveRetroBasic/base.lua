@@ -681,9 +681,9 @@ function AssembleString(t, cs, lst, sig)
 
 			sig = "semicolon"
 		elseif t[i].typ == "word" then
-			local ln, e = GetLabelLine(t[i].sym)
+			local l, e = EvalLabel(t[i].sym)
 
-			table.insert(lst, ln)
+			table.insert(lst, l)
 			
 			if e~= OK then return ERR_UNDEFINED_LABEL, nil, sig end
 		else
@@ -885,9 +885,9 @@ function EvalParamList(t, i, cs, maxpnum)
 				return ERR_TYPE_MISMATCH, nil
 			end
 		elseif cmd[cs].ptype[k] == VAR_LABEL then
-			local ln, e = GetLabelLine(t[i].sym)
+			local l, e = EvalLabel(t[i].sym)
 
-			table.insert(lst, ln)
+			table.insert(lst, l)
 			
 			if e~= OK then return ERR_UNDEFINED_LABEL, nil end
 		end
