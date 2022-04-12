@@ -157,21 +157,21 @@ end
 
 -- initialiser le piano virtuel
 function InitPiano()
-	piano[23] = { "noire", 15, 286, 2 }
-	piano[24] = { "noire", 27, 286, 4 }
-	piano[25] = { "noire", 51, 286, 7 }
-	piano[26] = { "noire", 63, 286, 9 }
-	piano[27] = { "noire", 75, 286, 11 }
-	piano[28] = { "noire", 99, 286, 14 }
-	piano[29] = { "noire", 111, 286, 16 }
-	piano[30] = { "noire", 135, 286, 19 }
-	piano[31] = { "noire", 147, 286, 21 }
-	piano[32] = { "noire", 159, 286, 23 }
-	piano[33] = { "noire", 183, 286, 26 }
-	piano[34] = { "noire", 195, 286, 28 }
-	piano[35] = { "noire", 219, 286, 31 }
-	piano[36] = { "noire", 231, 286, 33 }
-	piano[37] = { "noire", 243, 286, 35 }
+	piano[23] = {img_kb[2], 15, 286, 2 }
+	piano[24] = {img_kb[2], 27, 286, 4 }
+	piano[25] = {img_kb[2], 51, 286, 7 }
+	piano[26] = {img_kb[2], 63, 286, 9 }
+	piano[27] = {img_kb[2], 75, 286, 11 }
+	piano[28] = {img_kb[2], 99, 286, 14 }
+	piano[29] = {img_kb[2], 111, 286, 16 }
+	piano[30] = {img_kb[2], 135, 286, 19 }
+	piano[31] = {img_kb[2], 147, 286, 21 }
+	piano[32] = {img_kb[2], 159, 286, 23 }
+	piano[33] = {img_kb[2], 183, 286, 26 }
+	piano[34] = {img_kb[2], 195, 286, 28 }
+	piano[35] = {img_kb[2], 219, 286, 31 }
+	piano[36] = {img_kb[2], 231, 286, 33 }
+	piano[37] = {img_kb[2], 243, 286, 35 }
 	
 	piano[1][4] = 1
 	piano[2][4] = 3
