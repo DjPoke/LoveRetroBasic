@@ -27,11 +27,11 @@ end
 
 -- commande 'CHR$'
 cmd["CHR$"].fn = function(lst)
-	if lst[1] < 0 or v > lst[1] then
+	if lst[1] < 0 or lst[1] > 255 then
 		return ERR_OVERFLOW, nil
 	end
 
-	return OK, "\"" .. Chr(lst[1]) .. "\""
+	return OK, Chr(lst[1])
 end
 
 -- commande 'CLS'

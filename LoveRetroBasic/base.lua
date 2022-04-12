@@ -489,7 +489,7 @@ function Exec(t, l)
 		
 		if maxpnum < 0 then
 			-- si l'expression est de type chaîne poly...
-			e, lst = EvalExpression(t, tp, i, cs, maxpnum)
+			e, lst = EvalExpression(t, tp, i, cs, maxpnum)			
 		elseif t[i].typ == "whitespace" then
 			-- si c'est une liste de paramètres
 			e, lst = EvalParamList(t, i, cs, maxpnum)			
@@ -589,6 +589,7 @@ function EvalExpression(t, tp, i, cs, maxpnum)
 				-- exécuter la commande
 				local e, value = ExecOne(cs2, lst2)
 				
+				-- ajouter le résultat à la liste de retour
 				table.insert(lst, "\"" .. value .. "\"")
 				
 				return e, lst
