@@ -1,6 +1,5 @@
 BUGS :
 ------
-- PRINT : le point-virgule en fin de ligne ne fonctionne pas
 
 FONCTIONS A AJOUTER :
 ---------------------

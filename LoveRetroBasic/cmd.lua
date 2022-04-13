@@ -346,20 +346,18 @@ end
 cmd["PRINT"].fn = function(lst)
 	if #lst == 0 then
 		LineFeed()
-	else	
+	else
 		for i = 1, #lst do
 			if type(lst[i]) ~= "string" then lst[i] = tostring(lst[i]) end
 			
 			if lst[i]:sub(1, 1) == "\"" and lst[i]:sub(-1) == "\"" then
 				lst[i] = lst[i]:sub(2, -2)
 			end
-			
-			PrintString(lst[i])
-			
-			if i == #lst then
-				if string.sub(lst[i], -1) ~= ";" then
-					LineFeed()
-				end
+
+			if lst[i] ~= ";" then
+				PrintString(lst[i])
+
+				if i == #lst then LineFeed() end
 			end
 		end
 	end
