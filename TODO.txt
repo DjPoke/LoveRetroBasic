@@ -1,5 +1,6 @@
 BUGS :
 ------
+PRINT expression numérique
 
 FONCTIONS A AJOUTER :
 ---------------------
