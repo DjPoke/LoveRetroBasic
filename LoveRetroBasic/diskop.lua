@@ -420,3 +420,52 @@ function LoadFileTable(t, path, filename)
 	
 	return t
 end
+
+-- sBatchFile = .bat for windows, .sh for x
+function CallBatch(sBatchFile)
+    local b = package.cpath:match("%p[\\|/]?%p(%a+)")
+    if b == "dll" then 
+        -- windows
+        os.execute('start cmd /k call "'..sBatchFile..'"')
+    elseif b == "dylib" then
+        -- macos
+        os.execute('chmod +x "'..sBatchFile..'"')
+        os.execute('open -a Terminal.app "'..sBatchFile..'"')
+    elseif b == "so" then
+        -- Linux
+        os.execute('chmod +x "'..sBatchFile..'"')
+        os.execute('xterm -hold -e "'..sBatchFile..'" & ')
+    end 
+end
+
+-- copier un fichier d'un endroit à un autre
+function CopyFile(old_path, new_path)
+  local old_file = io.open(old_path, "rb")
+  local new_file = io.open(new_path, "wb")
+  local old_file_sz, new_file_sz = 0, 0
+  if not old_file or not new_file then
+    return false
+  end
+  while true do
+    local block = old_file:read(2^13)
+    if not block then 
+      old_file_sz = old_file:seek( "end" )
+      break
+    end
+    new_file:write(block)
+  end
+  old_file:close()
+  new_file_sz = new_file:seek( "end" )
+  new_file:close()
+  return new_file_sz == old_file_sz
+end
+
+-- vérifier la présence d'un fichier hors du bac à sable de love2d
+function GetExtFileExists(filename)
+   local f = io.open(filename, "r")
+   if f ~= nil then io.close(f) return true else return false end
+end
+
+function GetExtFolderExists(filename)
+	return os.rename(filename,filename)
+end

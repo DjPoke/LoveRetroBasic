@@ -1252,6 +1252,8 @@ function love.keypressed(key, scancode, isrepeat)
 			UI_Save()
 		elseif key == "f8" then
 			UI_Load()
+		elseif key == "f9" then
+			UI_Import()
 		elseif key == "f10" then
 			UI_Export()
 		elseif key == "delete" and love.keyboard.isDown("lctrl", "rctrl") then
@@ -1681,9 +1683,11 @@ function love.update(dt)
 					UI_Save()
 				elseif x >= 18 and x <= 18 then -- charger le programme
 					UI_Load()
-				elseif x >= 21 and x <= 21 then -- importer/exporter un programme
+				elseif x >= 21 and x <= 21 then -- importer un programme
+					UI_Import()
+				elseif x >= 23 and x <= 23 then -- exporter un programme
 					UI_Export()
-				elseif x >= 24 and x <= 24 then -- effacer le programme
+				elseif x >= 26 and x <= 26 then -- effacer le programme
 					KillProgram()
 				elseif x == 39 then
 					CloseProgram()
@@ -3103,8 +3107,8 @@ function love.draw()
 		PrintInfosString("?", 4, "green", 8)
 		PrintInfosString(Chr(158) .. " " .. Chr(157), 4, "black", 16)
 		PrintInfosString(Chr(160) .. " " .. Chr(161), 4, "red", 11)
-		PrintInfosString(Chr(162), 4, "blue", 21)
-		PrintInfosString(Chr(255), 4, "red", 24)
+		PrintInfosString("I E", 4, "blue", 21)
+		PrintInfosString(Chr(255), 4, "red", 26)
 		PrintInfosString("X", 4, "black", 39)
 		love.graphics.draw(renderer[4], borderX, borderY - (16 * 2 * screenScaleY), 0, 2 * screenScaleX, 2 * screenScaleY, 0, 0, 0, 0)
 	end

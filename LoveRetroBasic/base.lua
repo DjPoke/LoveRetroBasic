@@ -1835,17 +1835,6 @@ function SaveProgram()
 	end
 end
 
--- importer/exporter un programme
-function ImportExportProgram()
-	local lnk = love.filesystem.getSaveDirectory()
-
-	if love.window.showMessageBox("Info", "Your program can be dropped or taken here:\n" .. "Don't forget to reload your program after importing it !\n" .. lnk .. "\n\nLink copied to clipboard !", "info", true) then
-		love.system.setClipboardText(lnk)
-	else
-		msg = "Runtime error !"
-	end
-end
-
 -- importer une banque de sprites
 function ImportSprites()
 	local lnk = love.filesystem.getSaveDirectory() .. spriteFolder .. "/"
@@ -2090,13 +2079,55 @@ function UI_Load()
 	return
 end
 
--- importer/exporter le programme
+-- exporter le programme
 function UI_Export()
 	-- remise à zéro d'un éventuel message texte
 	msg = nil
+	
+	local lnk = love.filesystem.getSaveDirectory()
+	local exportLnk = love.filesystem.getUserDirectory() .. "\\Documents"
 
-	ImportExportProgram()
+	if not GetExtFolderExists(exportLnk .. "\\LoveRetroBasic") then
+		os.execute("mkdir " .. exportLnk .. "\\LoveRetroBasic")
+	end
 
+	if GetExtFolderExists(exportLnk .. "\\LoveRetroBasic") then
+		CopyFile(lnk .. "\\main.bas", exportLnk .. "\\LoveRetroBasic\\main.bas")
+	
+		msg = "main.bas exported"
+	end
+	
+	return
+end
+
+-- importer le programme
+function UI_Import()
+	-- remise à zéro d'un éventuel message texte
+	msg = nil
+	
+	local lnk = love.filesystem.getSaveDirectory()
+	local importLnk = love.filesystem.getUserDirectory() .. "\\Documents"
+	
+	if not GetExtFolderExists(importLnk .. "\\LoveRetroBasic") then
+		os.execute("mkdir " .. importLnk .. "\\LoveRetroBasic")
+		
+		if GetExtFolderExists(importLnk .. "\\LoveRetroBasic") then
+			msg = "Export folder created"
+		
+			return
+		end
+	end
+	
+	if GetExtFileExists(importLnk .. "\\LoveRetroBasic\\main.bas") then
+		CopyFile(importLnk .. "\\LoveRetroBasic\\main.bas", lnk .. "\\main.bas")
+				
+		UI_Load()
+			
+		msg = "main.bas imported"
+	else
+		msg = "main.bas not found"
+	end
+	
 	return
 end
 
