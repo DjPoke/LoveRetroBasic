@@ -1839,7 +1839,7 @@ end
 function ImportSprites()
 	local lnk = love.filesystem.getSaveDirectory() .. spriteFolder .. "/"
 	
-	if love.window.showMessageBox("Info", "Your sprite bank can be dropped here:\n" .. lnk .. "\n\nLink copied to clipboard !", "info", true) then
+	if Messagebox("Info", "Your sprite bank can be dropped here:\n" .. lnk .. "\n\nLink copied to clipboard !", "info", true) then
 		love.system.setClipboardText(lnk)
 	else
 		msg = "Runtime error !"
@@ -1850,7 +1850,7 @@ end
 function ExportSprites()
 	local lnk = love.filesystem.getSaveDirectory() .. spriteFolder .. "/"
 
-	if love.window.showMessageBox("Info", "Your sprite bank be taken here:\n" .. lnk .. "\n\nLink copied to clipboard !", "info", true) then
+	if Messagebox("Info", "Your sprite bank be taken here:\n" .. lnk .. "\n\nLink copied to clipboard !", "info", true) then
 		love.system.setClipboardText(lnk)
 	else
 		msg = "Runtime error !"
@@ -2140,7 +2140,7 @@ function KillProgram()
 	local message = "Delete your program ?"
 	local buttons = {"Yes", "No", "Cancel", escapebutton = 2}
 
-	local pressedbutton = love.window.showMessageBox(title, message, buttons)
+	local pressedbutton = Messagebox(title, message, buttons)
 	
 	if pressedbutton == 1 then
 		ShowCursor(false)

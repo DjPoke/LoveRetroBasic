@@ -2469,7 +2469,7 @@ function love.update(dt)
 						end
 					else
 						mouseEnabled = false
-						love.window.showMessageBox("Info", "Please push 'STOP' button first !", "info", true)
+						Messagebox("Info", "Please push 'STOP' button first !", "info", true)
 					end
 				elseif targetButton == BTN_SAVE then
 					if state == STOP then
@@ -2489,17 +2489,17 @@ function love.update(dt)
 								if #f > 0 then
 									SaveMusic(musicName)
 									mouseEnabled = false
-									love.window.showMessageBox("Info", "Saved !", "info", true)
+									Messagebox("Info", "Saved !", "info", true)
 								end
 							end
 						else
 							SaveMusic(musicName)
 							mouseEnabled = false
-							love.window.showMessageBox("Info", "Saved !", "info", true)
+							Messagebox("Info", "Saved !", "info", true)
 						end
 					else
 						mouseEnabled = false
-						love.window.showMessageBox("Info", "Please push 'STOP' button first !", "info", true)
+						Messagebox("Info", "Please push 'STOP' button first !", "info", true)
 					end
 				elseif targetButton == BTN_CUT_TRACK then
 					if state == EDIT then
@@ -2519,7 +2519,7 @@ function love.update(dt)
 							end
 						end
 					else
-						love.window.showMessageBox("Info", "You must set EDIT mode !", "info", true)
+						Messagebox("Info", "You must set EDIT mode !", "info", true)
 					end
 				elseif targetButton == BTN_CUT_PATTERN then
 					if state == EDIT then
@@ -2533,7 +2533,7 @@ function love.update(dt)
 							end
 						end
 					else
-						love.window.showMessageBox("Info", "You must set EDIT mode !", "info", true)
+						Messagebox("Info", "You must set EDIT mode !", "info", true)
 					end
 				elseif targetButton == BTN_COPY_TRACK then
 					if state == EDIT then
@@ -2552,9 +2552,9 @@ function love.update(dt)
 						end
 						
 						-- message d'info
-						love.window.showMessageBox("Info", "Copied", "info", true)
+						Messagebox("Info", "Copied", "info", true)
 					else
-						love.window.showMessageBox("Info", "You must set EDIT mode !", "info", true)
+						Messagebox("Info", "You must set EDIT mode !", "info", true)
 					end
 				elseif targetButton == BTN_COPY_PATTERN then
 					if state == EDIT then
@@ -2567,9 +2567,9 @@ function love.update(dt)
 						end
 						
 						-- message d'info
-						love.window.showMessageBox("Info", "Copied", "info", true)
+						Messagebox("Info", "Copied", "info", true)
 					else
-						love.window.showMessageBox("Info", "You must set EDIT mode !", "info", true)
+						Messagebox("Info", "You must set EDIT mode !", "info", true)
 					end
 				elseif targetButton == BTN_PASTE_TRACK then
 					if state == EDIT then
@@ -2579,7 +2579,7 @@ function love.update(dt)
 							vol[currentTrack][i][mus[currentPattern]] = clipmus[1][i][2]
 						end
 					else
-						love.window.showMessageBox("Info", "You must set EDIT mode !", "info", true)
+						Messagebox("Info", "You must set EDIT mode !", "info", true)
 					end
 				elseif targetButton == BTN_PASTE_PATTERN then
 					if state == EDIT then
@@ -2591,7 +2591,7 @@ function love.update(dt)
 							end
 						end
 					else
-						love.window.showMessageBox("Info", "You must set EDIT mode !", "info", true)
+						Messagebox("Info", "You must set EDIT mode !", "info", true)
 					end
 				end
 
@@ -3146,7 +3146,7 @@ function love.draw()
 
 	-- afficher un message de débogage
 	if dbg ~= nil then
-		love.window.showMessageBox("Debug", dbg, "info", true)
+		Messagebox("Debug", dbg, "info", true)
 		print("Debug: " .. dbg)
 		dbg = nil
 	end

@@ -492,3 +492,11 @@ function SetEditorTextColor(ln)
 	-- rétablir le stylo par défaut
 	pen = DEFAULT_PEN
 end
+
+function Messagebox(title, message, buttons)
+	local lt = string.len(title) * 8
+	local lm = string.len(message) * 8
+	local l = math.max(lt, lm)
+	
+	DrawButton(0, 0, l, 4, 2, 9, 0, 1)
+end
