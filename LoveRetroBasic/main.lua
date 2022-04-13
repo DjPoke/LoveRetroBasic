@@ -86,6 +86,10 @@ cmd = {}
 
 -- entrées des fonctions dans une table
 for i = 1, #commands do
+	-- fn: fonction d'appel
+	-- ret: valeur de retour
+	-- pmin, pmax: nombre de paramètres min et max
+	-- ptype: type de paramètres (integer ou autres)
 	cmd[commands[i]] = {fn = nil, ret = 0, pmin = 0, pmax = 0, ptype = {VAR_INTEGER}}
 end
 
