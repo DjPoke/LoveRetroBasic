@@ -74,7 +74,8 @@ commands = {
 			"OVAL",
 			"PAPER", "PASTEBOB", "PEN", "PLOT", "PLOTR", "PRINT",
 			"RECT", "REPEAT", "RETURN",
-			"SAVEBOB", "SELECT", "SGN", "SPRITEIMG", "SPRITEOFF", "SPRITEON", "SPRITEPOS", "SPRITESCALE", "SPRITETRANSP", "STOPMUSIC","STR$",
+			"SAVEBOB", "SELECT", "SGN", "SPRITEIMG", "SPRITEOFF", "SPRITEON", "SPRITEPOS", "SPRITESCALE", "SPRITETRANSP", "STOPMUSIC", "STEP", "STR$",
+			"TO",
 			"UNTIL",
 			"VAL",
 			"WAITKEY", "WAITVBL", "WEND", "WHILE"
@@ -85,7 +86,7 @@ cmd = {}
 
 -- entrées des fonctions dans une table
 for i = 1, #commands do
-	cmd[commands[i]] = {fn = nil, ret = 0, pmin = 0, pmax = 0, ptype = {VAR_INTEGER}, word2 = "", word3 = "", wmin = 1, wmax = 1}
+	cmd[commands[i]] = {fn = nil, ret = 0, pmin = 0, pmax = 0, ptype = {VAR_INTEGER}}
 end
 
 -- définir le type de valeur retournée pour chaque instruction BASIC
@@ -122,7 +123,7 @@ cmd["DRAWR"].pmin, cmd["DRAWR"].pmax = 2, 2
 -- END
 cmd["ELSEIF"].pmin, cmd["ELSEIF"].pmax = 1, 1
 -- ELSE
-cmd["FOR"].pmin, cmd["FOR"].pmax = 2, 3
+cmd["FOR"].pmin, cmd["FOR"].pmax = 1, 1
 cmd["FREEBOB"].pmin, cmd["FREEBOB"].pmax = 1, 1
 cmd["GOSUB"].pmin, cmd["GOSUB"].pmax = 1, 1
 cmd["GOTO"].pmin, cmd["GOTO"].pmax = 1, 1
@@ -156,7 +157,9 @@ cmd["SPRITEON"].pmin, cmd["SPRITEON"].pmax = 1, 1
 cmd["SPRITEPOS"].pmin, cmd["SPRITEPOS"].pmax = 3, 3
 cmd["SPRITESCALE"].pmin, cmd["SPRITESCALE"].pmax = 2, 2
 cmd["SPRITETRANSP"].pmin, cmd["SPRITETRANSP"].pmax = 2, 2
+cmd["STEP"].pmin, cmd["STEP"].pmax = 1, 1
 cmd["STR$"].pmin, cmd["STR$"].pmax = 1, 1
+cmd["TO"].pmin, cmd["TO"].pmax = 1, 1
 cmd["UNTIL"].pmin, cmd["UNTIL"].pmax = 1, 1
 cmd["VAL"].pmin, cmd["VAL"].pmax = 1, 1
 cmd["WHILE"].pmin, cmd["WHILE"].pmax = 1, 1
@@ -179,14 +182,12 @@ cmd["PRINT"].ptype = {VAR_POLY}
 cmd["SAVEBOB"].ptype = {VAR_STRING, VAR_INTEGER}
 cmd["SELECT"].ptype = {VAR_VAR}
 cmd["SGN"].ptype = {VAR_NUM}
+cmd["STEP"].ptype = {VAR_INTEGER}
+cmd["TO"].ptype = {VAR_INTEGER}
 cmd["UNTIL"].ptype = {VAR_CONDITION}
 cmd["STR$"].ptype = {VAR_NUM}
 cmd["VAL"].ptype = {VAR_STRING}
 cmd["WHILE"].ptype = {VAR_CONDITION}
-
--- mots additionnels pour certaines commandes BASIC
-cmd["FOR"].word2, cmd["FOR"].word3, cmd["FOR"].wmin, cmd["FOR"].wmax = "TO", "STEP", 2, 3
-cmd["IF"].word2, cmd["IF"].wmin, cmd["IF"].wmax = "THEN", 2, 2
 
 -- opérateurs spéciaux
 operators = {"MOD"}
