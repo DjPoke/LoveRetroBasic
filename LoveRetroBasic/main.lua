@@ -97,7 +97,7 @@ for i = 1, #commands do
 	-- pmin, pmax: nombre de paramètres min et max
 	-- ptype: type de paramètres (integer ou autres)
 	-- cmd: commande simple, multi-commande ou utilisé par une multi-commande
-	cmd[commands[i]] = {fn = nil, ret = 0, pmin = 0, pmax = 0, ptype = {VAR_INTEGER}, cmd = SIMPLE_COMMAND}
+	cmd[commands[i]] = {fn = nil, ret = 0, pmin = 0, pmax = 0, pnext = 0, ptype = {VAR_INTEGER}, cmd = SIMPLE_COMMAND}
 end
 
 -- définir le type de valeur retournée pour chaque instruction BASIC
@@ -133,7 +133,7 @@ cmd["DRAWR"].pmin, cmd["DRAWR"].pmax = 2, 2
 -- END
 cmd["ELSEIF"].pmin, cmd["ELSEIF"].pmax = 1, 1
 -- ELSE
-cmd["FOR"].pmin, cmd["FOR"].pmax = 1, 1
+cmd["FOR"].pmin, cmd["FOR"].pmax = 3, 3
 cmd["FREEBOB"].pmin, cmd["FREEBOB"].pmax = 1, 1
 cmd["GOSUB"].pmin, cmd["GOSUB"].pmax = 1, 1
 cmd["GOTO"].pmin, cmd["GOTO"].pmax = 1, 1
@@ -150,6 +150,7 @@ cmd["MODE"].pmin, cmd["MODE"].pmax = 1, 1
 cmd["MOVE"].pmin, cmd["MOVE"].pmax = 2, 2
 cmd["MOVER"].pmin, cmd["MOVER"].pmax = 2, 2
 cmd["MUSIC"].pmin, cmd["MUSIC"].pmax = 1, 1
+cmd["NEXT"].pmin, cmd["NEXT"].pmax = 0, 1
 cmd["OVAL"].pmin, cmd["OVAL"].pmax = 5, 5
 cmd["PAPER"].pmin, cmd["PAPER"].pmax = 1, 1
 cmd["PASTEBOB"].pmin, cmd["PASTEBOB"].pmax = 3, 3
@@ -187,6 +188,7 @@ cmd["GRAPHPRINT"].ptype = {VAR_POLY}
 cmd["IF"].ptype = {VAR_CONDITION}
 cmd["LOADIMAGE"].ptype = {VAR_STRING}
 cmd["LOADBOB"].ptype = {VAR_STRING, VAR_INTEGER}
+cmd["NEXT"].ptype = {VAR_VAR}
 cmd["PASTEBOB"].ptype = {VAR_INTEGER, VAR_FLOAT, VAR_FLOAT}
 cmd["PRINT"].ptype = {VAR_POLY}
 cmd["SAVEBOB"].ptype = {VAR_STRING, VAR_INTEGER}
@@ -218,6 +220,10 @@ cmd["UNTIL"].cmd = MULTI_CMD_USED
 
 cmd["SELECT"].cmd = MULTI_COMMAND
 cmd["CASE"].cmd = MULTI_CMD_USED
+
+-- commandes nécessaires suivantes
+cmd["FOR"].pnext = "TO"
+cmd["TO"].pnext = "STEP"
 
 -- opérateurs spéciaux
 operators = {"MOD"}
@@ -310,10 +316,12 @@ ERR_MEMORY_FULL = 10
 ERR_DIVISION_BY_ZERO = 11
 ERR_STACK_FULL = 12
 ERR_UNEXPECTED_RETURN = 13
-ERR_READ_ERROR = 14
-ERR_WRITE_ERROR = 15
-ERR_DISC_MISSING = 16
-ERR_FILE_MISSING = 17
+ERR_UNEXPECTED_NEXT = 14
+
+ERR_READ_ERROR = 101
+ERR_WRITE_ERROR = 102
+ERR_DISC_MISSING = 103
+ERR_FILE_MISSING = 104
 
 -- =======================
 -- = constantes diverses =
@@ -348,7 +356,6 @@ MAX_VRAM = 65536 -- taille de la mémoire pour les variables (64k)
 MAX_SPRAM = MAX_SPRITES_IMAGES * MAX_SPRITE_SIZE -- taille de la mémoire pour les 256 sprites
 MAX_STACK = 65536 -- taille de chaque pile
 
-
 MAX_SCN_WIDTH = 640
 MAX_SCN_HEIGHT = 400
 SCN_SIZE_INFOS_HEIGHT = 8
@@ -358,6 +365,8 @@ MAX_CLIPBOARD = MAX_SCN_WIDTH * MAX_SCN_HEIGHT
 DEFAULT_MODE = 1
 
 MAX_BOB = 65535
+
+MAX_INSTRUCTIONS_BY_LINE = 16
 
 -- ================================
 -- = définir les modes graphiques =
@@ -379,40 +388,24 @@ end
 
 ramLine = 0 -- offset de stockage de lignes de code en RAM
 
+iterator = {}
+for i = 0, MAX_RAM - 1 do
+	iterator[i] = {}
+	
+	for j = 0, MAX_INSTRUCTIONS_BY_LINE - 1 do
+		iterator[i][j] = {0, 0, 0, ""}
+	end
+end
+
 -- ============================================
 -- = définir la RAM de stockage des variables =
 -- ============================================
 vram = {}
 
 -- =======================================
--- = définir la pile pour les GOTO/GOSUB =
+-- = définir la pile pour les itérateurs =
 -- =======================================
 stack = {}
-for i = 0, MAX_STACK - 1 do
-	stack[i] = 0
-end
-
-stackPointer = MAX_STACK
-
--- =======================================
--- = définir la pile pour les conditions =
--- =======================================
-cstack = {}
-for i = 0, MAX_STACK - 1 do
-	cstack[i] = 0
-end
-
-cstackPointer = MAX_STACK
-
--- ====================================
--- = définir la pile pour les boucles =
--- ====================================
-lstack = {}
-for i = 0, MAX_STACK - 1 do
-	lstack[i] = 0
-end
-
-lstackPointer = MAX_STACK
 
 -- =====================================================
 -- = définir la RAM de stockage des images des sprites =
@@ -749,7 +742,9 @@ labels = {} -- liste de labels présents dans le script
 labPC = {} -- liste des adresses mémoires de code source pointées par les labels
 labCount = 0
 
-ProgramCounter = 1
+ProgramCounter = 1 -- compteur de lignes de programme
+gotoColumn = 0 -- permet de zapper les commandes lors d'un saut
+currentCommandColumn = 0 -- permet de stocker le rang de l'instruction sur une ligne
 
 renderer = {}
 renderer[0] = nil
@@ -1035,7 +1030,10 @@ function love.load()
 
 	-- pointer sur le disque par défaut
 	love.filesystem.setIdentity(currentRelativeFolder)
-	
+
+	-- cacher le curseur
+	ShowCursor(false)
+
 	-- choisir le Disk0 comme disque par défaut
 	LoadDisc(currentRelativeFolder)
 	
@@ -1770,7 +1768,9 @@ function love.update(dt)
 			-- exécuter les commandes
 			if ProgramCounter < MAX_RAM and (not stepsMode or (stepsMode and execStep)) then
 				execStep = false
+				
 				local s = ram[ProgramCounter]
+				
 				if s ~= nil and s ~= Chr(LF) then
 					-- débogage en 'step mode'
 					if stepsMode then
@@ -1783,7 +1783,7 @@ function love.update(dt)
 					
 					-- exécution de la commande
 					if e == OK then
-						errCode, value = GetError(Exec(Parser(Lexer(RemoveLabels(s)))), ProgramCounter)
+						errCode, value = GetError(Exec(Parser(Lexer(RemoveLabels(s))), ProgramCounter), ProgramCounter)
 					else
 						errCode = GetError(e, ProgramCounter)
 					end
@@ -1809,11 +1809,16 @@ function love.update(dt)
 					if GetLeftMouseClic() then
 						-- passer à la ligne de code suivante
 						ProgramCounter = ProgramCounter + 1
+
+						currentCommandColumn = 0
+
 						execStep = true
 					end
 				else
 					-- passer à la ligne de code suivante
 					ProgramCounter = ProgramCounter + 1
+
+					currentCommandColumn = 0
 				end
 			else
 				break

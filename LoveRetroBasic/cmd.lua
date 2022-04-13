@@ -74,7 +74,10 @@ end
 
 -- commande 'FOR'
 cmd["FOR"].fn = function(lst)
-	return OK
+	-- assigner l'expression à la variable
+	local e = AssignToVar(lst[1], lst[2], lst[3])
+
+	return e
 end
 
 -- commande 'FREEBOB'
@@ -87,7 +90,7 @@ end
 
 -- commande 'GETBORDER'
 cmd["GETBORDER"].fn = function(lst)
-	c = GetBorderColor()
+	local c = GetBorderColor()
 	
 	return OK, c
 end
@@ -287,6 +290,36 @@ end
 
 -- commande 'NEXT'
 cmd["NEXT"].fn = function(lst)
+	local cs, row, column = "", 0, 0
+
+	for i = #stack, 1, -1 do
+		if stack[i][1] == "FOR" then
+			cs = stack[i][1]
+			row = stack[i][2]
+			column = stack[i][3]
+		end
+	end
+	
+	--	next sans for
+	if cs == "" then return ERR_UNEXPECTED_NEXT end
+
+	-- mauvaise variable indiquée derrière next
+	if lst[1] ~= nil then
+		if string.upper(lst[1]) ~= string.upper(iterator[row][column][4]) then return ERR_UNEXPECTED_NEXT end
+	end
+	
+	-- si nécessaire...
+	if math.abs(iterator[row][column][1] + iterator[row][column][3]) <= math.abs( iterator[row][column][2]) then
+		-- incrémenter l'itérateur
+		iterator[row][column][1] = iterator[row][column][1] + iterator[row][column][3]
+
+		-- boucler
+		JumpToIterator(cs, row, column)
+	else	-- terminer la boucle
+		iterator[row][column] = {0, 0, 0, ""}
+		PopIterator(cs, row, column)
+	end	
+
 	return OK
 end
 

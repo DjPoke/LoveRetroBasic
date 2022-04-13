@@ -74,6 +74,9 @@ function ResetEditor()
 	for i = 0, MAX_HARD_SPRITES - 1 do
 		hardspr[i] = {x = 0.0, y = 0.0, img = 0, hotspot = 0, scale = 0, transp = 0, on = false}
 	end
+
+	-- reset de la pile
+	stack = {}
 	
 	-- texte opaque
 	SetTextTransparent(false)

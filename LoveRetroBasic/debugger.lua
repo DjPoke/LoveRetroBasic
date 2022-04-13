@@ -29,6 +29,8 @@ function GetError(err_code, err_line)
 			e = "Stack full"
 		elseif err_code == ERR_UNEXPECTED_RETURN then
 			e = "Unexpected return"
+		elseif err_code == ERR_UNEXPECTED_NEXT then
+			e = "Unexpected next"
 		elseif err_code == ERR_READ_ERROR then
 			e = "Read error"
 		elseif err_code == ERR_WRITE_ERROR then

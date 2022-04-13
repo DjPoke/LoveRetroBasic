@@ -388,7 +388,7 @@ function ExecOne(cs, lst)
 
 	local e, value = cmd[cs].fn(lst)
 
-	return OK, value
+	return e, value
 end
 
 -- assigne une expression à une variable
@@ -417,7 +417,7 @@ function AssignToVar(var, vType, s)
 			elseif vType == VAR_STRING then
 				vVal = ""
 			end
-					
+
 			table.insert(vram, {string.upper(var), vVal, vType})
 			
 			pointeur = #vram			
@@ -441,8 +441,16 @@ end
 
 -- exploser la ligne de commande et l'exécuter
 function Exec(t, l)
+	local cs = nil
+	local cs2 = nil
+	local cs3 = nil
+	local cn = nil
+	
+	local row = l
+	local column = currentCommandColumn
+	
 	-- retourner si la table est vide
-	if t == nil or #t == 0 then return OK, nil end
+	if t == nil or #t == 0 then return OK end
 
 	-- retourner si le nombre de parenthèses est impair
 	local obracket = 0
@@ -460,7 +468,7 @@ function Exec(t, l)
 		end
 	end
 	
-	if obracket ~= cbracket then return ERR_SYNTAX_ERROR, nil end
+	if obracket ~= cbracket then return ERR_SYNTAX_ERROR end
 	
 	-- supprimer les blancs au début et à la fin de la phrase
 	if #t > 0 and t[#t].typ == "whitespace" then table.remove(t, #t) end
@@ -500,7 +508,7 @@ function Exec(t, l)
 
 	-- n'exécuter que les morceaux de code unique
 	if cln > 0 then return OK end
-
+	
 	-- le début du tronçon de texte est une commande ?
 	local maxpnum = 0
 	local i = 1
@@ -509,12 +517,26 @@ function Exec(t, l)
 		-- mémoriser la commande dans cs
 		cs = t[i].sym
 		
+		-- établir le numéro de colonne de la commande
+		column = column + 1
+		currentCommandColumn = column
+
+		-- zapper la commande si nécessaire
+		if gotoColumn > 0 then
+			if gotoColumn < column then return OK end
+
+			gotoColumn = 0
+		end
+		
+		-- mémoriser la prochaine commande nécessaire
+		if t[i].pnext ~= nil then cn = t[i].pnext end
+		
 		-- erreur si une fonction est trouvée en tant que commande, sans assignation à une variable
 		if cmd[cs].ret > 0 then return ERR_SYNTAX_ERROR end
 		
 		-- vérifier la suite
 		i = i + 1
-
+		
 		if i <= #t then
 			-- vérifier le type de paramètre admis par cette commande
 			if #cmd[cs].ptype > 1 then
@@ -522,17 +544,213 @@ function Exec(t, l)
 			else
 				maxpnum = cmd[cs].pmax
 			end
-		
+
 			if maxpnum < 0 then
 				-- si l'expression est de type chaîne poly...
 				e, lst = EvalExpression(t, tp, i, cs, maxpnum)
 
 				if e ~= OK then return e end
 			elseif t[i].typ == "whitespace" then
-				-- si c'est une liste de paramètres
-				e, lst = EvalParamList(t, i, cs, maxpnum)
+				-- vérifier s'il s'agit bien d'une suite de commandes multiples
+				if cmd[cs].cmd == MULTI_COMMAND then
+					-- si c'est une commande nécessitant d'assigner une variable
+					if cmd[cs].ptype[1] == VAR_ASSIGN then
+						-- on est dans une boucle itérative ?
+						local loopMode = false
+						
+						if iterator[row][column][1] == 0 and iterator[row][column][2] == 0 and iterator[row][column][3] == 0 then
+							local e = PushIterator(string.upper(cs), row, column)
+							
+							if e ~= OK then return e end
+						else
+							loopMode = true
+						end
 
-				if e ~= OK then return e end
+						i = i + 1
+						
+						if t[i].typ ~= "word" then return ERR_SYNTAX_ERROR end
+						
+						local var = t[i].sym
+												
+						-- vérifier si la variable possède un symbole à la fin
+						-- afin de définir le type de variable
+						local vType = VAR_INTEGER
+
+						i = i + 1
+						-- erreur d'assignation
+						if i > #t then return ERR_SYNTAX_ERROR end
+
+						-- vérifier le type de la variable à assigner
+						if t[i].typ == "integer" then
+							var = var .. "!"
+
+							i = i + 1
+							
+							-- erreur d'assignation
+							if i > #t then return ERR_SYNTAX_ERROR end
+						elseif t[i].typ == "float" then
+							var = var .. "%"
+							vType = VAR_FLOAT
+
+							i = i + 1
+							
+							-- erreur d'assignation
+							if i > #t then return ERR_SYNTAX_ERROR end
+						elseif t[i].typ == "string" then
+							var = var .. "$"
+							vType = VAR_STRING
+
+							i = i + 1
+							
+							-- erreur d'assignation
+							if i > #t then return ERR_SYNTAX_ERROR end
+						end
+
+						-- vérifier la présence d'un espace
+						if t[i].typ == "whitespace" then i = i + 1 end
+
+						-- erreur d'assignation
+						if i > #t then return ERR_SYNTAX_ERROR end
+
+						-- vérifier la présence du symbole égal
+						if t[i].typ == "equal" then i = i + 1 end
+
+						-- erreur d'assignation
+						if i > #t then return ERR_SYNTAX_ERROR end
+
+						-- vérifier la présence d'un espace
+						if t[i].typ == "whitespace" then i = i + 1 end
+
+						-- erreur d'assignation
+						if i > #t then return ERR_SYNTAX_ERROR end
+
+						-- on a trouvé la variable sur laquelle travailler
+						table.insert(lst, var)
+
+						-- on a trouvé le type de variable sur laquelle travailler
+						table.insert(lst, vType)
+						
+						-- vérifier la présence de données à assigner à la variable
+						local s = ""
+						local i2 = nil
+						
+						for j = i, #t do
+							if t[j].typ == "whitespace" then
+								if j < #t then
+									if t[j + 1].typ == "command" then
+										i2 = j + 1
+										break
+									end
+								end
+							end
+							
+							s = s .. t[j].sym
+						end
+
+						-- prêt à assigner l'expression à la variable
+						if not loopMode then 
+							table.insert(lst, s)
+						-- .. ou à en augmenter la valeur précédente
+						else
+							table.insert(lst, tostring(iterator[row][column][1]))
+						end
+
+						-- exécuter la commande avec ses paramètres
+						local e
+						e = ExecOne(cs, lst)
+
+						if e ~= OK then return e end
+						
+						-- commande incomplète... erreur
+						if t[i2].typ ~= "command" then return ERR_SYNTAX_ERROR end
+
+						-- mémoriser la prochaine commande nécessaire
+						cn = t[i2].pnext
+
+						-- commande attendue non présente
+						if cn ~= t[i2].pnext then return ERR_SYNTAX_ERROR end
+						
+						-- mémoriser la suite de commande trouvée
+						cs2 = t[i2].sym
+
+						-- vérifier s'il s'agit bien d'une suite de commande multiple
+						if cmd[cs2].cmd ~= MULTI_CMD_USED then return ERR_SYNTAX_ERROR end
+
+						i2 = i2 + 1
+
+						-- erreur d'assignation
+						if i2 > #t then return ERR_SYNTAX_ERROR end
+
+						-- vérifier la présence d'un espace
+						if t[i2].typ == "whitespace" then i2 = i2 + 1 end
+
+						-- erreur d'assignation
+						if i2 > #t then return ERR_SYNTAX_ERROR end
+
+						-- vérifier le type de paramètres requis par la deuxième commande
+						if cmd[cs2].ptype[1] == VAR_CONSTANT then
+							-- paramètres constantes nécessaire
+							if t[i2].typ ~= "number" then return ERR_SYNTAX_ERROR end
+							
+							local it1 = GetVarValue(var, vType)
+							local it2 = Val(t[i2].sym)
+
+							-- vérifier la présence d'un espace
+							if t[i2].typ == "whitespace" then i2 = i2 + 1 end
+	
+							-- erreur d'assignation
+							if i2 > #t then return ERR_SYNTAX_ERROR end
+							
+							-- une troisième commande est elle obligatoire ?
+							-- TODO!
+							-- si oui...
+
+							
+							-- sinon...
+							if not loopMode then
+								iterator[row][column] = {it1, it2, 1, var}
+							end
+							
+							return OK
+						else
+							return ERR_SYNTAX_ERROR
+						end
+					else
+						return ERR_SYNTAX_ERROR
+					end
+				elseif cmd[cs].cmd == MULTI_CMD_USED then
+					if i < #t then
+						-- vérifier la présence d'un espace
+						if t[i].typ == "whitespace" then i = i + 1 end
+	
+						-- erreur d'assignation
+						if i > #t then return ERR_SYNTAX_ERROR end
+						
+						-- chercher une variable
+						if cmd[cs].ptype[1] == VAR_VAR then
+							if t[i].typ == "integer" or t[i].typ == "float" or t[i].typ == "string" or t[i].typ == "word" then
+								table.insert(lst, t[i].sym)
+								
+								i = i + 1
+								
+								-- erreur d'assignation
+								if i <= #t then							
+									-- vérifier la présence d'un espace
+									if t[i].typ ~= "whitespace" then return ERR_SYNTAX_ERROR end
+									
+									i = i + 1
+									
+									if i <= #t then return ERR_SYNTAX_ERROR end
+								end
+							end
+						end
+					end
+				else
+					-- si c'est une liste de paramètres
+					e, lst = EvalParamList(t, i, cs, maxpnum)
+					
+					if e ~= OK then return e end
+				end
 			else
 				return ERR_SYNTAX_ERROR
 			end
@@ -967,6 +1185,22 @@ function EvalParamList(t, i, cs, maxpnum)
 	end
 	
 	return OK, lst
+end
+
+-- évaluer le type d'une expression numérique
+function EvalNumber(s)
+	local v, e = EvalInteger(s)
+
+	if e ~= OK then return nil end
+	
+	-- le nombre est un integer
+	if tostring(v) == s then return VAR_INTEGER end
+
+	local v, e = EvalFloat(s)
+
+	if e ~= OK then return nil end
+
+	return VAR_FLOAT
 end
 
 -- évaluer une expression integer
@@ -2160,4 +2394,39 @@ end
 
 -- ne rien faire
 function Nothing()
+end
+
+-- stocker une itération
+function PushIterator(cs, l, c)
+	if #stack == MAX_STACK then return ERR_STACK_FULL end
+	
+	table.insert(stack, {cs, l, c})
+
+	return OK
+end
+
+-- dépiler une itération
+function PopIterator()
+end
+
+-- relire une itération
+function WatchIterator()
+	if #stack == 0 then return "", 0, 0 end
+
+	local cs = stack[#stack][1]
+	local l = stack[#stack][2]
+	local c = stack[#stack][3]
+	
+	return cs, l, c
+end
+
+function JumpToIterator(cs, l, c)
+	for i = #stack, 1, -1 do
+		local cs2, l2, c2 = WatchIterator()
+		
+		if cs == cs2 and l == l2 and c == c2 then
+			ProgramCounter = l - 1
+			gotoColumn = c
+		end
+	end
 end
