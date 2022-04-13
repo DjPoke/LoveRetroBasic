@@ -69,6 +69,19 @@ function ResetEditor()
 		vram[i] = nil
 	end
 	
+	-- effacer la pile
+	stack = {}
+	
+	-- vider les itérateurs
+	for i = 0, MAX_RAM - 1 do
+		iterator[i] = {}
+	
+		for j = 0, MAX_INSTRUCTIONS_BY_LINE - 1 do
+			iterator[i][j] = {0, 0, 0, ""}
+		end
+	end
+
+	
 	-- reset des sprites
 	hardspr = {}
 	for i = 0, MAX_HARD_SPRITES - 1 do

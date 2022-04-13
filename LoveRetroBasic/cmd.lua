@@ -297,11 +297,13 @@ cmd["NEXT"].fn = function(lst)
 			cs = stack[i][1]
 			row = stack[i][2]
 			column = stack[i][3]
+			
+			break
 		end
 	end
 	
 	--	next sans for
-	if cs == "" then return ERR_UNEXPECTED_NEXT end
+	if cs == "" and row == 0 and column == 0 then return ERR_UNEXPECTED_NEXT end
 
 	-- mauvaise variable indiquée derrière next
 	if lst[1] ~= nil then

@@ -1005,7 +1005,7 @@ function EvalExpression(t, tp, i, cs, maxpnum)
 	return OK, lst
 end
 
--- évaluer une liste de paramètres et exécuter la commande qui les invoque
+-- évaluer une liste de paramètres et les retourner
 function EvalParamList(t, i, cs, maxpnum)
 	local lst = {}
 	local sig = nil
@@ -1068,7 +1068,7 @@ function EvalParamList(t, i, cs, maxpnum)
 				if i > #t then return ERR_SYNTAX_ERROR, nil end
 			end
 		end
-
+		
 		-- détecter les paramètres numériques entiers
 		if cmd[cs].ptype[k] == VAR_INTEGER then
 			if t[i].typ == "number" then
@@ -1081,15 +1081,20 @@ function EvalParamList(t, i, cs, maxpnum)
 
 				-- vérifier la suite
 				i = i + 1
+				
 				if i > #t then return OK, lst end
 			elseif t[i].typ == "word" then
-				local value, e = GetVarValue(t[i].sym, VAR_INTEGER)
+				cm = true
+
+				local v, e = GetVarValue(t[i].sym, VAR_INTEGER)
+								
 				if e ~= OK then return e, nil end
 				
-				table.insert(lst, value)
+				table.insert(lst, v)
 
 				-- vérifier la suite
 				i = i + 1
+				
 				if i > #t then return OK, lst end
 			else
 				return ERR_TYPE_MISMATCH, nil
@@ -1098,22 +1103,29 @@ function EvalParamList(t, i, cs, maxpnum)
 		elseif cmd[cs].ptype[k] == VAR_FLOAT then
 			if t[i].typ == "number" then
 				cm = true
+				
 				local n, e = EvalFloat(t[i].sym)
+				
 				if e ~= OK then return e, nil end
 						
 				table.insert(lst, n)
 						
 				-- vérifier la suite
 				i = i + 1
+				
 				if i > #t then return OK, lst end
 			elseif t[i].typ == "word" then
-				local value, e = GetVarValue(t[i].sym, VAR_FLOAT)
+				cm = true
+
+				local v, e = GetVarValue(t[i].sym, VAR_FLOAT)
+				
 				if e ~= OK then return e, nil end
 				
-				table.insert(lst, value)
+				table.insert(lst, v)
 
 				-- vérifier la suite
 				i = i + 1
+				
 				if i > #t then return OK, lst end
 			else
 				return ERR_TYPE_MISMATCH, nil
@@ -1131,13 +1143,17 @@ function EvalParamList(t, i, cs, maxpnum)
 				i = i + 1
 				if i > #t then return OK, lst end
 			elseif t[i].typ == "word" then
-				local value, e = GetVarValue(t[i].sym, VAR_FLOAT)
+				cm = true
+
+				local v, e = GetVarValue(t[i].sym, VAR_FLOAT)
+				
 				if e ~= OK then return e, nil end
 				
-				table.insert(lst, value)
+				table.insert(lst, v)
 
 				-- vérifier la suite
 				i = i + 1
+				
 				if i > #t then return OK, lst end
 			else
 				return ERR_TYPE_MISMATCH, nil
@@ -1147,21 +1163,27 @@ function EvalParamList(t, i, cs, maxpnum)
 				cm = true
 
 				local s, e = EvalString(t[i].sym)
+				
 				if e ~= OK then return e, nil end
 
 				table.insert(lst, s)
 
 				-- vérifier la suite
 				i = i + 1
+				
 				if i > #t then return OK, lst end
 			elseif t[i].typ == "word" then
-				local value, e = GetVarValue(t[i].sym, VAR_STRING)
+				cm = true
+
+				local v, e = GetVarValue(t[i].sym, VAR_STRING)
+				
 				if e ~= OK then return e, nil end
 				
-				table.insert(lst, value)
+				table.insert(lst, v)
 
 				-- vérifier la suite
 				i = i + 1
+				
 				if i > #t then return OK, lst end
 			else
 				return ERR_TYPE_MISMATCH, nil
@@ -1728,7 +1750,7 @@ function GetVarValue(var, vType)
 			return vram[j][2], OK
 		end
 	end
-	
+
 	return nil, ERR_TYPE_MISMATCH
 end
 
