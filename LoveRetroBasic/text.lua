@@ -159,6 +159,35 @@ function GraphPrintChar(c, r)
 	return OK
 end
 
+-- afficher un caractère graphique à l'écran, avec la couleur du stylo texte
+function GraphPrintCharEx(c, r)
+	-- retour si le caractère n'existe pas
+	if c == nil then
+		return ERR_OPERAND_MISSING
+	end
+	
+	local x1 = gcursor[1]
+	local y1 = gcursor[2]
+
+	-- dessiner en mémoire vidéo virtuelle
+	for y = y1, y1 + 7 do
+		for x = x1, x1 + 7 do
+			if x >= 0 and x <= gmode[currentMode][1] - 1 and y >= 0 and y <= gmode[currentMode][2] - 1 then
+				if sym[c][x-x1][y-y1] == nil then
+					return OK
+				elseif sym[c][x-x1][y-y1] == 1 then
+					love.graphics.setColor(scnPal[gpen][0] / 255, scnPal[gpen][1] / 255, scnPal[gpen][2] / 255, 1)
+					love.graphics.points(x + 0.5, y + 0.5)
+				end
+			end
+		end
+	end
+	
+	gcursor[1] = gcursor[1] + 8
+	
+	return OK
+end
+
 -- afficher un ou plusieurs caractères à l'écran avec la couleur du stylo texte
 function PrintString(s)
 	-- annuler si la chaîne est vide
@@ -200,6 +229,25 @@ function GraphPrintString(s)
 			-- TODO ?
 		else
 			GraphPrintChar(Asc(chr), PRINT_CLIPPED)
+		end
+	end
+end
+
+-- afficher un ou plusieurs caractères graphiques sur un canvas avec la couleur du stylo texte
+function GraphPrintStringEx(s)
+	-- annuler si la chaîne est vide
+	if s == nil then
+		return
+	end
+	
+	for i = 1, #s do
+		chr = string.sub(s, i, i)
+		if Asc(chr) == 7 then
+			Beep()
+		elseif Asc(chr) < 32 then
+			-- TODO ?
+		else
+			GraphPrintCharEx(Asc(chr), PRINT_CLIPPED)
 		end
 	end
 end
@@ -493,51 +541,10 @@ function SetEditorTextColor(ln)
 	pen = DEFAULT_PEN
 end
 
-function Messagebox(title, message, buttons)
-	local lt = string.len(title) * 8
-	local lm = string.len(message) * 8
-	local l = math.max(lt, lm) + 16
-	local h = (4 * 8) + 2
-	local memgpen = gpen
-	local memgcursx = gcursor[1]
-	local memgcursy = gcursor[2]
-	
-	msgboxRenderer = love.graphics.newCanvas(l, h)
-	
-	love.graphics.setCanvas(msgboxRenderer)
-	love.graphics.clear()
-	love.graphics.setColor(1, 1, 1, 1)
-	
-	-- dessiner la fenêtre
-	DrawButton(0, 0, l, h, 2, 9, 0, 1)
-	
-	-- dessiner le fond du titre
-	gpen = 4
-	DrawRectangle(0, 0, l, 8, 1)
-
-	-- afficher le titre
-	gpen = 1
-	gcursor[1] = (l - lt) / 2
-	gcursor[2] = 1
-	
-	GraphPrintString(title)
-
-	-- afficher le contour du titre
-	gpen = 9
-	DrawRectangle(0, 0, l, 8, 0)
-		
-	-- afficher le texte
-	gpen = 0
-	gcursor[1] = (l - lm) / 2
-	gcursor[2] = 2 * 8
-	
-	GraphPrintString(message)
-
-	-- rétablir l'affichage
-	love.graphics.setCanvas()
-
-	-- restituer le style graphique
-	gpen = memgpen
-	gcursor[1] = memgcursx
-	gcursor[2] = memgcursy
+function Messagebox(title, message, buttons, fnct)
+	changeMsgbox = true
+	msgboxTitle = title
+	msgboxMessage = message
+	msgboxButtons = buttons
+	msgboxFunction = fnct
 end

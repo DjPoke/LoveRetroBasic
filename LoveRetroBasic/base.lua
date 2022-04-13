@@ -187,6 +187,13 @@ function Beep()
 	love.audio.play(beepSound)
 end
 
+-- émettre un son de validation
+function Sound()
+	love.audio.stop(validateSound)
+	love.audio.play(validateSound)
+end
+
+
 -- supprimer les commentaires d'une ligne de code
 function RemoveComments(s)
 	-- retourner nil si la chaîne est vide
@@ -1839,7 +1846,7 @@ end
 function ImportSprites()
 	local lnk = love.filesystem.getSaveDirectory() .. spriteFolder .. "/"
 	
-	if Messagebox("Info", "Your sprite bank can be dropped here:\n" .. lnk .. "\n\nLink copied to clipboard !", "info", true) then
+	if Messagebox("Info", "Your sprite bank can be dropped here:\n" .. lnk .. "\n\nLink copied to clipboard !") then
 		love.system.setClipboardText(lnk)
 	else
 		msg = "Runtime error !"
@@ -1850,7 +1857,7 @@ end
 function ExportSprites()
 	local lnk = love.filesystem.getSaveDirectory() .. spriteFolder .. "/"
 
-	if Messagebox("Info", "Your sprite bank be taken here:\n" .. lnk .. "\n\nLink copied to clipboard !", "info", true) then
+	if Messagebox("Info", "Your sprite bank be taken here:\n" .. lnk .. "\n\nLink copied to clipboard !") then
 		love.system.setClipboardText(lnk)
 	else
 		msg = "Runtime error !"
@@ -2136,28 +2143,7 @@ function KillProgram()
 	-- remise à zéro d'un éventuel message texte
 	msg = nil
 
-	local title = "Question"
-	local message = "Delete your program ?"
-	local buttons = {"Yes", "No", "Cancel", escapebutton = 2}
-
-	local pressedbutton = Messagebox(title, message, buttons)
-	
-	if pressedbutton == 1 then
-		ShowCursor(false)
-
-		ResetEditor()
-
-		-- effacer la RAM
-		for i = 0, MAX_RAM - 1 do
-			ram[i] = ""
-		end
-	
-		ramLine = 1
-
-		Locate(1, 1)
-					
-		ShowCursor(true)
-	end
+	Messagebox("Question", "Delete your program ?", {"Yes", "No", "Cancel"}, {"New", "Nothing", "Nothing"})
 
 	return
 end
@@ -2168,4 +2154,29 @@ function CloseProgram()
 	QuitProgram()
 
 	return
+end
+
+-- ne rien faire
+function Nothing()
+end
+
+-- effacer le programme
+function New()
+	-- vider la mémoire code
+	ram = {}
+	for i = 0, MAX_RAM - 1 do
+		ram[i] = ""
+	end
+	ramLine = 0
+	
+	-- cacher le curseur
+	ShowCursor(false)
+
+	ResetEditor()
+	RedrawEditor()
+	
+	-- TODO: bug ici
+	
+	-- montrer le curseur
+	ShowCursor(true)
 end

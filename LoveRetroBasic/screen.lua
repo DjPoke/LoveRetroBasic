@@ -181,6 +181,17 @@ function DrawRectangle(x, y, w, h, f)
 	SetCanvas(false)
 end
 
+-- tracer un rectangle (vide ou plein) sur un canvas
+function DrawRectangleEx(x, y, w, h, f)
+	love.graphics.setColor(scnPal[gpen][0] / 255, scnPal[gpen][1] / 255, scnPal[gpen][2] / 255, 1)
+
+	if f == 0 then
+		love.graphics.rectangle("line", x + 0.5, y + 0.5, w, h)
+	else
+		love.graphics.rectangle("fill", x + 0.5, y + 0.5, w, h)
+	end
+end
+
 -- dessiner un ovale
 function DrawOval(x, y, w, h, f)
 	local md = "line"
@@ -213,6 +224,20 @@ function DrawFullLine(x0, y0, x1, y1)
 	SetCanvas(false)
 end
 
+-- tracer une ligne sur un canvas
+function DrawFullLineEx(x0, y0, x1, y1)
+	love.graphics.setColor(scnPal[gpen][0] / 255, scnPal[gpen][1] / 255, scnPal[gpen][2] / 255, 1)
+
+	if x0 == x1 and y0 == y1 then
+		love.graphics.points(x0 + 0.5, y0 + 0.5)
+	else
+		love.graphics.line(x0, y0 + 0.5, x1, y1 + 0.5)
+	end
+	
+	gcursor[1] = x1
+	gcursor[2] = y1
+end
+
 -- tracer un bouton d'UI
 function DrawButton(x, y, w, h, b, c1, c2, c3)
 	-- dessiner le fond du bouton virtuel
@@ -238,6 +263,33 @@ function DrawButton(x, y, w, h, b, c1, c2, c3)
 	
 	gpen = memGPen
 end
+
+-- tracer un bouton d'UI sur un canvas
+function DrawButtonEx(x, y, w, h, b, c1, c2, c3)
+	-- dessiner le fond du bouton virtuel
+	memGPen = gpen
+	gpen = c1
+
+	DrawRectangleEx(x, y, w, h, 1)
+
+	-- dessiner le côté foncé du cadre
+	gpen = c3
+	
+	for i = 0, b - 1 do
+		DrawRectangleEx(x + i, y + i, w - (i * 2) - 1, h - (i * 2) - 1, 0)
+	end
+	
+	-- dessiner le côté clair du cadre
+	gpen = c2
+	
+	for i = 0, b - 1 do
+		DrawFullLineEx(x + i, y + i, x + w - i - 1, y + i)
+		DrawFullLineEx(x + w - i, y + i - 1, x + w - i, y - i + h)
+	end
+	
+	gpen = memGPen
+end
+
 
 -- dessiner une image matrice
 function DrawMatrix(m, x, y, c1, c2)

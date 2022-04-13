@@ -730,6 +730,7 @@ currentRelativeFolder = nil -- chemin relatif courant
 helpPage = 0 -- numéro de page d'aide affichée
 
 beepSound = nil -- id de chargement du son bip
+validateSound = nil
 
 -- variable globales pour la souris
 mouseX = 0
@@ -758,8 +759,18 @@ renderer[3] = nil -- renderer pour les erreurs
 renderer[4] = nil -- renderer pour le menu outils
 currentRenderer = 0
 
+-- messageboxes
 msgboxRenderer = nil
+msgboxTitle = nil
+msgboxMessage = nil
+msgboxButtons = nil
+msgboxButtonX = nil
+msgboxButtonY = nil
+msgboxButtonW = nil
+msgboxButtonH = nil
+msgboxFunction = nil
 
+-- clipboard
 clipboard = {}
 for i = 0, MAX_CLIPBOARD - 1 do
 	clipboard[i] = 0
@@ -953,6 +964,7 @@ showVolumeTrigger = false
 musicPlaying = false
 
 mouseEnabled = true
+restoreMouseEnabled = true
 
 setFullscreen = false
 screenScaleX = 1
@@ -1595,6 +1607,22 @@ function love.textinput(t)
 	end
 end
 
+function love.mousepressed(x, y, button)
+	-- gestion des boites de dialogue
+	if button == 1 and msgboxRenderer then
+		for i = 1, #msgboxButtons do
+			if x >= msgboxButtonX[i] and x <= msgboxButtonX[i] + msgboxButtonW[i] - 1 then
+				if y >= msgboxButtonY[i] and y <= msgboxButtonY[i] + msgboxButtonH[i] - 1 then
+					-- appeler la fonction désirée
+					if #msgboxButtons > 1 then _G[msgboxFunction[i]]() end
+					
+					changeMsgbox = true
+				end
+			end
+		end
+	end
+end
+
 function love.update(dt)
 	-- initialiser countTime
 	if appStarted then
@@ -1605,7 +1633,7 @@ function love.update(dt)
 	-- mettre à jour la position de la souris
 	mouseX = GetMousePositionX()
 	mouseY = GetMousePositionY()
-
+	
 	-- mettre à jour les clics souris
 	for b = 1, 3 do
 		memMouseDown[b] = mouseDown[b]
@@ -2471,7 +2499,7 @@ function love.update(dt)
 						end
 					else
 						mouseEnabled = false
-						Messagebox("Info", "Please push 'STOP' button first !", "info", true)
+						Messagebox("Info", "Please push 'STOP' button first !")
 					end
 				elseif targetButton == BTN_SAVE then
 					if state == STOP then
@@ -2491,17 +2519,17 @@ function love.update(dt)
 								if #f > 0 then
 									SaveMusic(musicName)
 									mouseEnabled = false
-									Messagebox("Info", "Saved !", "info", true)
+									Messagebox("Info", "Saved !")
 								end
 							end
 						else
 							SaveMusic(musicName)
 							mouseEnabled = false
-							Messagebox("Info", "Saved !", "info", true)
+							Messagebox("Info", "Saved !")
 						end
 					else
 						mouseEnabled = false
-						Messagebox("Info", "Please push 'STOP' button first !", "info", true)
+						Messagebox("Info", "Please push 'STOP' button first !")
 					end
 				elseif targetButton == BTN_CUT_TRACK then
 					if state == EDIT then
@@ -2521,7 +2549,7 @@ function love.update(dt)
 							end
 						end
 					else
-						Messagebox("Info", "You must set EDIT mode !", "info", true)
+						Messagebox("Info", "You must set EDIT mode !")
 					end
 				elseif targetButton == BTN_CUT_PATTERN then
 					if state == EDIT then
@@ -2535,7 +2563,7 @@ function love.update(dt)
 							end
 						end
 					else
-						Messagebox("Info", "You must set EDIT mode !", "info", true)
+						Messagebox("Info", "You must set EDIT mode !")
 					end
 				elseif targetButton == BTN_COPY_TRACK then
 					if state == EDIT then
@@ -2554,9 +2582,9 @@ function love.update(dt)
 						end
 						
 						-- message d'info
-						Messagebox("Info", "Copied", "info", true)
+						Messagebox("Info", "Copied")
 					else
-						Messagebox("Info", "You must set EDIT mode !", "info", true)
+						Messagebox("Info", "You must set EDIT mode !")
 					end
 				elseif targetButton == BTN_COPY_PATTERN then
 					if state == EDIT then
@@ -2569,9 +2597,9 @@ function love.update(dt)
 						end
 						
 						-- message d'info
-						Messagebox("Info", "Copied", "info", true)
+						Messagebox("Info", "Copied")
 					else
-						Messagebox("Info", "You must set EDIT mode !", "info", true)
+						Messagebox("Info", "You must set EDIT mode !")
 					end
 				elseif targetButton == BTN_PASTE_TRACK then
 					if state == EDIT then
@@ -2581,7 +2609,7 @@ function love.update(dt)
 							vol[currentTrack][i][mus[currentPattern]] = clipmus[1][i][2]
 						end
 					else
-						Messagebox("Info", "You must set EDIT mode !", "info", true)
+						Messagebox("Info", "You must set EDIT mode !")
 					end
 				elseif targetButton == BTN_PASTE_PATTERN then
 					if state == EDIT then
@@ -2593,7 +2621,7 @@ function love.update(dt)
 							end
 						end
 					else
-						Messagebox("Info", "You must set EDIT mode !", "info", true)
+						Messagebox("Info", "You must set EDIT mode !")
 					end
 				end
 
@@ -3147,6 +3175,115 @@ function love.draw()
 		PrintInfosString("X", 4, "black", 39)
 		love.graphics.draw(renderer[4], borderX, borderY - (16 * 2 * screenScaleY), 0, 2 * screenScaleX, 2 * screenScaleY, 0, 0, 0, 0)
 	end
+
+	-- si une messagebox a été invoquée
+	if changeMsgbox then
+		changeMsgbox = false
+		
+		if msgboxRenderer ~= nil then
+			msgboxRenderer:release()
+			msgboxRenderer = nil
+			
+			mouseEnabled = restoreMouseEnabled
+		else			
+			restoreMouseEnabled = mouseEnabled
+			mouseEnabled = false
+			
+			local lt = string.len(msgboxTitle) * 8
+			local lm = string.len(msgboxMessage) * 8
+			local l = math.max(lt, lm, 6 * 8) + 16
+			local lw = math.max(string.len(msgboxTitle), string.len(msgboxMessage), 6) + 2
+			local h = (6 * 8) + 2
+		
+			local memgpen = gpen
+			local memgcursx = gcursor[1]
+			local memgcursy = gcursor[2]
+		
+			if msgboxRenderer == nil then msgboxRenderer = love.graphics.newCanvas(l, h) end
+		
+			love.graphics.setCanvas(msgboxRenderer)
+			love.graphics.clear()
+			love.graphics.setColor(1, 1, 1, 1)
+		
+			-- dessiner la fenêtre
+			DrawButtonEx(0, 0, l, h, 2, 9, 0, 1)
+		
+			-- dessiner le fond du titre
+			gpen = 4
+			DrawRectangleEx(0, 0, l, 8, 1)
+	
+			-- afficher le titre
+			gpen = 1
+			gcursor[1] = (l - lt) / 2
+			gcursor[2] = 1
+		
+			GraphPrintStringEx(msgboxTitle)
+	
+			-- afficher le contour du titre
+			gpen = 9
+			DrawRectangleEx(0, 0, l, 8, 0)
+	
+			-- afficher le texte
+			gpen = 0
+			gcursor[1] = (l - lm) / 2
+			gcursor[2] = 2 * 8
+			
+			GraphPrintStringEx(msgboxMessage)
+			
+			-- bouton par défaut 'Ok'
+			if msgboxButtons == nil then
+				msgboxButtons = {"Ok"}
+			end
+			
+			-- calculer la taille des boutons
+			local tb = 5
+			
+			for i = 1, #msgboxButtons do
+				if string.len(msgboxButtons[i]) + 1 > tb then tb = string.len(msgboxButtons[i]) + 1 end
+			end
+	
+			-- calculer les positions des boutons
+			local boffset = ((lw - (#msgboxButtons * tb)) / (#msgboxButtons + 1)) * 8
+		
+			-- préparer les variables des boutons
+			msgboxButtonX = {}
+			msgboxButtonY = {}
+			msgboxButtonW = {}
+			msgboxButtonH = {}
+
+			-- afficher les boutons
+			for i = 1, #msgboxButtons do
+				-- dessiner les boutons
+				DrawButtonEx((boffset * i) + (tb * (i - 1)) * 8, 4 * 8, tb * 8, 10, 1, 9, 0, 1)
+				
+				gpen = 0
+				gcursor[1] = ((boffset * i) + (tb * (i - 1)) * 8) + ((tb - string.len(msgboxButtons[i])) * 8 / 2)
+				gcursor[2] = (4 * 8) + 1
+				
+				local x = (realScnWidth - l) / 2
+				local y = (realScnHeight - h) / 2
+				
+				msgboxButtonX[i] = gcursor[1] + x
+				msgboxButtonY[i] = gcursor[2] + y
+				msgboxButtonW[i] = tb * 8
+				msgboxButtonH[i] = 10
+	
+				GraphPrintStringEx(msgboxButtons[i])
+				
+			end
+	
+			-- rétablir l'affichage
+			love.graphics.setCanvas()
+		
+			-- restituer le style graphique
+			gpen = memgpen
+			gcursor[1] = memgcursx
+			gcursor[2] = memgcursy
+		
+			-- jouer un son
+			Sound()
+		end
+	end
 	
 	-- afficher une messagebox
 	if msgboxRenderer ~= nil then
@@ -3155,8 +3292,6 @@ function love.draw()
 		local x = (realScnWidth - w) / 2
 		local y = (realScnHeight - h) / 2
 		
-		--love.graphics.draw(msgboxRenderer, x, y, 0, 1, 1, 0, 0, 0, 0)
-	else
-		Messagebox("Info", "Test", {"Ok", "Cancel"})
+		love.graphics.draw(msgboxRenderer, x, y, 0, 1, 1, 0, 0, 0, 0)
 	end
 end

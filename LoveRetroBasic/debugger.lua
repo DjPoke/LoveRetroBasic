@@ -49,6 +49,6 @@ end
 
 -- throw an error and exit
 function RuntimeError(e)
-	Messagebox("Runtime Error", e, "error", true)
+	Messagebox("Runtime Error", e)
 	love.event.quit(1)
 end
