@@ -496,7 +496,48 @@ end
 function Messagebox(title, message, buttons)
 	local lt = string.len(title) * 8
 	local lm = string.len(message) * 8
-	local l = math.max(lt, lm)
+	local l = math.max(lt, lm) + 16
+	local h = (4 * 8) + 2
+	local memgpen = gpen
+	local memgcursx = gcursor[1]
+	local memgcursy = gcursor[2]
 	
-	DrawButton(0, 0, l, 4, 2, 9, 0, 1)
+	msgboxRenderer = love.graphics.newCanvas(l, h)
+	
+	love.graphics.setCanvas(msgboxRenderer)
+	love.graphics.clear()
+	love.graphics.setColor(1, 1, 1, 1)
+	
+	-- dessiner la fenêtre
+	DrawButton(0, 0, l, h, 2, 9, 0, 1)
+	
+	-- dessiner le fond du titre
+	gpen = 4
+	DrawRectangle(0, 0, l, 8, 1)
+
+	-- afficher le titre
+	gpen = 1
+	gcursor[1] = (l - lt) / 2
+	gcursor[2] = 1
+	
+	GraphPrintString(title)
+
+	-- afficher le contour du titre
+	gpen = 9
+	DrawRectangle(0, 0, l, 8, 0)
+		
+	-- afficher le texte
+	gpen = 0
+	gcursor[1] = (l - lm) / 2
+	gcursor[2] = 2 * 8
+	
+	GraphPrintString(message)
+
+	-- rétablir l'affichage
+	love.graphics.setCanvas()
+
+	-- restituer le style graphique
+	gpen = memgpen
+	gcursor[1] = memgcursx
+	gcursor[2] = memgcursy
 end

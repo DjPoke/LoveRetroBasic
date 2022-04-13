@@ -758,6 +758,8 @@ renderer[3] = nil -- renderer pour les erreurs
 renderer[4] = nil -- renderer pour le menu outils
 currentRenderer = 0
 
+msgboxRenderer = nil
+
 clipboard = {}
 for i = 0, MAX_CLIPBOARD - 1 do
 	clipboard[i] = 0
@@ -2692,9 +2694,11 @@ function love.draw()
 	-- dessiner les sprites hardware
 	if appState == RUN_MODE or appState == READY_MODE then
 		SetCanvas(true)
+		
 		for i = 0, MAX_HARD_SPRITES - 1 do
 			DrawSprite(i)
 		end
+		
 		SetCanvas(false)
 	end
 
@@ -3143,11 +3147,16 @@ function love.draw()
 		PrintInfosString("X", 4, "black", 39)
 		love.graphics.draw(renderer[4], borderX, borderY - (16 * 2 * screenScaleY), 0, 2 * screenScaleX, 2 * screenScaleY, 0, 0, 0, 0)
 	end
-
-	-- afficher un message de débogage
-	if dbg ~= nil then
-		Messagebox("Debug", dbg, "info", true)
-		print("Debug: " .. dbg)
-		dbg = nil
+	
+	-- afficher une messagebox
+	if msgboxRenderer ~= nil then
+		local w = msgboxRenderer:getWidth()
+		local h = msgboxRenderer:getHeight()
+		local x = (realScnWidth - w) / 2
+		local y = (realScnHeight - h) / 2
+		
+		--love.graphics.draw(msgboxRenderer, x, y, 0, 1, 1, 0, 0, 0, 0)
+	else
+		Messagebox("Info", "Test", {"Ok", "Cancel"})
 	end
 end
