@@ -85,7 +85,7 @@ function Parser(t)
 				count = count + 1
 			end
 			if count > 1 or t[i].sym == "." then
-				t[i].typ = "err"
+				t[i].typ = "error"
 				return t
 			end
 		end
@@ -108,7 +108,7 @@ function Parser(t)
 		if t[i].typ == "word" then
 			for j = 1, #t[i].sym do
 				if (string.sub(t[i].sym, j, j) == "!" or string.sub(t[i].sym, j, j) == "%" or string.sub(t[i].sym, j, j) == "$") and j < #t[i].sym then
-					t[i].typ = "err"
+					t[i].typ = "error"
 					return t
 				end
 			end

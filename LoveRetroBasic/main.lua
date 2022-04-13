@@ -688,8 +688,8 @@ img_kb[2] = {
 -- =============================================
 kb_buffer = "" -- tampon clavier
 dbg = nil -- message de débogage
-err = nil -- sortie d'erreur
-msg = nil -- sortie de message ou de question (err est prioritaire sur msg)
+errCode = nil -- sortie d'erreur
+msg = nil -- sortie de message ou de question (errCode est prioritaire sur msg)
 msgLine = nil -- sortie de numéro de ligne en steps mode
 
 diskFolder = nil -- nom du dossier du projet en cours, pour sauvegarder le fichier
@@ -962,8 +962,9 @@ function love.load()
 	
 	-- initialiser tout
 	local e, l = InitSymbols()
+
 	if e ~= OK then
-		err = GetError(e) .. " line " .. tostring(l)
+		errCode = GetError(e) .. " line " .. tostring(l)
 	else
 		Reset()
 	end
@@ -1016,9 +1017,9 @@ end
 
 function love.keyreleased(key, scancode, isrepeat)
 	-- sortie du mode spécial en cas d'erreur
-	if specialAppState and err ~= nil then
+	if specialAppState and errCode ~= nil then
 		if key == "escape" then
-			err = nil
+			errCode = nil
 
 			return
 		end
@@ -1060,8 +1061,10 @@ function love.keyreleased(key, scancode, isrepeat)
 				
 				-- redessiner l'éditeur
 				RedrawEditor()
+				
 				cursor[1] = safeCursor[1]
 				cursor[2] = safeCursor[2]
+				
 				-- afficher le curseur
 				ShowCursor(true)
 				appState = EDIT_MODE
@@ -1090,12 +1093,17 @@ function love.keyreleased(key, scancode, isrepeat)
 			SetPaperColor(DEFAULT_PAPER)
 			SetBorderColor(DEFAULT_PAPER)
 			SetGraphicPenColor(DEFAULT_PEN)
+
 			ShowCursor(false)
+			
 			ClearScreen()
 			RedrawEditor()
+
 			cursor[1] = safeCursor[1]
 			cursor[2] = safeCursor[2]
+			
 			ShowCursor(true)
+			
 			appState = EDIT_MODE
 
 			return
@@ -1604,13 +1612,18 @@ function love.update(dt)
 				if x == 0 then -- lancer l'éditeur de sprites
 					-- remise à zéro d'un éventuel message texte
 					msg = nil
+					
 					SaveProgram()
+					
 					safeCursor[1] = cursor[1]
 					safeCursor[2] = cursor[2]
+					
 					for i = 0, MAX_CLIPBOARD - 1 do
 						clipboard[i] = 0
 					end
+					
 					appState = SPRITE_MODE
+					
 					SpriteEditor()
 
 					return
@@ -1622,7 +1635,9 @@ function love.update(dt)
 					
 					safeCursor[1] = cursor[1]
 					safeCursor[2] = cursor[2]
+					
 					appState = LEVEL_MODE
+					
 					LevelEditor()
 
 					return
@@ -1631,9 +1646,12 @@ function love.update(dt)
 					msg = nil
 
 					SaveProgram()
+					
 					safeCursor[1] = cursor[1]
 					safeCursor[2] = cursor[2]
+					
 					appState = NOISE_MODE
+					
 					NoiseEditor()
 
 					return
@@ -1642,10 +1660,14 @@ function love.update(dt)
 					msg = nil
 
 					SaveProgram()
+					
 					safeCursor[1] = cursor[1]
 					safeCursor[2] = cursor[2]
+					
 					appState = TRACKER_MODE
+					
 					SetMode(2)
+					
 					Tracker()
 
 					return
@@ -1676,9 +1698,11 @@ function love.update(dt)
 	elseif appState == RUN_MODE then
 		-- exécuter les instructions de la frame
 		local i2 = IBF
+		
 		if stepsMode then i2 = 1 end
+		
 		for i = 1, i2 do
-			-- exécuter le commandes
+			-- exécuter les commandes
 			if ProgramCounter < MAX_RAM and (not stepsMode or (stepsMode and execStep)) then
 				execStep = false
 				local s = ram[ProgramCounter]
@@ -1688,26 +1712,32 @@ function love.update(dt)
 						msg = s
 						msgLine = tostring(ProgramCounter)
 					end
+					
 					-- suppression des commentaires
 					s, e = RemoveComments(s)
+					
 					-- exécution de la commande
 					if e == OK then
-						err, value = GetError(Exec(Parser(Lexer(RemoveLabels(s)))), ProgramCounter)
+						errCode, value = GetError(Exec(Parser(Lexer(RemoveLabels(s)))), ProgramCounter)
 					else
-						err = GetError(e, ProgramCounter)
+						errCode = GetError(e, ProgramCounter)
 					end
+					
 					-- stopper en cas d'erreur
-					if err == "Ok" then
-						err = nil
+					if errCode == "Ok" then
+						errCode = nil
 					else
 						StopProgram()
+
 						break
 					end
 				end
 			elseif not stepsMode then
 				StopProgram()
+				
 				break
 			end
+			
 			if appState == RUN_MODE then
 				-- débogage
 				if stepsMode then
@@ -1723,6 +1753,7 @@ function love.update(dt)
 			else
 				break
 			end
+			
 			-- waitVBL
 			if VBL then
 				-- sortir de la boucle d'instructions
@@ -3048,11 +3079,11 @@ function love.draw()
 	end
 
 	-- afficher les erreurs
-	if err == nil and msg ~= nil then
+	if errCode == nil and msg ~= nil then
 		PrintInfosString(msg, 3, "blue")
 		specialAppState = true
-	elseif err ~= nil then
-		PrintInfosString(err, 3, "red")
+	elseif errCode ~= nil then
+		PrintInfosString(errCode, 3, "red")
 		specialAppState = true
 	end
 

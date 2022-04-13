@@ -538,7 +538,7 @@ function Exec(t, l)
 		local var = t[i].sym
 		
 		i = i + 1
-
+		
 		-- variable sans assignation... erreur
 		if i > #t then return ERR_SYNTAX_ERROR end
 		
@@ -999,7 +999,7 @@ function EvalFloat(s)
 	local i = 1
 	while i <= #t do
 		-- pour chaque commande présente dans l'expression...
-		if t[i].typ == "err" then
+		if t[i].typ == "error" then
 			-- détecter les erreurs
 			return nil, ERR_SYNTAX_ERROR
 		elseif t[i].typ == "whitespace" then
@@ -1291,7 +1291,7 @@ function EvalString(s, assign)
 	-- assembler les valeurs
 	local i = 1
 	while i <= #t do
-		if t[i].typ == "err" then
+		if t[i].typ == "error" then
 			-- détecter les erreurs
 			return nil, ERR_SYNTAX_ERROR
 		elseif not waitsym then
@@ -1665,8 +1665,9 @@ end
 
 -- stopper le programme correctement
 function StopProgram()
-	if err == nil or err == "" then
-		err = nil
+	if errCode == nil or errCode == "" then
+		errCode = nil
+		
 		msg = "Ready"
 		appState = READY_MODE
 	else
@@ -1685,12 +1686,14 @@ function EndProgram()
 	msg = nil
 	
 	-- effacer le message d'erreur si c'est 'ready'
-	if err == "Ready" then err = nil end
+	if errCode == "Ready" then errCode = nil end
 	
 	ResetEditor()
 	RedrawEditor()
+	
 	cursor[1] = safeCursor[1]
 	cursor[2] = safeCursor[2]
+	
 	cmd["STOPMUSIC"].fn("")
 	
 	ShowCursor(true)
@@ -1996,19 +1999,24 @@ end
 function UI_Run()
 	-- remise à zéro d'un éventuel message texte
 	msg = nil
+	
+	safeCursor[1] = cursor[1]
+	safeCursor[2] = cursor[2]
 
 	stepsMode = false
 	SaveProgram()
 	
-	err = GetError(ScanLabels())
+	errCode = GetError(ScanLabels())
 	
-	if err == "Ok" then
-		err = nil
-		ClearScreen()
-		safeCursor[1] = cursor[1]
-		safeCursor[2] = cursor[2]
+	if errCode == "Ok" then
+		errCode = nil
+		
+		ClearScreen()		
+		
 		Locate(1, 1)
+		
 		kb_buffer = ""
+		
 		for i = 0, MAX_HARD_SPRITES - 1 do
 			hardspr[i].x = 0.0
 			hardspr[i].y = 0.0
@@ -2016,6 +2024,7 @@ function UI_Run()
 			hardspr[i].hotspot = 0
 			hardspr[i].scale = 0
 		end
+		
 		execStep = true
 		appState = RUN_MODE -- exécuter le code source basic
 	end
@@ -2028,16 +2037,18 @@ function UI_Debug()
 	-- remise à zéro d'un éventuel message texte
 	msg = nil
 
+	safeCursor[1] = cursor[1]
+	safeCursor[2] = cursor[2]
+
 	stepsMode = true
 	
 	SaveProgram()
-	err = GetError(ScanLabels())
+	errCode = GetError(ScanLabels())
 	
-	if err == "Ok" then
-		err = nil
+	if errCode == "Ok" then
+		errCode = nil
+		
 		ClearScreen()
-		safeCursor[1] = cursor[1]
-		safeCursor[2] = cursor[2]
 
 		Locate(1, 1)
 		kb_buffer = ""

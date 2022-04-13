@@ -256,7 +256,7 @@ end
 function PrintInfosString(s, r, col, offset)
 	love.graphics.push()
 	love.graphics.setCanvas(renderer[r])
-	
+
 	if offset == nil then offset = 0 end
 
 	-- dessiner tous les caractères en haut de l'écran
@@ -391,7 +391,9 @@ function SetEditorTextColor(ln)
 		cursor[2] = ySafe
 
 		-- rétablir le stylo par défaut
-		pen = DEFAULT_PEN		
+		pen = DEFAULT_PEN
+
+		return		
 	end
 	
 	-- repositionner le curseur texte en début de ligne
@@ -416,18 +418,10 @@ function SetEditorTextColor(ln)
 
 		-- rétablir le stylo par défaut
 		pen = DEFAULT_PEN		
+
+		return		
 	end
 	
-	-- exit si la chaîne est vide
-	if s == nil then
-		-- rétablir la position du curseur texte
-		cursor[1] = xSafe
-		cursor[2] = ySafe
-
-		-- rétablir le stylo par défaut
-		pen = DEFAULT_PEN		
-	end
-
 	-- commande trouvée ? on remplace la couleur
 	local g = 0 -- nombre de guillemets trouvés
 	local word = "" -- mot trouvé
