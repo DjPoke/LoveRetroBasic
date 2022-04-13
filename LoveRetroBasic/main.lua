@@ -1627,7 +1627,7 @@ function love.update(dt)
 	-- initialiser countTime
 	if appStarted then
 		countTime = 0
-		appStarted = false
+		appStarted = false		
 	end
 	
 	-- mettre à jour la position de la souris
