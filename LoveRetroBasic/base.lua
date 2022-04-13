@@ -2143,7 +2143,7 @@ function KillProgram()
 	-- remise à zéro d'un éventuel message texte
 	msg = nil
 
-	Messagebox("Question", "Delete your program ?", {"Yes", "No", "Cancel"}, {"New", "Nothing", "Nothing"})
+	Messagebox("Question", "Delete your program ?", {"Yes", "No", "Cancel"}, {"Reset", "Nothing", "Nothing"})
 
 	return
 end
@@ -2158,25 +2158,4 @@ end
 
 -- ne rien faire
 function Nothing()
-end
-
--- effacer le programme
-function New()
-	-- vider la mémoire code
-	ram = {}
-	for i = 0, MAX_RAM - 1 do
-		ram[i] = ""
-	end
-	ramLine = 0
-	
-	-- cacher le curseur
-	ShowCursor(false)
-
-	ResetEditor()
-	RedrawEditor()
-	
-	-- TODO: bug ici
-	
-	-- montrer le curseur
-	ShowCursor(true)
 end

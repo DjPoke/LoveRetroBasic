@@ -151,4 +151,6 @@ function Reset()
 	
 	-- mettre le curseur texte en haut à gauche
 	Locate(1, 1)
+	
+	ShowCursor(true)
 end
