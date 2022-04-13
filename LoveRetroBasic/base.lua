@@ -4,6 +4,8 @@ function ShowCursor(s)
 		if not cursorVisible then
 			PrintChar(95, PRINT_NO_FLAGS)
 			cursorVisible = true
+		else
+			PrintChar(95, PRINT_NO_FLAGS)
 		end
 	else
 		if cursorVisible then

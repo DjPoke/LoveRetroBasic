@@ -2796,7 +2796,6 @@ function love.draw()
 				PrintInfosString(nfo, 2, "red", 17)
 			end
 		end
-
 	end
 
 	-- afficher la position de la souris
