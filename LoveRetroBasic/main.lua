@@ -29,8 +29,9 @@ VAR_STRING = 4
 VAR_POLY = 5 -- types numériques ou chaîne confondus
 VAR_LABEL = 6
 VAR_CONDITION = 7 -- true ou false, comparaison
-VAR_VAR = 8 -- un nom de variable
-VAR_CONSTANT = 9 -- une constante (numérique ou chaîne de caractères)
+VAR_VARIABLE = 8 -- un nom de variable
+VAR_ASSIGN = 9 -- une assignation de variable
+VAR_CONSTANT = 10 -- une constante (numérique ou chaîne de caractères)
 
 -- constantes du scrolling de l'éditeur
 PRINT_NO_FLAGS = 0
@@ -53,6 +54,11 @@ EDITOR_UI = 4
 -- ralentir le jeu par défaut (en FPS)
 DEFAULT_VBL = 1
 
+-- types de commandes
+SIMPLE_COMMAND = 0
+MULTI_COMMAND = 1
+MULTI_CMD_USED = 2
+
 -- ===================================================
 -- = définir la liste des instructions de RetroBasic =
 -- ===================================================
@@ -63,7 +69,7 @@ commands = {
 			"BIN$", "BORDER",
 			"CASE", "CHR$", "CLS",
 			"DRAW", "DRAWR",
-			"ELSEIF", "ELSE", "ENDIF", "ENDSELECT", "END",
+			"ELSEIF", "ELSE", "END",
 			"FOR", "FREEBOB",
 			"GETBORDER", "GETLOCX", "GETLOCY", "GETPAPER", "GETPEN", "GETGRAPHPEN", "GOSUB", "GOTO", "GRAPHPEN", "GRAPHPRINT",
 			"HEX$", "HOTSPOT",
@@ -75,7 +81,7 @@ commands = {
 			"PAPER", "PASTEBOB", "PEN", "PLOT", "PLOTR", "PRINT",
 			"RECT", "REPEAT", "RETURN",
 			"SAVEBOB", "SELECT", "SGN", "SPRITEIMG", "SPRITEOFF", "SPRITEON", "SPRITEPOS", "SPRITESCALE", "SPRITETRANSP", "STOPMUSIC", "STEP", "STR$",
-			"TO",
+			"THEN", "TO",
 			"UNTIL",
 			"VAL",
 			"WAITKEY", "WAITVBL", "WEND", "WHILE"
@@ -90,7 +96,8 @@ for i = 1, #commands do
 	-- ret: valeur de retour
 	-- pmin, pmax: nombre de paramètres min et max
 	-- ptype: type de paramètres (integer ou autres)
-	cmd[commands[i]] = {fn = nil, ret = 0, pmin = 0, pmax = 0, ptype = {VAR_INTEGER}}
+	-- cmd: commande simple, multi-commande ou utilisé par une multi-commande
+	cmd[commands[i]] = {fn = nil, ret = 0, pmin = 0, pmax = 0, ptype = {VAR_INTEGER}, cmd = SIMPLE_COMMAND}
 end
 
 -- définir le type de valeur retournée pour chaque instruction BASIC
@@ -122,7 +129,6 @@ cmd["CHR$"].pmin, cmd["CHR$"].pmax = 1, 1
 -- CLS
 cmd["DRAW"].pmin, cmd["DRAW"].pmax = 2, 2
 cmd["DRAWR"].pmin, cmd["DRAWR"].pmax = 2, 2
--- ENDIF
 -- ENDSELECT
 -- END
 cmd["ELSEIF"].pmin, cmd["ELSEIF"].pmax = 1, 1
@@ -174,7 +180,7 @@ cmd["ASC"].ptype = {VAR_STRING}
 cmd["CASE"].ptype = {VAR_CONSTANT}
 cmd["CHR$"].ptype = {VAR_NUM}
 cmd["ELSEIF"].ptype = {VAR_CONDITION}
-cmd["FOR"].ptype = {VAR_INTEGER}
+cmd["FOR"].ptype = {VAR_ASSIGN}
 cmd["GOSUB"].ptype = {VAR_LABEL}
 cmd["GOTO"].ptype = {VAR_LABEL}
 cmd["GRAPHPRINT"].ptype = {VAR_POLY}
@@ -186,12 +192,32 @@ cmd["PRINT"].ptype = {VAR_POLY}
 cmd["SAVEBOB"].ptype = {VAR_STRING, VAR_INTEGER}
 cmd["SELECT"].ptype = {VAR_VAR}
 cmd["SGN"].ptype = {VAR_NUM}
-cmd["STEP"].ptype = {VAR_INTEGER}
-cmd["TO"].ptype = {VAR_INTEGER}
+cmd["STEP"].ptype = {VAR_CONSTANT}
+cmd["TO"].ptype = {VAR_CONSTANT}
 cmd["UNTIL"].ptype = {VAR_CONDITION}
 cmd["STR$"].ptype = {VAR_NUM}
 cmd["VAL"].ptype = {VAR_STRING}
 cmd["WHILE"].ptype = {VAR_CONDITION}
+
+-- liste des commands spéciales
+cmd["IF"].cmd = MULTI_COMMAND
+cmd["THEN"].cmd = MULTI_CMD_USED
+cmd["ELSEIF"].cmd = MULTI_CMD_USED
+cmd["ELSE"].cmd = MULTI_CMD_USED
+
+cmd["FOR"].cmd = MULTI_COMMAND
+cmd["TO"].cmd = MULTI_CMD_USED
+cmd["STEP"].cmd = MULTI_CMD_USED
+cmd["NEXT"].cmd = MULTI_CMD_USED
+
+cmd["WHILE"].cmd = MULTI_COMMAND
+cmd["WEND"].cmd = MULTI_CMD_USED
+
+cmd["REPEAT"].cmd = MULTI_COMMAND
+cmd["UNTIL"].cmd = MULTI_CMD_USED
+
+cmd["SELECT"].cmd = MULTI_COMMAND
+cmd["CASE"].cmd = MULTI_CMD_USED
 
 -- opérateurs spéciaux
 operators = {"MOD"}

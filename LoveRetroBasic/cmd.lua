@@ -65,16 +65,6 @@ cmd["ELSE"].fn = function(lst)
 	return OK
 end
 
--- commande 'ENDIF'
-cmd["ENDIF"].fn = function(lst)
-	return OK
-end
-
--- commande 'ENDSELECT'
-cmd["ENDSELECT"].fn = function(lst)
-	return OK
-end
-
 -- commande 'END'
 cmd["END"].fn = function(lst)
 	EndProgram()
