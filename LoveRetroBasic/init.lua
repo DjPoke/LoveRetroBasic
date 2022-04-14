@@ -81,6 +81,7 @@ function ResetEditor()
 
 	-- désactiver la rechercher d'une commande
 	searchCommand = ""
+	searchLoopCommandID = 0
 	gotoCommand = 0
 	
 	-- reset des sprites

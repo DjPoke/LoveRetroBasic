@@ -543,6 +543,7 @@ cmd["WHILE"].fn = function(lst)
 	-- zapper la boucle
 	if Val(lst[1]) == 0 then
 		searchCommand = "WEND"
+		searchLoopCommandID = currentLoopCommandID
 	end
 
 	return OK

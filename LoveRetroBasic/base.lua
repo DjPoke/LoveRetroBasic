@@ -783,7 +783,7 @@ function Exec(t, l)
 		
 		-- si une commande est recherchée...
 		if searchCommand ~= "" then
-			if searchCommand == cs then searchCommand = "" end
+			if searchCommand == cs and searchLoopCommandID == currentLoopCommandID then searchCommand = ""; searchLoopCommandID = 0 end
 
 			return OK
 		end
