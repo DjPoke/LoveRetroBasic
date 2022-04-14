@@ -523,7 +523,9 @@ function Exec(t, l)
 
 		-- si une commande est recherchée...
 		if searchCommand ~= "" then
-			if cs ~= searchCommand then return OK end
+			if searchCommand == cs then searchCommand = "" end
+
+			return OK
 		end
 
 		-- zapper la commande si nécessaire
