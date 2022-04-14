@@ -97,7 +97,7 @@ for i = 1, #commands do
 	-- pmin, pmax: nombre de paramètres min et max
 	-- ptype: type de paramètres (integer ou autres)
 	-- cmd: commande simple, multi-commande ou utilisé par une multi-commande
-	cmd[commands[i]] = {fn = nil, ret = 0, pmin = 0, pmax = 0, pnext = 0, ptype = {VAR_INTEGER}, cmd = SIMPLE_COMMAND}
+	cmd[commands[i]] = {fn = nil, ret = 0, pmin = 0, pmax = 0, pnext = 0, ptype = {VAR_INTEGER}, cmd = SIMPLE_COMMAND, loopFn = false}
 end
 
 -- définir le type de valeur retournée pour chaque instruction BASIC
@@ -221,6 +221,11 @@ cmd["UNTIL"].cmd = MULTI_CMD_USED
 cmd["SELECT"].cmd = MULTI_COMMAND
 cmd["CASE"].cmd = MULTI_CMD_USED
 
+-- fonction qui vont renvoyer à une boucle
+cmd["NEXT"].loopFn = true
+cmd["WEND"].loopFn = true
+cmd["UNTIL"].loopFn = true
+
 -- commandes nécessaires suivantes
 cmd["FOR"].pnext = "TO"
 cmd["TO"].pnext = "STEP"
@@ -317,6 +322,9 @@ ERR_DIVISION_BY_ZERO = 11
 ERR_STACK_FULL = 12
 ERR_UNEXPECTED_RETURN = 13
 ERR_UNEXPECTED_NEXT = 14
+ERR_UNEXPECTED_WEND = 15
+ERR_NEXT_MISSING = 16
+ERR_WEND_MISSING = 17
 
 ERR_READ_ERROR = 101
 ERR_WRITE_ERROR = 102
@@ -743,7 +751,7 @@ labPC = {} -- liste des adresses mémoires de code source pointées par les labe
 labCount = 0
 
 ProgramCounter = 1 -- compteur de lignes de programme
-gotoColumn = 0 -- permet de zapper les commandes lors d'un saut
+gotoCommand = 0 -- permet de zapper les commandes lors d'un saut
 currentCommandColumn = 0 -- permet de stocker le rang de l'instruction sur une ligne
 
 renderer = {}
@@ -770,6 +778,8 @@ clipboard = {}
 for i = 0, MAX_CLIPBOARD - 1 do
 	clipboard[i] = 0
 end
+
+currentLoopCommandID = 0
 
 -- ====================
 -- = audio et musique =

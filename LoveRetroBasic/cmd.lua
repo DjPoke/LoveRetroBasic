@@ -290,20 +290,19 @@ end
 
 -- commande 'NEXT'
 cmd["NEXT"].fn = function(lst)
-	local cs, row, column = "", 0, 0
+	local cs, row, column, id = "", 0, 0, 0
 
 	for i = #stack, 1, -1 do
-		if stack[i][1] == "FOR" then
-			cs = stack[i][1]
-			row = stack[i][2]
-			column = stack[i][3]
-			
-			break
-		end
+		cs = stack[i][1]
+		row = stack[i][2]
+		column = stack[i][3]
+		id = stack[i][4]
+
+		if id == currentLoopCommandID and cs == "FOR" then break end	
 	end
 	
 	--	next sans for
-	if cs == "" and row == 0 and column == 0 then return ERR_UNEXPECTED_NEXT end
+	if cs == "" and row == 0 and column == 0 and id == 0 then return ERR_UNEXPECTED_NEXT end
 
 	-- mauvaise variable indiquée derrière next
 	if lst[1] ~= nil then
@@ -316,10 +315,10 @@ cmd["NEXT"].fn = function(lst)
 		iterator[row][column][1] = iterator[row][column][1] + iterator[row][column][3]
 
 		-- boucler
-		JumpToIterator(cs, row, column)
+		JumpToIterator(cs, row, column, id)
 	else	-- terminer la boucle
 		iterator[row][column] = {0, 0, 0, ""}
-		PopIterator(cs, row, column)
+		PopIterator(cs, row, column, id)
 	end	
 
 	return OK
@@ -517,10 +516,50 @@ end
 
 -- commande 'WEND'
 cmd["WEND"].fn = function(lst)
+	local cs, row, column, id = "", 0, 0, 0
+
+	for i = #stack, 1, -1 do
+		if stack[i][1] == "WHILE" then
+			cs = stack[i][1]
+			row = stack[i][2]
+			column = stack[i][3]
+			id = stack[i][4]
+			
+			break
+		end
+	end
+	
+	--	wend sans while
+	if cs == "" and row == 0 and column == 0 and id == 0 then return ERR_UNEXPECTED_WEND end
+		
+	-- boucler
+	JumpToIterator(cs, row, column, id)
+
 	return OK
 end
 
 -- commande 'WHILE'
 cmd["WHILE"].fn = function(lst)
+	local cs, row, column, id = "", 0, 0, 0
+
+	for i = 1, #stack, -1 do
+		if stack[i][1] == "WEND" and stack[i][4] == currentLoopCommandID then
+			cs = stack[i][1]
+			row = stack[i][2]
+			column = stack[i][3]
+			id = stack[i][4]
+							
+			break
+		end
+	end
+		
+	--	while sans wend
+	if cs == "" and row == 0 and column == 0 and id == 0 then return ERR_WEND_MISSING end
+	
+	-- boucler
+	if Val(lst[1]) > 0 then
+		JumpToIterator(cs, row, column)
+	end
+
 	return OK
 end

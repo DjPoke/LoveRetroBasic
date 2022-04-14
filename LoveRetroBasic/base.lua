@@ -522,10 +522,8 @@ function Exec(t, l)
 		currentCommandColumn = column
 
 		-- zapper la commande si nécessaire
-		if gotoColumn > 0 then
-			if gotoColumn < column then return OK end
-
-			gotoColumn = 0
+		if gotoCommand > 0 then
+			if gotoCommand < currentLoopCommandID then return OK end
 		end
 		
 		-- mémoriser la prochaine commande nécessaire
@@ -558,8 +556,12 @@ function Exec(t, l)
 						-- on est dans une boucle itérative ?
 						local loopMode = false
 						
+						-- incrémenter le nombre de commandes
+						currentLoopCommandID = currentLoopCommandID + 1
+						
+						-- stocker
 						if iterator[row][column][1] == 0 and iterator[row][column][2] == 0 and iterator[row][column][3] == 0 then
-							local e = PushIterator(string.upper(cs), row, column)
+							local e = PushIterator(string.upper(cs), row, column, currentLoopCommandID)
 							
 							if e ~= OK then return e end
 						else
@@ -715,6 +717,29 @@ function Exec(t, l)
 						else
 							return ERR_SYNTAX_ERROR
 						end
+					elseif cmd[cs].ptype[1] == VAR_CONDITION then
+						-- espace manquant avant les paramètres
+						if t[i].typ ~= "whitespace" then return ERR_SYNTAX_ERROR end
+						
+						i = i + 1
+						
+						-- paramètre manquant
+						if i > #t then return ERR_SYNTAX_ERROR end
+
+						-- assembler les paramètres
+						local s = ""
+						
+						for j = i, #t do						
+							s = s .. t[j].sym
+						end
+
+						-- ajouter les paramètres à la liste
+						table.insert(lst, s)
+					
+						-- restocker la commande pour le saut
+						currentLoopCommandID = currentLoopCommandID + 1
+						
+						PushIterator(cs, row, column, currentLoopCommandID)
 					else
 						return ERR_SYNTAX_ERROR
 					end
@@ -755,7 +780,15 @@ function Exec(t, l)
 				return ERR_SYNTAX_ERROR
 			end
 		end
+		
+		-- si la commande est une fonction de boucle
+		if cmd[cs].loopFn then
+			PushIterator(cs, row, column, currentLoopCommandID)
 
+			-- compteur de commandes
+			currentLoopCommandID = currentLoopCommandID - 1			
+		end
+		
 		-- exécuter la commande avec ses paramètres
 		local e = ExecOne(cs, lst)
 
@@ -2306,7 +2339,7 @@ function UI_Run()
 			hardspr[i].hotspot = 0
 			hardspr[i].scale = 0
 		end
-		
+
 		execStep = true
 		appState = RUN_MODE -- exécuter le code source basic
 	end
@@ -2447,36 +2480,39 @@ function Nothing()
 end
 
 -- stocker une itération
-function PushIterator(cs, l, c)
+function PushIterator(cs, l, c, id)
 	if #stack == MAX_STACK then return ERR_STACK_FULL end
 	
-	table.insert(stack, {cs, l, c})
+	table.insert(stack, {cs, l, c, id})
 
 	return OK
 end
 
 -- dépiler une itération
-function PopIterator()
+function PopIterator(cs, l, c, id)
 end
 
 -- relire une itération
-function WatchIterator()
-	if #stack == 0 then return "", 0, 0 end
-
-	local cs = stack[#stack][1]
-	local l = stack[#stack][2]
-	local c = stack[#stack][3]
+function WatchIterator(i)
+	if i < 1 or i > #stack then return "", 0, 0, 0 end
 	
-	return cs, l, c
+	local cs = stack[i][1]
+	local l = stack[i][2]
+	local c = stack[i][3]
+	local id = stack[i][4]
+	
+	return cs, l, c, id
 end
 
-function JumpToIterator(cs, l, c)
+function JumpToIterator(cs, l, c, id)
 	for i = #stack, 1, -1 do
-		local cs2, l2, c2 = WatchIterator()
-		
-		if cs == cs2 and l == l2 and c == c2 then
+		local cs2, l2, c2, id2 = WatchIterator(i)
+
+		if id == id2 and c == c2 then
 			ProgramCounter = l - 1
-			gotoColumn = c
+			gotoCommand = id
+
+			break
 		end
 	end
 end
