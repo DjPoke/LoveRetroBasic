@@ -99,22 +99,39 @@ end
 function RedrawEditor()
 	local xc = cursor[1]
 	local yc = cursor[2]
+	local mempen = pen
+	local mempaper = paper
 	
 	ClearScreen()
 	
 	for y = 1, 25 do
 		if ram[y + editorOffsetY] ~= nil then
 			Locate(1, y)
+			
 			s = ram[y + editorOffsetY]
+			
 			if s ~= Chr(LF) then
 				x = 0
+				
+				paper = DEFAULT_PAPER
+				pen = DEFAULT_PEN
+				
+				-- inverser le stylo et le papier
+				if hightlightedRamLine == y then
+					pen = DEFAULT_PAPER
+					paper = DEFAULT_PEN
+				end
+				
+				-- afficher les lignes de code
 				while x < 40 do
 					local xf = x + editorOffsetX
+					
 					if xf <= #s then
 						PrintChar(Asc(string.sub(s, xf + 1, xf + 1)), PRINT_NOT_CLIPPED_NO_SCROLL)
 					else
 						break
 					end
+					
 					x = x + 1
 				end
 			end

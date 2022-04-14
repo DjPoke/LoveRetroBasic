@@ -2332,9 +2332,13 @@ function UI_Run()
 	
 	if errCode == "Ok" then
 		errCode = nil
+
+		paper = DEFAULT_PAPER
+		pen = DEFAULT_PEN
 		
-		ClearScreen()		
-		
+		hightlightedRamLine = nil
+		ClearScreen()
+				
 		Locate(1, 1)
 		
 		kb_buffer = ""
@@ -2369,6 +2373,11 @@ function UI_Debug()
 	
 	if errCode == "Ok" then
 		errCode = nil
+		
+		paper = DEFAULT_PAPER
+		pen = DEFAULT_PEN
+		
+		hightlightedRamLine = nil
 		
 		ClearScreen()
 

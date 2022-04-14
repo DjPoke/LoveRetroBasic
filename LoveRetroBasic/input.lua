@@ -2,7 +2,9 @@
 function GetCharacter()
 	if #kb_buffer > 0 then
 		local c = string.sub(kb_buffer, -1)
+		
 		kb_buffer = string.sub(kb_buffer, 1, -2)
+		
 		return c
 	end
 	

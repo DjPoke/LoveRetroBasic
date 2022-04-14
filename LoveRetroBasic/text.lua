@@ -371,10 +371,12 @@ function PrintTextToRam(s)
 end
 
 function AppendTextToRam(s)
+	local mempen = pen
+	local mempaper = paper
+
 	-- annuler si la chaîne est vide
-	if s == nil then
-		return
-	end
+	if s == nil then return end
+	
 
 	ShowCursor(false)
 	
@@ -394,6 +396,11 @@ function AppendTextToRam(s)
 			end
 			
 			if Asc(chr) ~= LF then
+				pen = DEFAULT_PEN
+				paper = DEFAULT_PAPER
+				
+				if hightlightedRamLine == ramLine then pen = DEFAULT_PAPER; paper = DEFAULT_PEN end
+				
 				PrintChar(Asc(chr), PRINT_NOT_CLIPPED)
 			end
 		end
@@ -409,12 +416,20 @@ function AppendTextToRam(s)
 			ram[ramLine] = ram[ramLine] .. chr
 			
 			if Asc(chr) ~= LF then
+				pen = DEFAULT_PEN
+				paper = DEFAULT_PAPER
+				
+				if hightlightedRamLine == ramLine then pen = DEFAULT_PAPER; paper = DEFAULT_PEN end
+				
 				PrintChar(Asc(chr), PRINT_NOT_CLIPPED)
 			end
 		end
 	end
 
 	ShowCursor(true)
+	
+	pen = mempen
+	paper = mempaper
 end
 
 -- colorier la ligne courante de l'éditeur
@@ -512,6 +527,8 @@ function SetEditorTextColor(ln)
 					local pos = cursor[1]
 					cursor[1] = wpos - editorOffsetX
 					pen = DEFAULT_INSTRUCTIONS_PEN
+					paper = DEFAULT_PAPER
+					if hightlightedRamLine == ln then pen = DEFAULT_INSTRUCTIONS_PEN_HIGHLIGHTED; paper = DEFAULT_PEN end
 					PrintString2(word)
 					pen = DEFAULT_PEN
 					cursor[1] = pos

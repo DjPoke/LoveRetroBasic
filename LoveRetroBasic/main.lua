@@ -45,6 +45,7 @@ DEFAULT_PEN = 6
 DEFAULT_LABELS_PEN = 34
 DEFAULT_COMMENTS_PEN = 33
 DEFAULT_INSTRUCTIONS_PEN = 4
+DEFAULT_INSTRUCTIONS_PEN_HIGHLIGHTED = 35
 DEFAULT_PAPER = 35
 EDITOR_PEN = 1
 EDITOR_PAPER = 35
@@ -396,6 +397,7 @@ for i = 0, MAX_RAM - 1 do
 end
 
 ramLine = 0 -- offset de stockage de lignes de code en RAM
+hightlightedRamLine = nil -- ligne de code en surbrillance
 
 iterator = {}
 for i = 0, MAX_RAM - 1 do
@@ -1188,6 +1190,7 @@ function love.keypressed(key, scancode, isrepeat)
 			end
 		elseif key == "backspace" then
 			ShowCursor(false)
+			
 			-- si le curseur est en début de ligne
 			if cursor[1] == 1 then
 				-- s'il y a d'autres ligne au dessus
@@ -1196,28 +1199,35 @@ function love.keypressed(key, scancode, isrepeat)
 					for i = ramLine, MAX_RAM - 2 do
 						ram[i] = ram[i + 1]
 					end
+					
 					ram[MAX_RAM - 1] = ""
+										
 					-- gérer le scrolling horizontal et redessiner l'écran
 					SetHScroll()
+					
 					-- passer à la ligne précédente
 					ramLine = ramLine - 1
 					--
 					cursor[1] = #ram[ramLine] + 1
 					cursor[2] = cursor[2] - 1
+					
 					-- si le curseur demande de faire un scrolling, alors...
 					if cursor[2] < 1 then
 						-- afficher la ligne du dessus
 						ScrollScreenDown()
+						
 						-- on le prend en compte dans l'éditeur
 						if editorOffsetY > 0 then
 							editorOffsetY = editorOffsetY - 1
 						end
-						--
+
 						cursor[1] = 1
 						cursor[2] = cursor[2] + 1
+						
 						for i = 1, #ram[ramLine] do
 							PrintChar(Asc(string.sub(ram[ramLine], i, i)), PRINT_NOT_CLIPPED)
 						end
+						
 						-- gérer le scrolling horizontal et redessiner l'écran
 						SetHScroll()
 					end
@@ -1231,14 +1241,21 @@ function love.keypressed(key, scancode, isrepeat)
 				PrintChar(32, PRINT_NOT_CLIPPED)
 				cursor[1] = #ram[ramLine] + 1
 				editorOffsetX = editorOffsetX - 1
+				
 				-- gérer le scrolling horizontal et redessiner l'écran
 				SetHScroll()
+				
 			else
 				-- supprimer le caractère précédent
 				ram[ramLine] = string.sub(ram[ramLine], 1, -2)
 				cursor[1] = #ram[ramLine] + 1
 				PrintChar(32, PRINT_NOT_CLIPPED)
 				cursor[1] = #ram[ramLine] + 1
+			end
+							
+			-- supprimer la surbrillance
+			if ram[ramLine] == "" then
+				hightlightedRamLine = nil
 			end
 
 			ShowCursor(true)
@@ -1436,11 +1453,13 @@ function love.keypressed(key, scancode, isrepeat)
 					if key == "backspace" then
 						pattern[currentTrack][currentEditLine][mus[currentPattern]] = 0
 						currentEditLine = currentEditLine + 1
+						
 						if currentEditLine > currentShownLineEnd then
 							if currentShownLineEnd < notesPerPattern then
 								currentShownLineStart = currentShownLineStart + 1
 								currentShownLineEnd = currentShownLineEnd + 1
 							end
+							
 							currentEditLine = currentShownLineEnd
 						end
 					end
@@ -1449,11 +1468,13 @@ function love.keypressed(key, scancode, isrepeat)
 					if key == "space" then
 						pattern[currentTrack][currentEditLine][mus[currentPattern]] = 100
 						currentEditLine = currentEditLine + 1
+						
 						if currentEditLine > currentShownLineEnd then
 							if currentShownLineEnd < notesPerPattern then
 								currentShownLineStart = currentShownLineStart + 1
 								currentShownLineEnd = currentShownLineEnd + 1
 							end
+							
 							currentEditLine = currentShownLineEnd
 						end
 					end
@@ -1476,11 +1497,13 @@ function love.keypressed(key, scancode, isrepeat)
 					if key == key_down then
 						if currentEditLine < notesPerPattern then
 							currentEditLine = currentEditLine + 1
+							
 							if currentEditLine > currentShownLineEnd then
 								if currentShownLineEnd < notesPerPattern then
 									currentShownLineStart = currentShownLineStart + 1
 									currentShownLineEnd = currentShownLineEnd + 1
 								end
+								
 								currentEditLine = currentShownLineEnd
 							end
 						end
@@ -1610,7 +1633,7 @@ function love.textinput(t)
 		
 		if a < 128 then
 			-- récupérer les caractères pressés
-			if #kb_buffer < 255 then
+			if #kb_buffer < 256 then
 				kb_buffer = kb_buffer .. t
 			end
 		end
@@ -1809,6 +1832,8 @@ function love.update(dt)
 					if errCode == "Ok" then
 						errCode = nil
 					else
+						-- mettre la ligne en surbrillance
+						hightlightedRamLine = ProgramCounter
 						StopProgram()
 
 						break
