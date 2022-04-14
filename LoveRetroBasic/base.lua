@@ -554,14 +554,16 @@ function Exec(t, l)
 			elseif t[i].typ == "whitespace" then
 				-- vérifier s'il s'agit bien d'une suite de commandes multiples
 				if cmd[cs].cmd == MULTI_COMMAND then
+					-- incrémenter le nombre de commandes
+					currentLoopCommandID = currentLoopCommandID + 1
+					
+					currentLoopCommand = currentCommand
+
 					-- si c'est une commande nécessitant d'assigner une variable
 					if cmd[cs].ptype[1] == VAR_ASSIGN then
 						-- on est dans une boucle itérative ?
 						local loopMode = false
-						
-						-- incrémenter le nombre de commandes
-						currentLoopCommandID = currentLoopCommandID + 1
-						
+												
 						-- stocker
 						if iterator[row][column][1] == 0 and iterator[row][column][2] == 0 and iterator[row][column][3] == 0 then
 							local e = PushIterator(string.upper(cs), row, column, currentLoopCommandID)
@@ -738,10 +740,7 @@ function Exec(t, l)
 
 						-- ajouter les paramètres à la liste
 						table.insert(lst, s)
-					
-						-- restocker la commande pour le saut
-						currentLoopCommandID = currentLoopCommandID + 1
-						
+											
 						PushIterator(cs, row, column, currentLoopCommandID)
 					else
 						return ERR_SYNTAX_ERROR
@@ -790,17 +789,20 @@ function Exec(t, l)
 
 			return OK
 		end
-
+		
 		-- si la commande est une fonction de boucle
 		if cmd[cs].loopFn then
 			PushIterator(cs, row, column, currentLoopCommandID)
-
-			-- compteur de commandes
-			currentLoopCommandID = currentLoopCommandID - 1			
 		end
 				
 		-- exécuter la commande avec ses paramètres
 		local e = ExecOne(cs, lst)
+		
+		-- si la commande est une fonction de boucle
+		if cmd[cs].loopFn then
+			-- compteur de commandes
+			currentLoopCommandID = currentLoopCommandID - 1			
+		end
 
 		return e
 	-- variable éventuellement trouvée
@@ -978,17 +980,17 @@ function AssembleString(t, cs, lst, sig)
 			-- vérifier si c'est une variable existante
 			local var = t[i].sym
 			local vType = GetVarType(var)
+			local value = "0"
 			
 			if vType == 0 then
 				vType = VAR_INTEGER
-				local value = 0
 
-				e = AssignToVar(var, vType, tostring(value))
+				e = AssignToVar(var, vType, value)
 				
 				if e ~= OK then return e, nil end
 			-- sinon, récupérer la valeur de la variable
 			else
-				local value, e = GetVarValue(var, vType)
+				value, e = GetVarValue(var, vType)
 				
 				if e ~= OK then return e, nil end
 			end
@@ -2045,9 +2047,9 @@ function StopProgram()
 	
 	-- erreurs de fin de programme
 	if currentLoopCommandID > 0 then
-		if currentCommand == "WHILE" then
+		if currentLoopCommand == "WHILE" then
 			e = ERR_WEND_MISSING
-		elseif currentCommand == "FOR" then
+		elseif currentLoopCommand == "FOR" then
 			e = ERR_NEXT_MISSING
 		end
 	end

@@ -788,6 +788,7 @@ end
 
 -- command en cours et son numéro d'ID de boucle
 currentLoopCommandID = 0
+currentLoopCommand = ""
 currentCommand = ""
 
 -- ====================
