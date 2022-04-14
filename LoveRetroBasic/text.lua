@@ -469,6 +469,7 @@ function SetEditorTextColor(ln)
 
 	if lab ~= nil then
 		pen = DEFAULT_LABELS_PEN
+		if hightlightedRamLine == ln then pen = DEFAULT_INSTRUCTIONS_PEN_HIGHLIGHTED; paper = DEFAULT_PEN end
 		PrintString2(lab .. ":")
 		pen = DEFAULT_PEN
 		s = string.sub(s, #lab + 2)
@@ -487,11 +488,11 @@ function SetEditorTextColor(ln)
 		return		
 	end
 	
-	-- trouver et colorier les commands sur la ligne
+	-- trouver et colorier les commandes sur la ligne
 	local word = "" -- mot en cours d'analyse
 	local wpos = 0 -- position de début de mot en cours d'analyse
 	local quotes = 0 -- nombre de guillemets
-	local flag = false -- drapeau pour activer le dessin du texte
+	local flag = true -- drapeau pour activer le dessin du texte colorié
 	local startPos = editorOffsetX
 	local endPos = math.min(#s, startPos + 39)
 
@@ -503,44 +504,35 @@ function SetEditorTextColor(ln)
 		if c == "\"" then
 			quotes = quotes + 1
 			
-			-- activer le remplacement de couleur si l'on arrive en fin de ligne
-			if #word > 0 and quotes % 2 == 1 then
-				flag = true
-			end
+			if quotes % 2 == 0 then word = ""; wpos = 0 end
 		-- comptabliser les caractères pour les commands
 		elseif c >= "a" and c <= "z" then
 			if wpos == 0 then wpos = i end
 			
 			word = word .. string.sub(s, i, i)
-			
-			-- si on est en fin de ligne
-			if i == endPos then
-				flag = true
-			end
 		-- activer le remplacement de couleur si l'on rencontre un autre caractère
 		else
-			flag = true
+			word = ""						
+			wpos = 0
 		end
 
-		-- remplacer la command avec la couleur adaptée
-		if flag then
+		-- remplacer la commande avec la couleur adaptée
+		if word ~= "" then
 			for j = 1, #commands do
 				if string.upper(word) == commands[j] then
-					local pos = cursor[1]
-					cursor[1] = wpos - editorOffsetX
-					pen = DEFAULT_INSTRUCTIONS_PEN
-					paper = DEFAULT_PAPER
-					if hightlightedRamLine == ln then pen = DEFAULT_INSTRUCTIONS_PEN_HIGHLIGHTED; paper = DEFAULT_PEN end
-					PrintString2(word)
-					pen = DEFAULT_PEN
-					cursor[1] = pos
+					-- si le guillemet trouvé peut être suivi d'un mot...
+					if quotes % 2 == 0 then
+						local pos = cursor[1]
+						cursor[1] = wpos - editorOffsetX
+						pen = DEFAULT_INSTRUCTIONS_PEN
+						paper = DEFAULT_PAPER
+						if hightlightedRamLine == ln then pen = DEFAULT_INSTRUCTIONS_PEN_HIGHLIGHTED; paper = DEFAULT_PEN end
+						PrintString2(word)
+						pen = DEFAULT_PEN
+						cursor[1] = pos
+					end
 				end
 			end
-			
-			wpos = 0
-			word = ""
-			
-			flag = false
 		end
 	end
 		
@@ -551,6 +543,7 @@ function SetEditorTextColor(ln)
 		local pos = cursor[1]
 		cursor[1] = cursor[1] + #s - #com
 		pen = DEFAULT_COMMENTS_PEN
+		if hightlightedRamLine == ln then pen = DEFAULT_INSTRUCTIONS_PEN_HIGHLIGHTED; paper = DEFAULT_PEN end
 		PrintString2(com)
 		pen = DEFAULT_PEN
 		cursor[1] = pos
