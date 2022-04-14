@@ -226,7 +226,7 @@ cmd["FOR"].pnext = "TO"
 cmd["TO"].pnext = "STEP"
 
 -- opérateurs spéciaux
-operators = {"MOD"}
+operators = {"AND", "MOD", "NOT", "OR", "XOR"}
 
 -- ===================================
 -- = palette de 64 (16 x 4) couleurs =

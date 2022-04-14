@@ -1255,8 +1255,16 @@ function EvalFloat(s)
 
 	for i = 1, #t do	
 		if t[i].typ == "operator" then
-			if t[i].sym == "MOD" then
+			if t[i].sym == "AND" then
+				t[i].sym = "A"
+			elseif t[i].sym == "MOD" then
 				t[i].sym = "M"
+			elseif t[i].sym == "NOT" then
+				t[i].sym = "N"
+			elseif t[i].sym == "OR" then
+				t[i].sym = "O"
+			elseif t[i].sym == "XOR" then
+				t[i].sym = "X"
 			end			
 		end
 	end
@@ -1460,6 +1468,9 @@ function EvalFloat(s)
 	end
 			
 	-- recalculer les morceaux d'expression dans l'ordre des priorités d'opérations
+	s, e = Calc(s, "N")
+	if e ~= OK then return nil, e end
+
 	s, e = Calc(s, "*")	
 	if e ~= OK then return nil, e end
 
@@ -1467,6 +1478,15 @@ function EvalFloat(s)
 	if e ~= OK then return nil, e end
 
 	s, e = Calc(s, "M")
+	if e ~= OK then return nil, e end
+
+	s, e = Calc(s, "A")
+	if e ~= OK then return nil, e end
+
+	s, e = Calc(s, "OR")
+	if e ~= OK then return nil, e end
+
+	s, e = Calc(s, "XOR")
 	if e ~= OK then return nil, e end
 
 	s, e = Calc(s, "-")	
@@ -1918,8 +1938,16 @@ function Calc(s, op)
 			else
 				s = string.sub(s, 1, p1 - 1) .. tostring(v1 / v2) .. string.sub(s, p2 + 1)
 			end
+		elseif op == "A" then
+			s = string.sub(s, 1, p1 - 1) .. tostring(bit.band(v1, v2)) .. string.sub(s, p2 + 1)
 		elseif op == "M" then
 			s = string.sub(s, 1, p1 - 1) .. tostring(v1 % v2) .. string.sub(s, p2 + 1)
+		elseif op == "NOT" then
+			s = string.sub(s, 1, p1 - 1) .. tostring(bit.bnot(v1, v2)) .. string.sub(s, p2 + 1)
+		elseif op == "OR" then
+			s = string.sub(s, 1, p1 - 1) .. tostring(bit.bor(v1, v2)) .. string.sub(s, p2 + 1)
+		elseif op == "XOR" then
+			s = string.sub(s, 1, p1 - 1) .. tostring(bit.bxor(v1, v2)) .. string.sub(s, p2 + 1)
 		end
 
 		pos = string.find(s, op)
