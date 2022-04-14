@@ -14,6 +14,7 @@ mouseSupport = love.mouse.isCursorSupported()
 
 if mouseSupport then
 	love.mouse.setRelativeMode(false)
+	
 	if not love.mouse.isVisible() then
 		love.mouse.setVisible(true)
 	end
@@ -1620,8 +1621,13 @@ function love.mousepressed(x, y, button)
 	-- gestion des boites de dialogue
 	if button == 1 and msgboxRenderer then
 		for i = 1, #msgboxButtons do
-			if x >= msgboxButtonX[i] and x <= msgboxButtonX[i] + msgboxButtonW[i] - 1 then
-				if y >= msgboxButtonY[i] and y <= msgboxButtonY[i] + msgboxButtonH[i] - 1 then
+			x2 = msgboxButtonX[i] * screenScaleX
+			y2 = msgboxButtonY[i] * screenScaleY
+			w2 = msgboxButtonW[i] * screenScaleX
+			h2 = msgboxButtonH[i] * screenScaleY
+
+			if x >= x2 and x <= x2 + w2 - 1 then
+				if y >= y2 and y <= y2 + h2 - 1 then
 					-- appeler la fonction désirée
 					if #msgboxButtons > 1 then _G[msgboxFunction[i]]() end
 					
@@ -1640,8 +1646,8 @@ function love.update(dt)
 	end
 	
 	-- mettre à jour la position de la souris
-	mouseX = GetMousePositionX()
-	mouseY = GetMousePositionY()
+	mouseX = ((GetMousePositionX() - borderX) / (screenScaleX * gmode[currentMode][3]))
+	mouseY = ((GetMousePositionY() - borderY) / (screenScaleY * gmode[currentMode][4]))
 	
 	-- mettre à jour les clics souris
 	for b = 1, 3 do
@@ -1678,9 +1684,9 @@ function love.update(dt)
 		-- récupérer les clics sur le menu outils
 		if GetLeftMouseClic() then
 			local x = math.floor(mouseX / 8)
-			local y = love.mouse.getY()
-						
-			if y >= borderY - (16 * gmode[currentMode][3]) and y < borderY - (8 * gmode[currentMode][3]) then
+			local y = mouseY
+
+			if y >= -16 and y <= -9 then
 				if x == 0 then -- lancer l'éditeur de sprites
 					-- remise à zéro d'un éventuel message texte
 					msg = nil
@@ -3307,6 +3313,6 @@ function love.draw()
 		local x = (realScnWidth - w) / 2
 		local y = (realScnHeight - h) / 2
 		
-		love.graphics.draw(msgboxRenderer, x, y, 0, 1, 1, 0, 0, 0, 0)
+		love.graphics.draw(msgboxRenderer, x * screenScaleX, y * screenScaleY, 0, screenScaleX, screenScaleY, 0, 0, 0, 0)
 	end
 end

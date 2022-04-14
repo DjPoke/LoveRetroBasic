@@ -22,11 +22,7 @@ end
 function GetMousePositionX()
 	if not mouseSupport then return 0 end
 
-	local x = love.mouse.getX() - borderX
-	x = math.floor(x / gmode[currentMode][3])
-	
-	if x < 0 then x = 0 end
-	if x > gmode[currentMode][1] - 1 then x = gmode[currentMode][1] - 1 end
+	local x = love.mouse.getX()
 	
 	return x
 end
@@ -35,11 +31,7 @@ end
 function GetMousePositionY()
 	if not mouseSupport then return 0 end
 
-	local y = love.mouse.getY() - borderY
-	y = math.floor(y / gmode[currentMode][4])
-	
-	if y < 0 then y = 0 end
-	if y > gmode[currentMode][2] - 1 then y = gmode[currentMode][2] - 1 end
+	local y = love.mouse.getY()
 	
 	return y
 end
