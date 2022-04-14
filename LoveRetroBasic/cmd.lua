@@ -540,7 +540,7 @@ end
 
 -- commande 'WHILE'
 cmd["WHILE"].fn = function(lst)
-	-- zapper ma boucle
+	-- zapper la boucle
 	if Val(lst[1]) == 0 then
 		searchCommand = "WEND"
 	end

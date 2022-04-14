@@ -74,13 +74,14 @@ function ResetEditor()
 	
 	-- vider les itérateurs
 	for i = 0, MAX_RAM - 1 do
-		iterator[i] = {}
-	
 		for j = 0, MAX_INSTRUCTIONS_BY_LINE - 1 do
 			iterator[i][j] = {0, 0, 0, ""}
 		end
 	end
 
+	-- désactiver la rechercher d'une commande
+	searchCommand = ""
+	gotoCommand = 0
 	
 	-- reset des sprites
 	hardspr = {}
@@ -88,9 +89,9 @@ function ResetEditor()
 		hardspr[i] = {x = 0.0, y = 0.0, img = 0, hotspot = 0, scale = 0, transp = 0, on = false}
 	end
 
-	-- reset de la pile
+	-- vider la pile
 	stack = {}
-	
+		
 	-- texte opaque
 	SetTextTransparent(false)
 end

@@ -520,14 +520,7 @@ function Exec(t, l)
 		-- établir le numéro de colonne de la commande
 		column = column + 1
 		currentCommandColumn = column
-
-		-- si une commande est recherchée...
-		if searchCommand ~= "" then
-			if searchCommand == cs then searchCommand = "" end
-
-			return OK
-		end
-
+		
 		-- zapper la commande si nécessaire
 		if gotoCommand > 0 then
 			if gotoCommand < currentLoopCommandID then return OK end
@@ -788,6 +781,13 @@ function Exec(t, l)
 			end
 		end
 		
+		-- si une commande est recherchée...
+		if searchCommand ~= "" then
+			if searchCommand == cs then searchCommand = "" end
+
+			return OK
+		end
+
 		-- si la commande est une fonction de boucle
 		if cmd[cs].loopFn then
 			PushIterator(cs, row, column, currentLoopCommandID)
@@ -795,7 +795,7 @@ function Exec(t, l)
 			-- compteur de commandes
 			currentLoopCommandID = currentLoopCommandID - 1			
 		end
-		
+				
 		-- exécuter la commande avec ses paramètres
 		local e = ExecOne(cs, lst)
 
@@ -1998,8 +1998,8 @@ end
 
 -- stopper le programme correctement
 function StopProgram()
-	if errCode == nil or errCode == "" then
-		errCode = nil
+	if errcode == nil or errcode == "" then
+		errcode = nil
 		
 		msg = "Ready"
 		appState = READY_MODE
@@ -2019,7 +2019,7 @@ function EndProgram()
 	msg = nil
 	
 	-- effacer le message d'erreur si c'est 'ready'
-	if errCode == "Ready" then errCode = nil end
+	if errcode == "Ready" then errcode = nil end
 	
 	ResetEditor()
 	RedrawEditor()
@@ -2328,10 +2328,10 @@ function UI_Run()
 	stepsMode = false
 	SaveProgram()
 	
-	errCode = GetError(ScanLabels())
+	errcode = GetError(ScanLabels())
 	
-	if errCode == "Ok" then
-		errCode = nil
+	if errcode == "Ok" then
+		errcode = nil
 
 		paper = DEFAULT_PAPER
 		pen = DEFAULT_PEN
@@ -2369,10 +2369,10 @@ function UI_Debug()
 	stepsMode = true
 	
 	SaveProgram()
-	errCode = GetError(ScanLabels())
+	errcode = GetError(ScanLabels())
 	
-	if errCode == "Ok" then
-		errCode = nil
+	if errcode == "Ok" then
+		errcode = nil
 		
 		paper = DEFAULT_PAPER
 		pen = DEFAULT_PEN

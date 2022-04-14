@@ -378,6 +378,8 @@ MAX_BOB = 65535
 
 MAX_INSTRUCTIONS_BY_LINE = 16
 
+BLINK_TIME = 8
+
 -- ================================
 -- = définir les modes graphiques =
 -- ================================
@@ -723,8 +725,9 @@ img_kb[2] = {
 -- =============================================
 kb_buffer = "" -- tampon clavier
 dbg = nil -- message de débogage
-errCode = nil -- sortie d'erreur
-msg = nil -- sortie de message ou de question (errCode est prioritaire sur msg)
+errcode = nil -- sortie d'erreur
+msg = nil -- sortie d'une message ou d'une question (errcode est prioritaire sur msg)
+msgblink = BLINK_TIME -- faire clignotter le message
 msgLine = nil -- sortie de numéro de ligne en steps mode
 
 diskFolder = nil -- nom du dossier du projet en cours, pour sauvegarder le fichier
@@ -1018,7 +1021,7 @@ function love.load()
 	local e, l = InitSymbols()
 
 	if e ~= OK then
-		errCode = GetError(e) .. " line " .. tostring(l)
+		errcode = GetError(e) .. " line " .. tostring(l)
 	else
 		Reset()
 	end
@@ -1074,9 +1077,9 @@ end
 
 function love.keyreleased(key, scancode, isrepeat)
 	-- sortie du mode spécial en cas d'erreur
-	if specialAppState and errCode ~= nil then
+	if specialAppState and errcode ~= nil then
 		if key == "escape" then
-			errCode = nil
+			errcode = nil
 
 			return
 		end
@@ -1641,6 +1644,9 @@ function love.textinput(t)
 end
 
 function love.mousepressed(x, y, button)
+	-- activer éventuellement un clignottement
+	msgblink = BLINK_TIME
+	
 	-- gestion des boites de dialogue
 	if button == 1 and msgboxRenderer then
 		for i = 1, #msgboxButtons do
@@ -1823,14 +1829,14 @@ function love.update(dt)
 					
 					-- exécution de la commande
 					if e == OK then
-						errCode, value = GetError(Exec(Parser(Lexer(RemoveLabels(s))), ProgramCounter), ProgramCounter)
+						errcode, value = GetError(Exec(Parser(Lexer(RemoveLabels(s))), ProgramCounter), ProgramCounter)
 					else
-						errCode = GetError(e, ProgramCounter)
+						errcode = GetError(e, ProgramCounter)
 					end
 					
 					-- stopper en cas d'erreur
-					if errCode == "Ok" then
-						errCode = nil
+					if errcode == "Ok" then
+						errcode = nil
 					else
 						-- mettre la ligne en surbrillance
 						hightlightedRamLine = ProgramCounter
@@ -3192,11 +3198,23 @@ function love.draw()
 	end
 
 	-- afficher les erreurs
-	if errCode == nil and msg ~= nil then
-		PrintInfosString(msg, 3, "blue")
+	if msg == nil or msg == "" then
+		msgblink = BLINK_TIME
+	elseif msgblink > 0 then
+		msgblink = msgblink - 0.2
+	end
+
+	if errcode == nil and msg ~= nil then
+		local cl = Round(msgblink) % 3
+		if cl == 0 then
+			PrintInfosString(msg, 3, "blue")
+		else
+			PrintInfosString(msg, 3, "darkblue")
+		end
+		
 		specialAppState = true
-	elseif errCode ~= nil then
-		PrintInfosString(errCode, 3, "red")
+	elseif errcode ~= nil then
+		PrintInfosString(errcode, 3, "red")
 		specialAppState = true
 	end
 
