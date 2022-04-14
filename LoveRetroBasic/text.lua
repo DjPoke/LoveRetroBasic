@@ -470,6 +470,56 @@ function SetEditorTextColor(ln)
 		return		
 	end
 	
+	-- trouver et colorier les commands sur la ligne
+	local word = "" -- mot en cours d'analyse
+	local wpos = 0 -- position de début de mot en cours d'analyse
+	local quotes = 0 -- nombre de guillemets
+	local flag = false -- drapeau pour activer le dessin du texte
+	
+	for i = editorOffsetX, math.min(#s, editorOffsetX + 39) do
+		-- récupérer le caractère en cours d'analyse
+		local c = string.lower(string.sub(s, i, i))
+
+		-- commencer à comptabliser les caractères
+		if c == "\"" then
+			quotes = quotes + 1
+			
+			if #word > 0 and quotes % 2 == 1 then
+				flag = true
+			end
+		elseif c >= "a" and c <= "z" then
+			if wpos == 0 then wpos = i end
+			
+			word = word .. string.sub(s, i, i)
+			
+			-- si on est en fin de ligne
+			if i == math.min(#s, editorOffsetX + 39) then
+				flag = true
+			end
+		elseif c == " " then
+			flag = true
+		elseif #word > 0 and quotes % 2 == 1 then
+			flag = true
+		end
+
+		-- remplacer la command avec la couleur adaptée
+		if flag then
+			for j = 1, #commands do
+				if string.upper(word) == commands[j] then
+					local pos = cursor[1]
+					cursor[1] = wpos - editorOffsetX
+					pen = DEFAULT_INSTRUCTIONS_PEN
+					PrintString2(word)
+					pen = DEFAULT_PEN
+					cursor[1] = pos
+				end
+			end
+			
+			flag = false
+		end
+	end
+	
+	--[[
 	-- commande trouvée ? on remplace la couleur
 	local g = 0 -- nombre de guillemets trouvés
 	local word = "" -- mot trouvé
@@ -495,7 +545,7 @@ function SetEditorTextColor(ln)
 			word = word .. string.sub(s, i, i)
 
 			if i == #s and g % 2 == 0 then
-				wpos = i - #word + 1
+				wpos = i - #word + 1 - editorOffsetX
 				flag = true
 			end
 		elseif #word > 0 and g % 2 == 0 then
@@ -520,6 +570,7 @@ function SetEditorTextColor(ln)
 			word = ""
 		end
 	end
+	--]]
 	
 	-- commentaire trouvé ? on remplace la couleur
 	local com = ScanComments(s)

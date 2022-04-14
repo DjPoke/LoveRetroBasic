@@ -6,7 +6,7 @@ function Lexer(s)
 	-- recherche de symboles par priorité
 	local tokens = {
 		{sym = "\"", typ = "quote"}, -- constantes chaînes de caractères
-		{sym = "'", typ = "rem"}, -- remarques
+		{sym = "'", typ = "comment"}, -- commentaires
 		{sym = ":", typ = "colon"}, -- séparateur de commandes
 		{sym = " ", typ = "whitespace"}, -- espace séparateur
 		{sym = "(", typ = "openbracket"}, -- parenthèses de fonctions et/ou mathématiques
@@ -61,7 +61,7 @@ function Parser(t)
 	-- supprimer les remarques
 	i = 1
 	while i <= #t do
-		if t[i].typ == "rem" then
+		if t[i].typ == "comment" then
 			for j = #t, i, -1 do
 				table.remove(t)
 			end
