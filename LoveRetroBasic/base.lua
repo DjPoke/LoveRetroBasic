@@ -521,6 +521,11 @@ function Exec(t, l)
 		column = column + 1
 		currentCommandColumn = column
 
+		-- si une commande est recherchée...
+		if searchCommand ~= "" then
+			if cs ~= searchCommand then return OK end
+		end
+
 		-- zapper la commande si nécessaire
 		if gotoCommand > 0 then
 			if gotoCommand < currentLoopCommandID then return OK end

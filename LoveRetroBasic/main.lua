@@ -753,6 +753,7 @@ labCount = 0
 ProgramCounter = 1 -- compteur de lignes de programme
 gotoCommand = 0 -- permet de zapper les commandes lors d'un saut
 currentCommandColumn = 0 -- permet de stocker le rang de l'instruction sur une ligne
+searchCommand = "" -- commande à rechercher
 
 renderer = {}
 renderer[0] = nil

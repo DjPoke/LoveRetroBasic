@@ -55,8 +55,8 @@ function ResetEditor()
 	
 	-- reset des symboles
 	for i = 0, 255 do
-		for x = 0,7 do
-			for y = 0,7 do
+		for x = 0, 7 do
+			for y = 0, 7 do
 				sym[i][x][y] = rom[i][x][y]
 			end
 		end

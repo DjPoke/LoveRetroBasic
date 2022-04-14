@@ -540,25 +540,9 @@ end
 
 -- commande 'WHILE'
 cmd["WHILE"].fn = function(lst)
-	local cs, row, column, id = "", 0, 0, 0
-
-	for i = 1, #stack, -1 do
-		if stack[i][1] == "WEND" and stack[i][4] == currentLoopCommandID then
-			cs = stack[i][1]
-			row = stack[i][2]
-			column = stack[i][3]
-			id = stack[i][4]
-							
-			break
-		end
-	end
-		
-	--	while sans wend
-	if cs == "" and row == 0 and column == 0 and id == 0 then return ERR_WEND_MISSING end
-	
-	-- boucler
-	if Val(lst[1]) > 0 then
-		JumpToIterator(cs, row, column)
+	-- zapper ma boucle
+	if Val(lst[1]) == 0 then
+		searchCommand = "WEND"
 	end
 
 	return OK
