@@ -921,7 +921,7 @@ function AssembleString(t, cs, lst, sig)
 				maxpnum = cmd[cs2].pmax
 			end
 				
-			-- sil l'expression a une commande en amont...
+			-- si l'expression a une commande en amont...
 			if t[i].typ ~= "openbracket" then break end
 			if t[#t].typ ~= "closebracket" then break end
 					
@@ -975,11 +975,51 @@ function AssembleString(t, cs, lst, sig)
 				end
 			end
 			
-			-- sinon, récupérer la valeur de la variable
+			-- vérifier si c'est une variable existante
 			local var = t[i].sym
 			local vType = GetVarType(var)
+			
+			if vType == 0 then
+				vType = VAR_INTEGER
+				local value = 0
+
+				e = AssignToVar(var, vType, tostring(value))
+				
+				if e ~= OK then return e, nil end
+			-- sinon, récupérer la valeur de la variable
+			else
+				local value, e = GetVarValue(var, vType)
+				
+				if e ~= OK then return e, nil end
+			end
+
+			table.insert(lst, value)
+			
+			return OK, lst, sig
+		elseif t[i].typ == "integer" or t[i].typ == "float" or t[i].typ == "string" then
+			-- vérifier si c'est une variable existante
+			local var = t[i].sym
+			local vType = nil
+			
+			if t[i].typ == "integer" then
+				vType = VAR_INTEGER
+			elseif t[i].typ == "integer" then
+				vType = VAR_FLOAT
+			elseif t[i].typ == "integer" then
+				vType = VAR_STRING
+			end
+
+			-- essayer de récupérer la valeur de la variable
 			local value, e = GetVarValue(var, vType)
-			if e ~= OK then return e, nil end
+				
+			-- si erreur, on assigne à la place
+			if e == ERR_TYPE_MISMATCH then
+				local value = 0
+
+				e = AssignToVar(var, vType, tostring(value))
+				
+				if e ~= OK then return e, nil end
+			end
 
 			table.insert(lst, value)
 			

@@ -298,10 +298,12 @@ cmd["NEXT"].fn = function(lst)
 		column = stack[i][3]
 		id = stack[i][4]
 
-		if id == currentLoopCommandID and cs == "FOR" then break end
-
-		-- next de trop
-		if i == #stack then return ERR_UNEXPECTED_NEXT end
+		if id == currentLoopCommandID and cs == "FOR" then
+			break
+		else
+			-- next de trop
+			if i == 1 then return ERR_UNEXPECTED_NEXT end
+		end
 	end
 	
 	--	next sans for
