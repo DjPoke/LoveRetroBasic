@@ -298,7 +298,10 @@ cmd["NEXT"].fn = function(lst)
 		column = stack[i][3]
 		id = stack[i][4]
 
-		if id == currentLoopCommandID and cs == "FOR" then break end	
+		if id == currentLoopCommandID and cs == "FOR" then break end
+
+		-- next de trop
+		if i == #stack then return ERR_UNEXPECTED_NEXT end
 	end
 	
 	--	next sans for
@@ -398,6 +401,12 @@ end
 
 -- commande 'REPEAT'
 cmd["REPEAT"].fn = function(lst)
+	-- zapper la boucle
+	if Val(lst[1]) == 0 then
+		searchCommand = "UNTIL"
+		searchLoopCommandID = currentLoopCommandID
+	end
+	
 	return OK
 end
 
@@ -490,6 +499,25 @@ end
 
 -- commande 'UNTIL'
 cmd["UNTIL"].fn = function(lst)
+	local cs, row, column, id = "", 0, 0, 0
+
+	for i = #stack, 1, -1 do
+		if stack[i][1] == "REPEAT" then
+			cs = stack[i][1]
+			row = stack[i][2]
+			column = stack[i][3]
+			id = stack[i][4]
+			
+			break
+		end
+	end
+	
+	--	wend sans while
+	if cs == "" and row == 0 and column == 0 and id == 0 then return ERR_UNEXPECTED_UNTIL end
+		
+	-- boucler
+	JumpToIterator(cs, row, column, id)
+
 	return OK
 end
 
@@ -524,7 +552,7 @@ cmd["WEND"].fn = function(lst)
 			row = stack[i][2]
 			column = stack[i][3]
 			id = stack[i][4]
-			
+
 			break
 		end
 	end

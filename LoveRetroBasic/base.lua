@@ -517,6 +517,9 @@ function Exec(t, l)
 		-- mémoriser la commande dans cs
 		cs = t[i].sym
 		
+		-- mémoriser la commande courante pour usage futur
+		currentCommand = cs
+		
 		-- établir le numéro de colonne de la commande
 		column = column + 1
 		currentCommandColumn = column
@@ -1998,6 +2001,20 @@ end
 
 -- stopper le programme correctement
 function StopProgram()
+	local e = OK
+	
+	-- erreurs de fin de programme
+	if currentLoopCommandID > 0 then
+		if currentCommand == "WHILE" then
+			e = ERR_WEND_MISSING
+		elseif currentCommand == "FOR" then
+			e = ERR_NEXT_MISSING
+		end
+	end
+	
+	if e ~= OK then errcode = GetError(e, ProgramCounter) end
+	
+	-- terminer le programme avec erreur ou non
 	if errcode == nil or errcode == "" then
 		errcode = nil
 		

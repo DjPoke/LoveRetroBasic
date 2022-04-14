@@ -787,7 +787,9 @@ for i = 0, MAX_CLIPBOARD - 1 do
 	clipboard[i] = 0
 end
 
+-- command en cours et son numéro d'ID de boucle
 currentLoopCommandID = 0
+currentCommand = ""
 
 -- ====================
 -- = audio et musique =
@@ -1896,7 +1898,7 @@ function love.update(dt)
 					else
 						errcode = GetError(e, ProgramCounter)
 					end
-					
+										
 					-- stopper en cas d'erreur
 					if errcode == "Ok" then
 						errcode = nil
