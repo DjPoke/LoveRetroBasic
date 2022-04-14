@@ -1196,7 +1196,7 @@ function love.keypressed(key, scancode, isrepeat)
 			
 			-- si le curseur est en début de ligne
 			if cursor[1] == 1 then
-				-- s'il y a d'autres ligne au dessus
+				-- s'il y a d'autres lignes au dessus
 				if ramLine > 1 then
 					-- supprimer la ligne de code vide
 					for i = ramLine, MAX_RAM - 2 do
@@ -1262,33 +1262,89 @@ function love.keypressed(key, scancode, isrepeat)
 			end
 
 			ShowCursor(true)
+		elseif key == "delete" then
+			ShowCursor(false)
+			
+			-- si la ligne d'en dessous est vide...
+			if ramLine < MAX_RAM - 1 and ram[ramLine + 1] == "" then
+				ramLine = ramLine + 1
+					
+				-- supprimer la ligne de code vide
+				for i = ramLine, MAX_RAM - 2 do
+					ram[i] = ram[i + 1]
+				end
+					
+				ram[MAX_RAM - 1] = ""
+
+				ramLine = ramLine - 1
+										
+				-- gérer le scrolling horizontal et redessiner l'écran
+				SetHScroll()
+			-- si la ligne est vide
+			elseif ramLine < MAX_RAM - 1 and ram[ramLine] == "" then
+				-- supprimer la ligne de code vide
+				for i = ramLine, MAX_RAM - 2 do
+					ram[i] = ram[i + 1]
+				end
+					
+				ram[MAX_RAM - 1] = ""
+				
+				cursor[1] = string.len(ram[ramLine]) + 1
+										
+				-- gérer le scrolling horizontal et redessiner l'écran
+				SetHScroll()
+			else
+				Beep()
+			end
+
+			ShowCursor(true)
+		elseif key == "home" then
+			ShowCursor(false)
+
+			-- remonter à la 1ère ligne
+			cursor[1] = string.len(ram[ramLine]) + 1
+			cursor[2] = 1			
+			editorOffsetY = 0
+			ramLine = 1
+										
+			-- gérer le scrolling horizontal et redessiner l'écran
+			SetHScroll()
+
+			ShowCursor(true)
 		elseif key == "return" then
 			ShowCursor(false)
 			-- on passe à la ligne suivante
 			ramLine = ramLine + 1
+			
 			-- si la ligne suivante est vide, alors...
 			if ram[ramLine] == "" then
 				-- on se positionne en début de ligne
 				cursor[1] = 1
 				cursor[2] = cursor[2] + 1
+				
 				-- si le curseur doit faire scroller l'écran
 				if cursor[2] > 25 then
 					-- on scrolle l'écran
 					ScrollScreenUp()
+					
 					-- on le prend en compte dans l'éditeur
 					editorOffsetY = editorOffsetY + 1
+					
 					-- on repositionne le curseur virtuellement en début de ligne
 					cursor[1] = 1
 					cursor[2] = cursor[2] - 1
+					
 					-- s'il y a du texte à afficher en bas, alors...
 					for i = 1, #ram[ramLine] do
 						PrintChar(Asc(string.sub(ram[ramLine], i, i)), PRINT_NOT_CLIPPED)
 					end
+					
 					if ram[ramLine] == Chr(LF) then
 						cursor[1] = 1
 					else
 						cursor[1] = #ram[ramLine] + 1
 					end
+					
 					-- gérer le scrolling horizontal
 					SetHScroll()
 				end
@@ -1296,21 +1352,27 @@ function love.keypressed(key, scancode, isrepeat)
 			else
 				cursor[1] = 1
 				cursor[2] = cursor[2] + 1
+				
 				for i = 1, #ram[ramLine] do
 					PrintChar(Asc(string.sub(ram[ramLine], i, i)), PRINT_NOT_CLIPPED)
 				end
+				
 				if ram[ramLine] == Chr(LF) then
 					cursor[1] = 1
 				end
+				
 				-- gérer le scrolling horizontal
 				SetHScroll()
 			end
+			
 			-- décaler les lignes de code si possible
 			if ram[MAX_RAM - 1] == "" then
 				for i = MAX_RAM - 1, ramLine + 1, -1 do
 					ram[i] = ram[i - 1]
 				end
+				
 				ram[ramLine] = ""
+				
 				-- gérer le scrolling horizontal
 				SetHScroll()
 			end
