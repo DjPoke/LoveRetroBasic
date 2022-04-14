@@ -1,10 +1,16 @@
-for i=1 to 10
-print i
-next
 
 while 1
-while 0
-print"!"
+
+print"1"
+
+while 1
+
+for i=1 to 3
+ print"2"
+next
+
 wend
-print"?"
+
+print"1"
+
 wend
