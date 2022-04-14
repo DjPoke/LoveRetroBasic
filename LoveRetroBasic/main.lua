@@ -357,6 +357,7 @@ SPRITE_HEIGHT = 16
 MAX_SPRITE_SIZE = SPRITE_WIDTH * SPRITE_HEIGHT
 MAX_HARD_SPRITES = 32 -- 32 images de sprites par page
 MAX_SPRITES_IMAGES = 256 -- 8 pages
+MAX_BOB = 65535 -- bob images
 
 SPRITE_LINE_WIDTH = 16
 SPRITE_LINE_HEIGHT = 2
@@ -372,12 +373,10 @@ SCN_SIZE_INFOS_HEIGHT = 8
 
 MAX_CLIPBOARD = MAX_SCN_WIDTH * MAX_SCN_HEIGHT
 
+-- mode graphique par défaut pour l'éditeur
 DEFAULT_MODE = 1
 
-MAX_BOB = 65535
-
 MAX_INSTRUCTIONS_BY_LINE = 16
-
 BLINK_TIME = 8
 
 -- ================================
