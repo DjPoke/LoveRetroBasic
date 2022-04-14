@@ -475,30 +475,33 @@ function SetEditorTextColor(ln)
 	local wpos = 0 -- position de début de mot en cours d'analyse
 	local quotes = 0 -- nombre de guillemets
 	local flag = false -- drapeau pour activer le dessin du texte
-	
-	for i = editorOffsetX, math.min(#s, editorOffsetX + 39) do
+	local startPos = editorOffsetX
+	local endPos = math.min(#s, startPos + 39)
+
+	for i = startPos, endPos do
 		-- récupérer le caractère en cours d'analyse
 		local c = string.lower(string.sub(s, i, i))
 
-		-- commencer à comptabliser les caractères
+		-- comptabliser les guillemets
 		if c == "\"" then
 			quotes = quotes + 1
 			
+			-- activer le remplacement de couleur si l'on arrive en fin de ligne
 			if #word > 0 and quotes % 2 == 1 then
 				flag = true
 			end
+		-- comptabliser les caractères pour les commands
 		elseif c >= "a" and c <= "z" then
 			if wpos == 0 then wpos = i end
 			
 			word = word .. string.sub(s, i, i)
 			
 			-- si on est en fin de ligne
-			if i == math.min(#s, editorOffsetX + 39) then
+			if i == endPos then
 				flag = true
 			end
-		elseif c == " " then
-			flag = true
-		elseif #word > 0 and quotes % 2 == 1 then
+		-- activer le remplacement de couleur si l'on rencontre un autre caractère
+		else
 			flag = true
 		end
 
@@ -515,63 +518,13 @@ function SetEditorTextColor(ln)
 				end
 			end
 			
-			flag = false
-		end
-	end
-	
-	--[[
-	-- commande trouvée ? on remplace la couleur
-	local g = 0 -- nombre de guillemets trouvés
-	local word = "" -- mot trouvé
-	local flag = false -- drapeau pour si un mot est complet
-	local wpos = 0
-	
-	for i = 1, #s do
-		-- récupérer le caractère en cours
-		local c = string.lower(string.sub(s, i, i))
-		
-		-- si c'est un guillemet, on le comptabilise
-		if c == "\"" then
-			g = g + 1
-			
-			-- si un mot était avant le guillemet, et qu'il n'est
-			-- pas inclus dans une chaîne de caractères, alors,
-			-- déclencher son coloriage
-			if #word > 0 and g % 2 == 1 then
-				wpos = i - #word
-				flag = true
-			end
-		elseif c >= "a" and c <= "z" then
-			word = word .. string.sub(s, i, i)
-
-			if i == #s and g % 2 == 0 then
-				wpos = i - #word + 1 - editorOffsetX
-				flag = true
-			end
-		elseif #word > 0 and g % 2 == 0 then
-			wpos = i - #word
-			flag = true
-		end
-		
-		-- colorier un mot clé
-		if flag then
-			for j = 1, #commands do
-				if string.upper(word) == commands[j] then
-					local pos = cursor[1]
-					cursor[1] = wpos
-					pen = DEFAULT_INSTRUCTIONS_PEN
-					PrintString2(word)
-					pen = DEFAULT_PEN
-					cursor[1] = pos
-				end
-			end
-			
-			flag = false
+			wpos = 0
 			word = ""
+			
+			flag = false
 		end
 	end
-	--]]
-	
+		
 	-- commentaire trouvé ? on remplace la couleur
 	local com = ScanComments(s)
 	
