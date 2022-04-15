@@ -41,17 +41,24 @@ PRINT_NOT_CLIPPED = 2
 PRINT_NOT_CLIPPED_NO_SCROLL = 3
 
 -- constantes couleurs de l'éditeur
-DEFAULT_PEN = 6
-DEFAULT_LABELS_PEN = 34
-DEFAULT_COMMENTS_PEN = 33
-DEFAULT_INSTRUCTIONS_PEN = 4
-DEFAULT_INSTRUCTIONS_PEN_HIGHLIGHTED = 35
-DEFAULT_PAPER = 35
-EDITOR_PEN = 1
-EDITOR_PAPER = 35
-EDITOR_BORDER = 35
-EDITOR_MENU = 6
-EDITOR_UI = 4
+COLOR1 = 6 -- jaune
+COLOR2 = 51 -- bleu
+COLOR3 = 1 -- blanc
+COLOR4 = 4 -- orange
+COLOR5 = 34 -- bleu vert
+COLOR6 = 33 -- vert
+
+DEFAULT_PEN = COLOR1
+DEFAULT_LABELS_PEN = COLOR5
+DEFAULT_COMMENTS_PEN = COLOR6
+DEFAULT_INSTRUCTIONS_PEN = COLOR4
+DEFAULT_INSTRUCTIONS_PEN_HIGHLIGHTED = COLOR2
+DEFAULT_PAPER = COLOR2
+EDITOR_PEN = COLOR3
+EDITOR_PAPER = COLOR2
+EDITOR_BORDER = COLOR2
+EDITOR_MENU = COLOR1
+EDITOR_UI = COLOR4
 
 -- ralentir le jeu par défaut (en FPS)
 DEFAULT_VBL = 1
@@ -238,10 +245,14 @@ operators = {"AND", "MOD", "NOT", "OR", "XOR"}
 -- ===================================
 -- = palette de 64 (16 x 4) couleurs =
 -- ===================================
--- 0 à 15	-> Palette claire
--- 16 à 31	-> Palette medium
--- 32 à 47	-> Palette foncée
--- 48 à 63	-> Palette sombre
+-- 0 à 7	-> Palette claire
+-- 8 à 15	-> Palette medium
+-- 16 à 23	-> Palette foncée
+-- 24 à 31	-> Palette sombre
+-- 32 à 39	-> Palette claire
+-- 40 à 47	-> Palette medium
+-- 48 à 55	-> Palette foncée
+-- 56 à 63	-> Palette sombre
 
 palette = {}
 palette[0] = {0, 0, 0} -- noir
