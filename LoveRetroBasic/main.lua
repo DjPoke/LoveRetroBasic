@@ -1294,41 +1294,46 @@ function love.keypressed(key, scancode, isrepeat)
 
 			ShowCursor(true)
 		elseif key == "delete" then
-			ShowCursor(false)
-			
-			-- si la ligne d'en dessous est vide...
-			if ramLine < MAX_RAM - 1 and ram[ramLine + 1] == "" then
-				ramLine = ramLine + 1
-					
-				-- supprimer la ligne de code vide
-				for i = ramLine, MAX_RAM - 2 do
-					ram[i] = ram[i + 1]
-				end
-					
-				ram[MAX_RAM - 1] = ""
-
-				ramLine = ramLine - 1
-										
-				-- gérer le scrolling horizontal et redessiner l'écran
-				SetHScroll()
-			-- si la ligne est vide
-			elseif ramLine < MAX_RAM - 1 and ram[ramLine] == "" then
-				-- supprimer la ligne de code vide
-				for i = ramLine, MAX_RAM - 2 do
-					ram[i] = ram[i + 1]
-				end
-					
-				ram[MAX_RAM - 1] = ""
-				
-				cursor[1] = string.len(ram[ramLine]) + 1
-										
-				-- gérer le scrolling horizontal et redessiner l'écran
-				SetHScroll()
+			if love.keyboard.isDown("lctrl", "rctrl") then
+				KillProgram()
 			else
-				Beep()
-			end
 
-			ShowCursor(true)
+				ShowCursor(false)
+			
+				-- si la ligne d'en dessous est vide...
+				if ramLine < MAX_RAM - 1 and ram[ramLine + 1] == "" then
+					ramLine = ramLine + 1
+						
+					-- supprimer la ligne de code vide
+					for i = ramLine, MAX_RAM - 2 do
+						ram[i] = ram[i + 1]
+					end
+						
+					ram[MAX_RAM - 1] = ""
+	
+					ramLine = ramLine - 1
+											
+					-- gérer le scrolling horizontal et redessiner l'écran
+					SetHScroll()
+				-- si la ligne est vide
+				elseif ramLine < MAX_RAM - 1 and ram[ramLine] == "" then
+					-- supprimer la ligne de code vide
+					for i = ramLine, MAX_RAM - 2 do
+						ram[i] = ram[i + 1]
+					end
+						
+					ram[MAX_RAM - 1] = ""
+					
+					cursor[1] = string.len(ram[ramLine]) + 1
+											
+					-- gérer le scrolling horizontal et redessiner l'écran
+					SetHScroll()
+				else
+					Beep()
+				end
+
+				ShowCursor(true)
+			end
 		elseif key == "home" then
 			ShowCursor(false)
 
@@ -1424,8 +1429,6 @@ function love.keypressed(key, scancode, isrepeat)
 			UI_Import()
 		elseif key == "e" and love.keyboard.isDown("lctrl", "rctrl") then
 			UI_Export()
-		elseif key == "delete" and love.keyboard.isDown("lctrl", "rctrl") then
-			KillProgram()
 		elseif key == "q" and love.keyboard.isDown("lctrl", "rctrl") then
 			CloseProgram()
 		end
