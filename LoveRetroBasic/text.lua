@@ -383,10 +383,11 @@ function AppendTextToRam(s)
 		for i = 1, #s do
 			if i > 255 then
 				Beep()
+				
 				return
 			end
 		
-			chr = string.sub(s, i, i)
+			local chr = string.sub(s, i, i)
 			
 			if i == 1 then
 				ram[ramLine] = chr
@@ -407,10 +408,11 @@ function AppendTextToRam(s)
 		for i = 1, #s do
 			if i + #ram[ramLine] > 255 then
 				Beep()
+				
 				return
 			end
 		
-			chr = string.sub(s, i, i)
+			local chr = string.sub(s, i, i)
 			
 			ram[ramLine] = ram[ramLine] .. chr
 			
