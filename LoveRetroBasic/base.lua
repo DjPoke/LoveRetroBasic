@@ -832,7 +832,7 @@ function Execute(t, l)
 		-- variable sans assignation... erreur
 		if i > #t then return ERR_SYNTAX_ERROR end
 
-		-- vérifier la présence du symbol égal pour l'assignation, sinon erreur...
+		-- vérifier la présence du symbole égal pour l'assignation, sinon erreur...
 		if t[i].typ == "equal" then
 			i = i + 1
 			
@@ -846,34 +846,77 @@ function Execute(t, l)
 		
 		-- variable sans assignation... erreur
 		if i > #t then return ERR_SYNTAX_ERROR end
-
-		-- vérifier la présence de données à assigner à la variable
+		
+		-- scanner les données à assigner
 		local s = ""
+		local s1 = ""
+		local s2 = ""
 		
 		for j = i, #t do
-			s = s .. t[j].sym
+			-- récupérer un morceau de ce qu'il faut assigner
+			if t[j].typ == "whitespace" then
+				-- un espace, non comptabilisé
+			elseif t[j].typ == "text" then
+				s1 = s1 .. t[j].sym
+			elseif t[j].typ == "command" then
+				s1 = s1 .. t[j].sym
+			elseif t[j].typ == "openbracket" then
+				s1 = s1 .. t[j].sym
+			elseif t[j].typ == "closebracket" then
+				s1 = s1 .. t[j].sym
+			elseif t[j].typ == "word" then
+				-- vérifier le type de variable pour assignation
+				if vType == VAR_INTEGER then
+					local n, e = EvalInteger(t[j].sym)
+					
+					if e ~= OK then return e end
+					
+					s1 = s1 .. "\"" .. tostring(n) .. "\""
+				elseif vType == VAR_FLOAT then
+					local n, e = EvalFloat(t[j].sym)		
+					
+					if e ~= OK then return e end
+					
+					s1 = s1 .. "\"" .. tostring(n) .. "\""
+				else
+					s, e = EvalString(t[j].sym)
+					
+					if e ~= OK then return e end
+
+					s1 = s1 .. "\"" .. s .. "\""
+				end
+			elseif t[j].typ == "integer" then
+				local n, e = EvalInteger(t[j].sym)
+			
+				if e ~= OK then return e end
+			
+				s1 = s1 .. "\"" .. tostring(n) .. "\""
+			elseif t[j].typ == "float" then
+				local n, e = EvalFloat(t[j].sym)
+			
+				if e ~= OK then return e end
+			
+				s1 = s1 .. "\"" .. tostring(n) .. "\""
+			elseif t[j].typ == "string" then
+				s, e = EvalString(t[j].sym)
+				
+				if e ~= OK then return e end
+
+				s1 = s1 .. "\"" .. s .. "\""
+			elseif t[j].typ == "plus" then
+				s1 = s1 .. "+"
+			else
+				return ERR_SYNTAX_ERROR
+			end
 		end
+
+		-- évaluer la somme des morceaux de chaine
+		s2, e = EvalString(s1)
 		
-		if vType == VAR_INTEGER then
-			local n, e = EvalInteger(s)
-			
-			if e ~= OK then return e end
-			
-			s = tostring(n)
-		elseif vType == VAR_FLOAT then
-			local n, e = EvalFloat(s)			
-			
-			if e ~= OK then return e end
-			
-			s = tostring(n)
-		else
-			s, e = EvalString(s)
-			
-			if e ~= OK then return e end
-		end
-		
+		if e ~= OK then return e end
+
 		-- assigner l'expression à la variable
-		local e = AssignToVar(var, vType, "\"" .. s .. "\"")
+		local e = AssignToVar(var, vType, "\"" .. s2 .. "\"")
 		
 		return e
 	end
@@ -1688,8 +1731,18 @@ function EvalString(s, assign)
 			elseif t[i].typ == "string" then
 				local var = string.upper(t[i].sym)
 				local vType = VAR_STRING
-				local value, e = GetVarValue(var, vType)
-
+				local value = ""
+				local e = OK
+				
+				-- la variable n'existe pas...
+				if GetVarType(var) == 0 then
+					e = AssignToVar(var, vType, "")
+					
+					value = ""
+				else
+					value, e = GetVarValue(var, vType)
+				end
+				
 				if e ~= OK then return nil, e end
 				
 				s = s .. value
@@ -1871,7 +1924,7 @@ function GetVarValue(var, vType)
 			return vram[j][2], OK
 		end
 	end
-
+	
 	return nil, ERR_TYPE_MISMATCH
 end
 
