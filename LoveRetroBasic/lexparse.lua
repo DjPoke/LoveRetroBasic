@@ -243,7 +243,9 @@ function GetConstantExpression(t2)
 			else
 				assembly = false
 				s = s .. t2[i].sym
-				table.insert(t, {sym = s, typ = "poly"})
+				
+				table.insert(t, {sym = s, typ = "text"})
+				
 				s = ""
 			end
 		elseif t2[i].typ ~= "quote" then

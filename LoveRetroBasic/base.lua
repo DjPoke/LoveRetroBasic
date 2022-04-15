@@ -865,7 +865,7 @@ end
 -- assembler un tronçon de chaîne de caractère
 function AssembleString(t, cs, lst, sig)
 	local i = 1
-
+	
 	while i <= #t do
 		if t[i].typ == "whitespace" and i == #t then
 			-- vérifier la suite
@@ -879,7 +879,7 @@ function AssembleString(t, cs, lst, sig)
 				for j = 1, #lst do
 					p = p .. lst[j]
 				end
-					
+
 				p, e = EvalString(p)
 				if e ~= OK then return e, lst, sig end
 
@@ -892,7 +892,7 @@ function AssembleString(t, cs, lst, sig)
 				if e ~= OK then return e, nil, sig else return OK, lst, sig end
 			end
 		-- ajouter les chaînes de caractère à la liste
-		elseif t[i].typ == "poly" or t[i].typ == "string" then
+		elseif t[i].typ == "text" then
 			table.insert(lst, t[i].sym)
 		-- ajouter les valeurs numériques à un buffer
 		elseif t[i].typ == "number" then
@@ -960,7 +960,7 @@ function AssembleString(t, cs, lst, sig)
 			if i + 1 <= #t and t[i + 1].typ == "number" then return ERR_TYPE_MISMATCH, nil, sig end
 			
 			-- si point virgule en fin de ligne...
-			if i == #t and #t > 1 and (t[i - 1].typ == "poly" or t[i - 1].typ == "string") then table.insert(lst, ";") end
+			if i == #t and #t > 1 and t[i - 1].typ == "text" then table.insert(lst, ";") end
 		elseif t[i].typ == "word" then
 			-- vérifier si c'est un label
 			for j = 1, labCount do
@@ -998,13 +998,13 @@ function AssembleString(t, cs, lst, sig)
 		elseif t[i].typ == "integer" or t[i].typ == "float" or t[i].typ == "string" then
 			-- vérifier si c'est une variable existante
 			local var = t[i].sym
-			local vType = nil
+			local vType = 0
 			
 			if t[i].typ == "integer" then
 				vType = VAR_INTEGER
-			elseif t[i].typ == "integer" then
+			elseif t[i].typ == "float" then
 				vType = VAR_FLOAT
-			elseif t[i].typ == "integer" then
+			elseif t[i].typ == "string" then
 				vType = VAR_STRING
 			end
 
@@ -1058,49 +1058,7 @@ function EvalExpression(t, tp, i, cs, maxpnum)
 	
 	for i2 = i, #t do
 		if t[i2].typ ~= "comma" and i2 == #t then
-			-- vérifier l'existence d'une variable en fin d'expression chainée
-			local var = t[i2].sym
-			local vType = 0
-			local value = nil
-
-			-- variable trouvée ? quel type ?
-			if t[i2].typ == "word" then
-				var = t[i2].sym
-				value = 0
-				
-				-- la variable existe-t-elle ?
-				vType = GetVarType(var)
-			elseif t[i2].typ == "integer" then
-				var = t[i2].sym
-				value = 0
-				
-				-- la variable existe-t-elle ?
-				vType = GetVarType(var)
-			elseif t[i2].typ == "float" then
-				var = t[i2].sym
-				value = 0.0
-				
-				-- la variable existe-t-elle ?
-				vType = GetVarType(var)
-			elseif t[i2].typ == "string" then
-				var = t[i2].sym
-				value = ""
-				
-				-- la variable existe-t-elle ?
-				vType = GetVarType(var)
-			end
-			
-			vStrType = t[i2].typ
-						
-			-- si oui, on récupère sa valeur
-			if vType > 0 then value = GetVarValue(var, vType) end
-
-			-- puis, on stocke ce qu'il en résulte
-			if vType == 0 then
-				table.insert(t2, t[i2])
-			else
-				table.insert(t2, {sym = value, typ = vStrType})
-			end
+			table.insert(t2, t[i2])
 					
 			-- assembler les morceaux de chaîne entre-eux
 			local e, lst, sig = AssembleString(t2, cs, lst, sig)
@@ -1115,7 +1073,7 @@ function EvalExpression(t, tp, i, cs, maxpnum)
 		elseif t[i2].typ == "comma" then
 			-- assembler les morceaux de chaîne entre-eux
 			local e, lst, sig = AssembleString(t2, cs, lst, sig)
-			
+
 			-- erreur ?
 			if e ~= OK then return e, nill end
 			
@@ -1283,7 +1241,7 @@ function EvalParamList(t, i, cs, maxpnum)
 				return ERR_TYPE_MISMATCH, nil
 			end
 		elseif cmd[cs].ptype[k] == VAR_POLY or cmd[cs].ptype[k] == VAR_STRING then
-			if t[i].typ == "poly" or t[i].typ == "string" then
+			if t[i].typ == "string" then
 				cm = true
 
 				local s, e = EvalString(t[i].sym)
@@ -1499,7 +1457,7 @@ function EvalFloat(s)
 			s = s .. t[i].sym
 		--elseif t[i].typ == "comma" then -- TODO: à supprimer ?
 			--s = s .. t[i].sym
-		elseif t[i].typ ~= "poly" then
+		elseif t[i].typ ~= "text" then
 			-- symbole non autorisé ? erreur de syntaxe !
 			return nil, ERR_SYNTAX_ERROR
 		end
@@ -1704,7 +1662,7 @@ function EvalString(s, assign)
 			-- détecter les erreurs
 			return nil, ERR_SYNTAX_ERROR
 		elseif not waitsym then
-			if t[i].typ == "poly" then
+			if t[i].typ == "text" then
 				s = s .. string.sub(t[i].sym, 2, -2)
 
 				waitsym = true
