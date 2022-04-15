@@ -681,7 +681,7 @@ function Exec(t, l)
 						cs2 = t[i2].sym
 
 						-- vérifier s'il s'agit bien d'une suite de commande multiple
-						if cmd[cs2].cmd ~= MULTI_CMD_USED then return ERR_SYNTAX_ERROR end
+						if cmd[cs2].cmd ~= USED_BY_MULTICOMMAND then return ERR_SYNTAX_ERROR end
 
 						i2 = i2 + 1
 
@@ -745,7 +745,7 @@ function Exec(t, l)
 					else
 						return ERR_SYNTAX_ERROR
 					end
-				elseif cmd[cs].cmd == MULTI_CMD_USED then
+				elseif cmd[cs].cmd == USED_BY_MULTICOMMAND then
 					if i < #t then
 						-- vérifier la présence d'un espace
 						if t[i].typ == "whitespace" then i = i + 1 end

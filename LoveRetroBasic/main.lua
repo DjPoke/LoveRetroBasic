@@ -66,7 +66,7 @@ DEFAULT_VBL = 1
 -- types de commandes
 SIMPLE_COMMAND = 0
 MULTI_COMMAND = 1
-MULTI_CMD_USED = 2
+USED_BY_MULTICOMMAND = 2
 
 -- ===================================================
 -- = définir la liste des instructions de RetroBasic =
@@ -212,23 +212,23 @@ cmd["WHILE"].ptype = {VAR_CONDITION}
 
 -- liste des commands spéciales
 cmd["IF"].cmd = MULTI_COMMAND
-cmd["THEN"].cmd = MULTI_CMD_USED
-cmd["ELSEIF"].cmd = MULTI_CMD_USED
-cmd["ELSE"].cmd = MULTI_CMD_USED
+cmd["THEN"].cmd = USED_BY_MULTICOMMAND
+cmd["ELSEIF"].cmd = USED_BY_MULTICOMMAND
+cmd["ELSE"].cmd = USED_BY_MULTICOMMAND
 
 cmd["FOR"].cmd = MULTI_COMMAND
-cmd["TO"].cmd = MULTI_CMD_USED
-cmd["STEP"].cmd = MULTI_CMD_USED
-cmd["NEXT"].cmd = MULTI_CMD_USED
+cmd["TO"].cmd = USED_BY_MULTICOMMAND
+cmd["STEP"].cmd = USED_BY_MULTICOMMAND
+cmd["NEXT"].cmd = USED_BY_MULTICOMMAND
 
 cmd["WHILE"].cmd = MULTI_COMMAND
-cmd["WEND"].cmd = MULTI_CMD_USED
+cmd["WEND"].cmd = USED_BY_MULTICOMMAND
 
 cmd["REPEAT"].cmd = MULTI_COMMAND
-cmd["UNTIL"].cmd = MULTI_CMD_USED
+cmd["UNTIL"].cmd = USED_BY_MULTICOMMAND
 
 cmd["SELECT"].cmd = MULTI_COMMAND
-cmd["CASE"].cmd = MULTI_CMD_USED
+cmd["CASE"].cmd = USED_BY_MULTICOMMAND
 
 -- fonction qui vont renvoyer à une boucle
 cmd["NEXT"].loopFn = true
