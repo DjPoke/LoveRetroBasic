@@ -2298,24 +2298,96 @@ end
 
 -- importer une banque de sprites
 function ImportSprites()
-	local lnk = love.filesystem.getSaveDirectory() .. spriteFolder .. "/"
+	msg = GetDriveValid(USBDrive)
 	
-	if Messagebox("Info", "Your sprite bank can be dropped here:\n" .. lnk .. "\n\nLink copied to clipboard !") then
-		love.system.setClipboardText(lnk)
-	else
-		msg = "Runtime error !"
+	if msg ~= nil then return end
+	
+	-- importer la banque de sprites
+	local w = nil
+	local h = nil
+	local i = nil
+	
+	-- effacer la SPRAM
+	for i = 0, MAX_SPRAM - 1 do
+		spram[i] = 0
 	end
+
+	sprImgNumber = 0
+
+	-- ouvrir le fichier
+	local data = {}
+	local filename = "sprites.spr"
+	local line = {}
+	
+	for line in io.lines(USBDrive .. filename) do
+		table.insert(data, line)
+	end
+
+	i = 1
+	for j = 0, MAX_SPRITES_IMAGES - 1 do
+		w = tonumber(data[i])
+		h = tonumber(data[i + 1])
+
+		i = i + 2
+		
+		for y = 0, h - 1 do
+			for x = 0, w - 1 do
+				spram[(j * MAX_SPRITE_SIZE) + x + (y * w)] = tonumber(data[i])
+				i = i + 1
+			end
+		end
+
+		sprImgNumber = sprImgNumber + 1
+	end
+	
+	-- créer un sprite vide
+	sprImgNumber = 0	
+	
+	-- rafraîchir l'affichage des sprites
+	RedrawEditedSprite()
+	RedrawSpritesLine()
+	RedrawCurrentSprite()
+
+	msg = "Sprite file imported..."
+	
+	return
 end
 
 -- exporter une banque de sprites
 function ExportSprites()
-	local lnk = love.filesystem.getSaveDirectory() .. spriteFolder .. "/"
+	msg = GetDriveValid(USBDrive)
 
-	if Messagebox("Info", "Your sprite bank be taken here:\n" .. lnk .. "\n\nLink copied to clipboard !") then
-		love.system.setClipboardText(lnk)
-	else
-		msg = "Runtime error !"
+	if msg ~= nil then return end
+	
+	-- export sprite bank
+	local filename = "sprites.spr"
+	
+	local file = io.open(USBDrive .. filename, "w")
+	
+	if file == nil then return false end
+	
+	local s = ""
+	
+	for i = 0, MAX_SPRITES_IMAGES - 1 do
+		local w = SPRITE_WIDTH
+		local h = SPRITE_HEIGHT
+			
+
+		file:write(tostring(w) .. Chr(LF))
+		file:write(tostring(h) .. Chr(LF))
+			
+		for y = 0, h - 1 do
+			for x = 0, w - 1 do
+				file:write(tostring(spram[(i * MAX_SPRITE_SIZE) + x + (y * w)]) .. Chr(LF))
+			end
+		end
 	end
+	
+	io.close(file)
+	
+	msg = "Sprite file exported..."
+	
+	return
 end
 
 -- déplacer le curseur clavier vers le haut

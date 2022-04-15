@@ -1087,6 +1087,9 @@ function love.load()
 
 	InitKeyboard()
 	
+	-- current USB drive is
+	USBDrive = "e:/"
+	
 	-- initialiser l'application
 	appStarted = true
 end
@@ -2876,7 +2879,7 @@ function love.draw()
 	-- changer la couleur du stylo
 	love.graphics.setColor(1, 1, 0, 1)
 
-	-- effacer les renderer d'infos et d'erreur
+	-- effacer les renderer's d'infos et d'erreur
 	PrintInfosString("                                        ", 2, "black")
 	PrintInfosString("                                        ", 3, "black")
 	PrintInfosString("                                        ", 4, "black")
@@ -3302,11 +3305,11 @@ function love.draw()
 	end
 
 	-- afficher le renderer de message d'erreur
-	if appState == EDIT_MODE or appState == READY_MODE or (appState == RUN_MODE and stepsMode) then
+	if appState == EDIT_MODE or appState == READY_MODE or (appState == RUN_MODE and stepsMode) or appState == SPRITE_MODE then
 		love.graphics.draw(renderer[3], borderX, borderY + ((gmode[currentMode][2] + 16) * 2 * screenScaleY), 0, 2 * screenScaleX, 2 * screenScaleY, 0, 0, 0, 0)
 	end
 	
-	-- afficher le renderer de menu outils
+	-- afficher le renderer du menu outils
 	if appState == EDIT_MODE then
 		PrintInfosString(Chr(1) .. " " ..Chr(2) .. " " ..Chr(3) .. " " .. Chr(4), 4, "orange")
 		PrintInfosString("?", 4, "green", 8)

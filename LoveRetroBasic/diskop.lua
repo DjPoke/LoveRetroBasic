@@ -462,10 +462,23 @@ end
 
 -- vérifier la présence d'un fichier hors du bac à sable de love2d
 function GetExtFileExists(filename)
-   local f = io.open(filename, "r")
-   if f ~= nil then io.close(f) return true else return false end
+	local f = io.open(filename, "r")
+	if f ~= nil then io.close(f) return true else return false end
 end
 
+-- check if external folder exists
 function GetExtFolderExists(filename)
 	return os.rename(filename,filename)
+end
+
+-- check if drive is valid
+function GetDriveValid(drive)
+	local f = io.open(drive .. "/LRB.tst", "w")
+
+	if f == nil then return "Disk error !" end
+	
+	io.close(f)		
+	os.remove(drive .. "/LRB.tst")
+	
+	return nil
 end
