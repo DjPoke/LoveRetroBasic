@@ -300,6 +300,8 @@ for x = 0, 7 do
 	end
 end
 
+scnPalNoAlpha = 255
+
 CR = 13 -- caractère de fin de ligne Carriage Return
 LF = 10 -- caractère de fin de ligne Line Feed
 
@@ -2864,7 +2866,7 @@ function love.draw()
 	love.graphics.setCanvas()
 	
 	-- effacer l'écran avec la couleur du border
-	love.graphics.clear(scnPal[border][0] / 255.0, scnPal[border][1] / 255.0, scnPal[border][2] / 255.0, 1.0, false, false)
+	love.graphics.clear(scnPal[border][0], scnPal[border][1], scnPal[border][2], scnPalNoAlpha, false, false)
 
 	-- capturer l'écran
 	love.graphics.setCanvas(renderer[(currentRenderer + 1) % 2])

@@ -33,13 +33,26 @@ function CreatePalette()
 		scnPal[x * 8][1] = x * 16
 		scnPal[x * 8][2] = x * 16
 	end
+	
+	-- ajuster pour les nouvelles versions de love2d
+	major, minor, revision, codename = love.getVersion()
+
+	if major == 11 and minor > 1 then
+		for i = 0, 63 do
+			scnPal[i][0] = scnPal[i][0] / 255
+			scnPal[i][1] = scnPal[i][1] / 255
+			scnPal[i][2] = scnPal[i][2] / 255
+		end
+	end
+	
+	scnPalNoAlpha = scnPalNoAlpha / 255
 end
 
 -- effacer l'écran dans la couleur désirée
 function ClearScreen()
 	SetCanvas(true)
 
-	love.graphics.setColor(scnPal[paper][0] / 255, scnPal[paper][1] / 255, scnPal[paper][2] / 255, 1)
+	love.graphics.setColor(scnPal[paper][0], scnPal[paper][1], scnPal[paper][2], scnPalNoAlpha)
 	love.graphics.rectangle("fill", 0, 0, gmode[currentMode][1], gmode[currentMode][2])
 	
 	SetCanvas(false)
@@ -119,7 +132,7 @@ function PlotPixel(x, y)
 	if gcursor[1] >= 0 and gcursor[1] <= gmode[currentMode][1] - 1 and gcursor[2] >= 0 and gcursor[2] <= gmode[currentMode][2] - 1 then
 		SetCanvas(true)
 		
-		love.graphics.setColor(scnPal[gpen][0] / 255, scnPal[gpen][1] / 255, scnPal[gpen][2] / 255, 1)
+		love.graphics.setColor(scnPal[gpen][0], scnPal[gpen][1], scnPal[gpen][2], scnPalNoAlpha)
 		love.graphics.points(gcursor[1] + 0.5, gcursor[2] + 0.5)
 		
 		SetCanvas(false)
@@ -134,7 +147,7 @@ function PlotPixelRelative(x, y)
 	if gcursor[1] >= 0 and gcursor[1] <= gmode[currentMode][1] - 1 and gcursor[2] >= 0 and gcursor[2] <= gmode[currentMode][2] - 1 then
 		SetCanvas(true)
 		
-		love.graphics.setColor(scnPal[gpen][0] / 255, scnPal[gpen][1] / 255, scnPal[gpen][2] / 255, 1)
+		love.graphics.setColor(scnPal[gpen][0], scnPal[gpen][1], scnPal[gpen][2], scnPalNoAlpha)
 		love.graphics.points(gcursor[1] + 0.5, gcursor[2] + 0.5)
 		
 		SetCanvas(false)
@@ -170,7 +183,7 @@ end
 function DrawRectangle(x, y, w, h, f)
 	SetCanvas(true)
 
-	love.graphics.setColor(scnPal[gpen][0] / 255, scnPal[gpen][1] / 255, scnPal[gpen][2] / 255, 1)
+	love.graphics.setColor(scnPal[gpen][0], scnPal[gpen][1], scnPal[gpen][2], scnPalNoAlpha)
 
 	if f == 0 then
 		love.graphics.rectangle("line", x + 0.5, y + 0.5, w, h)
@@ -183,7 +196,7 @@ end
 
 -- tracer un rectangle (vide ou plein) sur un canvas
 function DrawRectangleEx(x, y, w, h, f)
-	love.graphics.setColor(scnPal[gpen][0] / 255, scnPal[gpen][1] / 255, scnPal[gpen][2] / 255, 1)
+	love.graphics.setColor(scnPal[gpen][0], scnPal[gpen][1], scnPal[gpen][2], scnPalNoAlpha)
 
 	if f == 0 then
 		love.graphics.rectangle("line", x + 0.5, y + 0.5, w, h)
@@ -200,7 +213,7 @@ function DrawOval(x, y, w, h, f)
 	
 	SetCanvas(true)
 	
-	love.graphics.setColor(scnPal[gpen][0] / 255, scnPal[gpen][1] / 255, scnPal[gpen][2] / 255, 1)
+	love.graphics.setColor(scnPal[gpen][0], scnPal[gpen][1], scnPal[gpen][2], scnPalNoAlpha)
 	love.graphics.ellipse(md, x + 0.5, y + 0.5, w, h)
 
 	SetCanvas(false)
@@ -210,7 +223,7 @@ end
 function DrawFullLine(x0, y0, x1, y1)
 	SetCanvas(true)
 	
-	love.graphics.setColor(scnPal[gpen][0] / 255, scnPal[gpen][1] / 255, scnPal[gpen][2] / 255, 1)
+	love.graphics.setColor(scnPal[gpen][0], scnPal[gpen][1], scnPal[gpen][2], scnPalNoAlpha)
 
 	if x0 == x1 and y0 == y1 then
 		love.graphics.points(x0 + 0.5, y0 + 0.5)
@@ -226,7 +239,7 @@ end
 
 -- tracer une ligne sur un canvas
 function DrawFullLineEx(x0, y0, x1, y1)
-	love.graphics.setColor(scnPal[gpen][0] / 255, scnPal[gpen][1] / 255, scnPal[gpen][2] / 255, 1)
+	love.graphics.setColor(scnPal[gpen][0], scnPal[gpen][1], scnPal[gpen][2], scnPalNoAlpha)
 
 	if x0 == x1 and y0 == y1 then
 		love.graphics.points(x0 + 0.5, y0 + 0.5)
@@ -326,7 +339,7 @@ function ScrollScreenUp()
 	-- effacer la ligne du bas
 	for y = gmode[currentMode][2] - 8,gmode[currentMode][2] - 1 do
 		for x = 0,gmode[currentMode][1] - 1 do
-			love.graphics.setColor(scnPal[paper][0] / 255, scnPal[paper][1] / 255, scnPal[paper][2] / 255, 1)
+			love.graphics.setColor(scnPal[paper][0], scnPal[paper][1], scnPal[paper][2], scnPalNoAlpha)
 			love.graphics.points(x + 0.5, y + 0.5)
 		end
 	end
@@ -348,7 +361,7 @@ function ScrollScreenDown()
 	-- effacer la ligne du bas
 	for y = 0, 7 do
 		for x = 0, gmode[currentMode][1] - 1 do
-			love.graphics.setColor(scnPal[paper][0] / 255, scnPal[paper][1] / 255, scnPal[paper][2] / 255, 1)
+			love.graphics.setColor(scnPal[paper][0], scnPal[paper][1], scnPal[paper][2], scnPalNoAlpha)
 			love.graphics.points(x + 0.5, y + 0.5)
 		end
 	end
@@ -370,7 +383,7 @@ function ScrollScreenLeft()
 	-- effacer la ligne de droite
 	for x = gmode[currentMode][1] - 8,gmode[currentMode][1] - 1 do
 		for y = 0,gmode[currentMode][2] - 1 do
-			love.graphics.setColor(scnPal[paper][0] / 255, scnPal[paper][1] / 255, scnPal[paper][2] / 255, 1)
+			love.graphics.setColor(scnPal[paper][0], scnPal[paper][1], scnPal[paper][2], scnPalNoAlpha)
 			love.graphics.points(x + 0.5, y + 0.5)
 		end
 	end
@@ -392,7 +405,7 @@ function ScrollScreenRight()
 	-- effacer la ligne de gauche
 	for x = 0, 7 do
 		for y = 0, gmode[currentMode][2] - 1 do
-			love.graphics.setColor(scnPal[paper][0] / 255, scnPal[paper][1] / 255, scnPal[paper][2] / 255, 1)
+			love.graphics.setColor(scnPal[paper][0], scnPal[paper][1], scnPal[paper][2], scnPalNoAlpha)
 			love.graphics.points(x + 0.5, y + 0.5)
 		end
 	end
@@ -481,7 +494,7 @@ function DrawSprite(spr)
 						col = spram[(img * MAX_SPRITE_SIZE) + xs + (ys * SPRITE_WIDTH)]
 				
 						if col ~= bit.band(tc, 63) then
-							love.graphics.setColor(scnPal[col][0] / 255, scnPal[col][1] / 255, scnPal[col][2] / 255, 1)
+							love.graphics.setColor(scnPal[col][0], scnPal[col][1], scnPal[col][2], scnPalNoAlpha)
 							love.graphics.points(xp + 0.5, yp + 0.5)
 						end
 					end

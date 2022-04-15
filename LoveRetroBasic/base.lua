@@ -2247,7 +2247,7 @@ function RedrawSpritesLine()
 						
 						col = spram[(j * MAX_SPRITE_SIZE) + xs + (ys * SPRITE_WIDTH)]
 						
-						love.graphics.setColor(scnPal[col][0] / 255, scnPal[col][1] / 255, scnPal[col][2] / 255, 1)
+						love.graphics.setColor(scnPal[col][0], scnPal[col][1], scnPal[col][2], scnPalNoAlpha)
 						love.graphics.points(xp + 0.5, yp + 0.5)
 					end
 				end
@@ -2275,7 +2275,7 @@ function RedrawCurrentSprite()
 				
 			local col = spram[(sprImgNumber * MAX_SPRITE_SIZE) + xs + (ys * SPRITE_WIDTH)]
 				
-			love.graphics.setColor(scnPal[col][0] / 255, scnPal[col][1] / 255, scnPal[col][2] / 255, 1)
+			love.graphics.setColor(scnPal[col][0], scnPal[col][1], scnPal[col][2], scnPalNoAlpha)
 			love.graphics.points(xp + 0.5, yp + 0.5)
 		end
 	end

@@ -19,7 +19,7 @@ function SaveBOB(filename, path, n)
 		for x = 0, bob[n][1] - 1 do
 			local i = x + (y * bob[n][1]) + 3
 			local c = bob[n][i]
-			local r, g, b = scnPal[c][0] / 255, scnPal[c][1] / 255, scnPal[c][2] / 255
+			local r, g, b = scnPal[c][0], scnPal[c][1], scnPal[c][2]
 			data:setPixel(x, y, r, g, b, 1.0)
 		end
 	end

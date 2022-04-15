@@ -3,7 +3,7 @@ function love.conf(w)
 	
 	w.window.msaa = 0
 	
-	w.version = "11.4"
+	w.version = "11.1"
 	
 	w.console = true
 end
