@@ -8,15 +8,25 @@ It includes a sprite editor, a tracker (w.i.p) and will includes a level editor 
 
 LoveRetroBasic gives virtual hardware sprites, bobs, palette adaptable images import, and a debug mode.
 
+
 Graphic Mode 0: 160x100 pixels
+
 Graphic Mode 1: 320x200 pixels
+
 Graphic Mode 2: 640x400 pixels
+
 Palette: 64 colors
+
 Hardware sprites: 32 (scalables)
+
 Sprites images: 256
+
 Sprite size: 16x16 pixels
+
 Bobs: 1024
+
 Bobs size: images limited
+
 
 This project is in work in progress. Please wait to see it finished.
 
