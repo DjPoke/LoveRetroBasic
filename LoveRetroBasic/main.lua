@@ -1709,7 +1709,7 @@ end
 function love.textinput(t)
 	if appState == EDIT_MODE or appState == RUN_MODE then
 		local a = Asc(string.sub(t, -1))
-		
+
 		if a < 128 then
 			-- récupérer les caractères pressés
 			if #kb_buffer < 256 then

@@ -385,7 +385,7 @@ function ExecOne(cs, lst)
 	elseif cmd[cs].pmax >= 0 and paramsCount > cmd[cs].pmax then
 		return ERR_TOO_MANY_OPERANDS, nil
 	end
-
+	
 	local e, value = cmd[cs].fn(lst)
 
 	return e, value
@@ -882,14 +882,14 @@ function AssembleString(t, cs, lst, sig)
 			if i > #t then
 				-- mixer tout de suite la chaîne et l'analyser
 				local p = ""
-							
+
 				for j = 1, #lst do
 					p = p .. lst[j]
 				end
 					
 				p, e = EvalString(p)
 				if e ~= OK then return e, lst, sig end
-	
+
 				lst = {p}
 			
 				-- exécuter la commande
@@ -908,13 +908,14 @@ function AssembleString(t, cs, lst, sig)
 		elseif t[i].typ == "command" then
 			-- mémoriser la commande dans cs2
 			local cs2 = t[i].sym
-		
+			local lst2 = {}
+			
 			-- erreur si une fonction n'est pas trouvée en tant que commande
 			if cmd[cs2].ret == 0 then return ERR_SYNTAX_ERROR, nil, sig end
 		
 			-- vérifier la suite
 			i = i + 1
-			if i > #t then return OK, lst, sig end
+			if i > #t then return ERR_SYNTAX_ERROR, nil, sig end
 				
 			-- vérifier le type de paramètres admis par cette commande
 			if #cmd[cs2].ptype > 1 then
@@ -924,22 +925,25 @@ function AssembleString(t, cs, lst, sig)
 			end
 				
 			-- si l'expression a une commande en amont...
-			if t[i].typ ~= "openbracket" then break end
-			if t[#t].typ ~= "closebracket" then break end
+			if t[i].typ ~= "openbracket" then return ERR_SYNTAX_ERROR, nil, sig end
+			if t[#t].typ ~= "closebracket" then return ERR_SYNTAX_ERROR, nil, sig end
 					
 			-- supprimer les parenthèses
 			table.remove(t, #t)
 			table.remove(t, i)
-
-			-- évaluer l'expression
-			e, lst2 = EvalParamList(t, i, cs2, maxpnum)
+			
+			-- commande avec paramètres
+			if i <= #t then
+				-- évaluer l'expression
+				e, lst2 = EvalParamList(t, i, cs2, maxpnum)
 				
-			-- erreur ?
-			if e ~= OK then return e, lst, sig end
+				-- erreur ?
+				if e ~= OK then return e, lst, sig end
+			end
 
 			-- exécuter la commande
 			local e, value = ExecOne(cs2, lst2)
-				
+
 			-- ajouter le résultat à la liste de retour
 			table.insert(lst, "\"" .. value .. "\"")
 				
@@ -1065,7 +1069,7 @@ function EvalExpression(t, tp, i, cs, maxpnum)
 
 			-- assembler les morceaux de chaîne entre-eux
 			local e, lst, sig = AssembleString(t2, cs, lst, sig)
-			
+
 			-- erreur ?
 			if e ~= OK then return e, nill end
 			
@@ -1086,7 +1090,7 @@ function EvalExpression(t, tp, i, cs, maxpnum)
 			t2 = {}
 		end
 	end
-	
+
 	return OK, lst
 end
 

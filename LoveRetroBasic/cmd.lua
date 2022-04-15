@@ -204,7 +204,7 @@ end
 
 -- commande 'INKEY$'
 cmd["INKEY$"].fn = function(lst)
-	return OK, "\"" .. GetCharacter() .. "\""
+	return OK, GetCharacter()
 end
 
 -- commande 'INPUT'
