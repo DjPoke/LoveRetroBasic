@@ -361,7 +361,7 @@ SPECIAL_MODE = 8 -- mode pour la gestion des erreurs
 stepsMode = false
 execStep = false
 
-IBF = 256 -- Nombre d'instructions exécutées chaque frame
+INSTRUCTIONS_BY_FRAME = 256 -- Nombre d'instructions exécutées chaque frame
 
 SPRITE_WIDTH = 16
 SPRITE_HEIGHT = 16
@@ -1882,7 +1882,7 @@ function love.update(dt)
 		end
 	elseif appState == RUN_MODE then
 		-- exécuter les instructions de la frame
-		local i2 = IBF
+		local i2 = INSTRUCTIONS_BY_FRAME
 		
 		if stepsMode then i2 = 1 end
 		
