@@ -506,7 +506,7 @@ function SetEditorTextColor(ln)
 			
 			if quotes % 2 == 0 then word = ""; wpos = 0 end
 		-- comptabliser les caractères pour les commands
-		elseif c >= "a" and c <= "z" then
+		elseif (c >= "a" and c <= "z") or c == "$" then
 			if wpos == 0 then wpos = i end
 			
 			word = word .. string.sub(s, i, i)
