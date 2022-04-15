@@ -374,7 +374,7 @@ function RemoveLabels(s)
 end
 
 -- exécuter une seule commande
-function ExecOne(cs, lst)
+function ExecuteOneTime(cs, lst)
 	paramsCount = #lst
 	
 	-- erreurs sur le nombre de paramètres ?
@@ -440,7 +440,7 @@ function AssignToVar(var, vType, s)
 end
 
 -- exploser la ligne de commande et l'exécuter
-function Exec(t, l)
+function Execute(t, l)
 	local cs = nil
 	local cs2 = nil
 	local cs3 = nil
@@ -482,7 +482,7 @@ function Exec(t, l)
 		if t[i].typ == "colon" then
 			-- exécuter un tronçon de code
 			if #t2 > 0 then
-				e = Exec(t2, l)
+				e = Execute(t2, l)
 
 				if e ~= OK then return e end
 				
@@ -494,7 +494,7 @@ function Exec(t, l)
 
 			-- exécuter un tronçon de code
 			if #t2 > 0 then
-				e = Exec(t2, l)
+				e = Execute(t2, l)
 
 				if e ~= OK then return e end
 				
@@ -549,7 +549,7 @@ function Exec(t, l)
 			if maxpnum < 0 then
 				-- si l'expression est de type chaîne poly...
 				e, lst = EvalExpression(t, tp, i, cs, maxpnum)
-
+				
 				if e ~= OK then return e end
 			elseif t[i].typ == "whitespace" then
 				-- vérifier s'il s'agit bien d'une suite de commandes multiples
@@ -664,7 +664,7 @@ function Exec(t, l)
 
 						-- exécuter la commande avec ses paramètres
 						local e
-						e = ExecOne(cs, lst)
+						e = ExecuteOneTime(cs, lst)
 
 						if e ~= OK then return e end
 						
@@ -796,7 +796,7 @@ function Exec(t, l)
 		end
 				
 		-- exécuter la commande avec ses paramètres
-		local e = ExecOne(cs, lst)
+		local e = ExecuteOneTime(cs, lst)
 		
 		-- si la commande est une fonction de boucle
 		if cmd[cs].loopFn then
@@ -806,43 +806,31 @@ function Exec(t, l)
 
 		return e
 	-- variable éventuellement trouvée
-	elseif t[i].typ == "word" then
+	elseif t[i].typ == "word" or t[i].typ == "integer" or t[i].typ == "float" or t[i].typ == "string" then
 		local var = t[i].sym
+				
+		-- vérifier si la variable a un autre type qu'integer par défaut
+		-- afin de définir le type de variable
+		local vType = DEFAULT_VAR_TYPE
+		
+		if t[i].typ == "integer" then
+			vType = VAR_INTEGER
+		elseif t[i].typ == "float" then
+			vType = VAR_FLOAT
+		elseif t[i].typ == "string" then
+			vType = VAR_STRING
+		end
 		
 		i = i + 1
 		
 		-- variable sans assignation... erreur
 		if i > #t then return ERR_SYNTAX_ERROR end
 		
-		-- vérifier si la variable possède un symbole à la fin
-		-- afin de définir le type de variable
-		local vType = VAR_INTEGER
+		if t[i].typ == "whitespace" then i = i + 1 end
 		
-		if t[i].typ == "integer" then
-			var = var .. "!"
+		-- variable sans assignation... erreur
+		if i > #t then return ERR_SYNTAX_ERROR end
 
-			i = i + 1
-			
-			-- variable sans assignation... erreur
-			if i > #t then return ERR_SYNTAX_ERROR end
-		elseif t[i].typ == "float" then
-			var = var .. "%"
-			vType = VAR_FLOAT
-
-			i = i + 1
-			
-			-- variable sans assignation... erreur
-			if i > #t then return ERR_SYNTAX_ERROR end
-		elseif t[i].typ == "string" then
-			var = var .. "$"
-			vType = VAR_STRING
-
-			i = i + 1
-			
-			-- variable sans assignation... erreur
-			if i > #t then return ERR_SYNTAX_ERROR end
-		end
-		
 		-- vérifier la présence du symbol égal pour l'assignation, sinon erreur...
 		if t[i].typ == "equal" then
 			i = i + 1
@@ -853,6 +841,11 @@ function Exec(t, l)
 			return ERR_SYNTAX_ERROR
 		end
 		
+		if t[i].typ == "whitespace" then i = i + 1 end
+		
+		-- variable sans assignation... erreur
+		if i > #t then return ERR_SYNTAX_ERROR end
+
 		-- vérifier la présence de données à assigner à la variable
 		local s = ""
 		
@@ -882,7 +875,7 @@ function AssembleString(t, cs, lst, sig)
 			if i > #t then
 				-- mixer tout de suite la chaîne et l'analyser
 				local p = ""
-
+				
 				for j = 1, #lst do
 					p = p .. lst[j]
 				end
@@ -893,7 +886,7 @@ function AssembleString(t, cs, lst, sig)
 				lst = {p}
 			
 				-- exécuter la commande
-				local e = ExecOne(cs, lst)
+				local e = ExecuteOneTime(cs, lst)
 				
 				-- erreur ?
 				if e ~= OK then return e, nil, sig else return OK, lst, sig end
@@ -942,7 +935,7 @@ function AssembleString(t, cs, lst, sig)
 			end
 
 			-- exécuter la commande
-			local e, value = ExecOne(cs2, lst2)
+			local e, value = ExecuteOneTime(cs2, lst2)
 
 			-- ajouter le résultat à la liste de retour
 			table.insert(lst, "\"" .. value .. "\"")
@@ -1060,19 +1053,55 @@ function EvalExpression(t, tp, i, cs, maxpnum)
 	
 	if cmd[cs].ptype[1] ~= VAR_POLY and cmd[cs].ptype[1] ~= VAR_STRING then return ERR_TYPE_MISMATCH, nil end
 
-	-- séparer les morceaux de textes par les virgules
+	-- séparer les morceaux de textes par des virgules
 	t2 = {}
 	
 	for i2 = i, #t do
 		if t[i2].typ ~= "comma" and i2 == #t then
-			table.insert(t2, t[i2])
+			-- vérifier l'existence d'une variable en fin d'expression chainée
+			local var = t[i2].sym
+			local vType = 0
+			local value = nil
 
+			-- variable trouvée ? quel type ?
+			if t[i2].typ == "word" then
+				var = t[i2].sym
+				value = 0
+			elseif t[i2].typ == "integer" then
+				var = t[i2].sym
+				value = 0
+			elseif t[i2].typ == "float" then
+				var = t[i2].sym
+				value = 0.0
+			elseif t[i2].typ == "string" then
+				var = t[i2].sym
+				value = ""
+			end
+			
+			vStrType = t[i2].typ
+			
+			-- la variable existe-t-elle ?
+			vType = GetVarType(var)
+			
+			-- si oui, on récupère sa valeur
+			if vType > 0 then value = GetVarValue(var, vType) end
+
+			-- puis, on stocke ce qu'il en résulte
+			if vType == 0 then
+				table.insert(t2, t[i2])
+			else
+				-- supprimer les éventuels guillemets
+				value = Trim(value, "\"")
+				
+				table.insert(t2, {sym = value, typ = vStrType})
+			end
+					
 			-- assembler les morceaux de chaîne entre-eux
 			local e, lst, sig = AssembleString(t2, cs, lst, sig)
 
 			-- erreur ?
 			if e ~= OK then return e, nill end
-			
+					
 			i = i2 + 1
 			t2 = {}
 		elseif t[i2].typ ~= "comma" then
@@ -1090,7 +1119,7 @@ function EvalExpression(t, tp, i, cs, maxpnum)
 			t2 = {}
 		end
 	end
-
+	
 	return OK, lst
 end
 
@@ -1706,7 +1735,7 @@ function EvalString(s, assign)
 					if e ~= OK then return nil, e end
 
 					local lst = {p}
-					local e, ch = ExecOne(c, lst)
+					local e, ch = ExecuteOneTime(c, lst)
 					if e ~= OK then return nil, e end
 					
 					s = s .. ch
@@ -1719,7 +1748,7 @@ function EvalString(s, assign)
 					if e ~= OK then return nil, e end
 					
 					local lst = {tostring(p)}
-					local e, ch = ExecOne(c, lst)
+					local e, ch = ExecuteOneTime(c, lst)
 					if e ~= OK then return nil, e end
 					
 					s = s .. ch
@@ -1732,7 +1761,7 @@ function EvalString(s, assign)
 					if e ~= OK then return nil, e end
 
 					local lst = {tostring(p)}
-					local e, ch = ExecOne(c, lst)
+					local e, ch = ExecuteOneTime(c, lst)
 					if e ~= OK then return nil, e end
 					
 					s = s .. ch
@@ -1748,7 +1777,7 @@ function EvalString(s, assign)
 					if e ~= OK then return nil, e end
 
 					local lst = {tostring(p)}
-					local e, ch = ExecOne(c, lst)
+					local e, ch = ExecuteOneTime(c, lst)
 					if e ~= OK then return nil, e end
 
 					s = s .. ch

@@ -505,7 +505,7 @@ function SetEditorTextColor(ln)
 			quotes = quotes + 1
 			
 			if quotes % 2 == 0 then word = ""; wpos = 0 end
-		-- comptabliser les caractères pour les commands
+		-- comptabliser les caractères pour les commandes
 		elseif (c >= "a" and c <= "z") or c == "$" then
 			if wpos == 0 then wpos = i end
 			

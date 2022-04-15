@@ -34,6 +34,8 @@ VAR_VARIABLE = 8 -- un nom de variable
 VAR_ASSIGN = 9 -- une assignation de variable
 VAR_CONSTANT = 10 -- une constante (numérique ou chaîne de caractères)
 
+DEFAULT_VAR_TYPE = VAR_INTEGER -- type de variables par défaut quand il n'y a pas de symbole
+
 -- constantes du scrolling de l'éditeur
 PRINT_NO_FLAGS = 0
 PRINT_CLIPPED = 1
@@ -1905,7 +1907,7 @@ function love.update(dt)
 					
 					-- exécution de la commande
 					if e == OK then
-						errcode, value = GetError(Exec(Parser(Lexer(RemoveLabels(s))), ProgramCounter), ProgramCounter)
+						errcode, value = GetError(Execute(Parser(Lexer(RemoveLabels(s))), ProgramCounter), ProgramCounter)
 					else
 						errcode = GetError(e, ProgramCounter)
 					end
