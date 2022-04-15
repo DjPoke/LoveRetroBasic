@@ -1000,6 +1000,10 @@ screenScaleY = 1
 
 currentOS = nil
 
+drivesList = nil
+currentDrive = nil
+currentDriveNumber = 0
+
 -- ==============================================================================================================================
 -- = fonctions principales =
 -- =========================
@@ -1089,19 +1093,17 @@ function love.load()
 
 	InitKeyboard()
 	
-	-- current USB drive is (TODO: replace me)
-	currentOS = love.system.getOS()
-	
-	if currentOS == "Windows" then
-		USBDrive = "e:/"
-	elseif currentOS == "Linux" then
-		USBDrive = "???"
+	-- récupérer le 1er drive potentiellement 'clé USB'
+	drivesList = GetDrivesList()
+
+	if drivesList == nil or #drivesList == 0 then
+		msg = "No drives found !"
 	else
-		USBDrive = ""
-		
-		msg = "USB pen can't be detected !"
+		currentDriveNumber = #drivesList
+		currentDrive = drivesList[currentDriveNumber]
+		msg = "Current drive: " .. currentDrive
 	end
-	
+		
 	-- initialiser l'application
 	appStarted = true
 end
@@ -1431,6 +1433,8 @@ function love.keypressed(key, scancode, isrepeat)
 			UI_Export()
 		elseif key == "q" and love.keyboard.isDown("lctrl", "rctrl") then
 			CloseProgram()
+		elseif key == "d" and love.keyboard.isDown("lctrl", "rctrl") then
+			ChangeDrive(1)
 		end
 	elseif appState == SPRITE_MODE then	
 		if key == "s" and love.keyboard.isDown("lctrl", "rctrl") then

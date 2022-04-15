@@ -466,19 +466,70 @@ function GetExtFileExists(filename)
 	if f ~= nil then io.close(f) return true else return false end
 end
 
--- check if external folder exists
+-- vérifier si un dossier externe au bac à sable existe
 function GetExtFolderExists(filename)
 	return os.rename(filename,filename)
 end
 
--- check if drive is valid
-function GetDriveValid(drive)
-	local f = io.open(drive .. "/LRB.tst", "w")
+-- vérifier si un périphérique de stockage existe
+function DriveValid(drive)
+	-- écrire un fichier temporaire
+	local f = io.open(drive .. "LRB.tst", "w")
 
 	if f == nil then return "Disk error !" end
 	
-	io.close(f)		
-	os.remove(drive .. "/LRB.tst")
+	io.close(f)
+	
+	-- supprimer le fichier créé
+	os.remove(drive .. "LRB.tst")
 	
 	return nil
+end
+
+-- obtenir la liste des périphériques de stockage accessibles
+function GetDrivesList()
+	local driveList = {}
+	local currentOS = love.system.getOS()
+	
+	if currentOS == "Windows" then
+		for i = Asc("a"), Asc("z") do
+			local drv = Chr(i) .. ":/"
+
+			if DriveValid(drv) == nil then
+				table.insert(driveList, drv)
+			end
+		end
+
+		return driveList
+	elseif currentOS == "Linux" then
+		for i = 1, 26  do
+			local drv = "/dev/sdb" .. tostring(i) .. "/"
+			
+			if DriveValid(drv) == nil then
+				table.insert(driveList, drv)
+			end
+		end
+	else	
+		msg = "Operating System not handled !"
+	end
+end
+
+function ChangeDrive(value)
+	-- on recharge l'affichage les disques
+	GetDrivesList()
+	
+	-- si la configuration a changée...
+	if #drivesList == 0 then
+		msg = "No drives found !"
+	elseif currentDriveNumber > #drivesList then
+		currentDriveNumber = #drivesList
+	else
+		currentDriveNumber = currentDriveNumber + value
+
+		if currentDriveNumber < 1 then currentDriveNumber = 1 end
+		if currentDriveNumber > #drivesList then currentDriveNumber = currentDriveNumber - #drivesList end
+		
+		currentDrive = drivesList[currentDriveNumber]
+		msg = "Current drive: " .. currentDrive
+	end
 end

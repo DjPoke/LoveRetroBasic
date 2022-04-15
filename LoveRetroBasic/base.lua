@@ -2298,7 +2298,7 @@ end
 
 -- importer une banque de sprites
 function ImportSprites()
-	msg = GetDriveValid(USBDrive)
+	msg = DriveValid(currentDrive)
 	
 	if msg ~= nil then return end
 	
@@ -2319,7 +2319,7 @@ function ImportSprites()
 	local filename = "sprites.spr"
 	local line = {}
 	
-	for line in io.lines(USBDrive .. filename) do
+	for line in io.lines(currentDrive .. filename) do
 		table.insert(data, line)
 	end
 
@@ -2355,14 +2355,14 @@ end
 
 -- exporter une banque de sprites
 function ExportSprites()
-	msg = GetDriveValid(USBDrive)
+	msg = DriveValid(currentDrive)
 
 	if msg ~= nil then return end
 	
 	-- export sprite bank
 	local filename = "sprites.spr"
 	
-	local file = io.open(USBDrive .. filename, "w")
+	local file = io.open(currentDrive .. filename, "w")
 	
 	if file == nil then return false end
 	
@@ -2626,11 +2626,11 @@ function UI_Export()
 	-- remise à zéro d'un éventuel message texte
 	local lnk = love.filesystem.getSaveDirectory()
 	
-	msg = GetDriveValid(USBDrive)
+	msg = DriveValid(currentDrive)
 	
 	if msg ~= nil then return end
 	
-	CopyFile(lnk .. "\\main.bas", USBDrive .. "main.bas")
+	CopyFile(lnk .. "\\main.bas", currentDrive .. "main.bas")
 	
 	msg = "BASIC file exported"
 	
@@ -2642,12 +2642,12 @@ function UI_Import()
 	-- remise à zéro d'un éventuel message texte
 	local lnk = love.filesystem.getSaveDirectory()
 	
-	msg = GetDriveValid(USBDrive)
+	msg = DriveValid(currentDrive)
 
 	if msg ~= nil then return end
 	
-	if GetExtFileExists(USBDrive .. "main.bas") then
-		CopyFile(USBDrive .. "main.bas", lnk .. "\\main.bas")
+	if GetExtFileExists(currentDrive .. "main.bas") then
+		CopyFile(currentDrive .. "main.bas", lnk .. "\\main.bas")
 	
 		UI_Load()
 
@@ -2706,6 +2706,7 @@ function WatchIterator(i)
 	return cs, l, c, id
 end
 
+-- exécuter un saut d'une partie d'une boucle à une autre
 function JumpToIterator(cs, l, c, id)
 	for i = #stack, 1, -1 do
 		local cs2, l2, c2, id2 = WatchIterator(i)
@@ -2717,4 +2718,17 @@ function JumpToIterator(cs, l, c, id)
 			break
 		end
 	end
+end
+
+-- fonction de split
+function Split(s, sep)
+	if sep == nil then sep = "%s" end
+
+	local t = {}
+	
+	for str in string.gmatch(s, sep) do
+		table.insert(t, str)
+	end
+	
+	return t
 end

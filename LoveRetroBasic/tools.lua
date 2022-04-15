@@ -57,9 +57,11 @@ function HelpManager()
 		Locate(4, 12)
 		PrintString("Ctrl-E: Export")
 		Locate(4, 13)
+		PrintString("Ctrl-D: Change export drive")
+		Locate(4, 14)
 		PrintString("Ctrl+Del: Clear - Ctrl+Q: Quit")
 		SetPenColor(EDITOR_UI)
-		Locate(10, 15)
+		Locate(10, 16)
 		PrintString("ESC : Back To HELP menu")
 	end
 end
