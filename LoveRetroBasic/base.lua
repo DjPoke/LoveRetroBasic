@@ -2624,20 +2624,15 @@ end
 -- exporter le programme
 function UI_Export()
 	-- remise à zéro d'un éventuel message texte
-	msg = nil
-	
 	local lnk = love.filesystem.getSaveDirectory()
-	local exportLnk = love.filesystem.getUserDirectory() .. "\\Documents"
-
-	if not GetExtFolderExists(exportLnk .. "\\LoveRetroBasic") then
-		os.execute("mkdir " .. exportLnk .. "\\LoveRetroBasic")
-	end
-
-	if GetExtFolderExists(exportLnk .. "\\LoveRetroBasic") then
-		CopyFile(lnk .. "\\main.bas", exportLnk .. "\\LoveRetroBasic\\main.bas")
 	
-		msg = "main.bas exported"
-	end
+	msg = GetDriveValid(USBDrive)
+	
+	if msg ~= nil then return end
+	
+	CopyFile(lnk .. "\\main.bas", USBDrive .. "main.bas")
+	
+	msg = "BASIC file exported"
 	
 	return
 end
@@ -2645,29 +2640,20 @@ end
 -- importer le programme
 function UI_Import()
 	-- remise à zéro d'un éventuel message texte
-	msg = nil
-	
 	local lnk = love.filesystem.getSaveDirectory()
-	local importLnk = love.filesystem.getUserDirectory() .. "\\Documents"
 	
-	if not GetExtFolderExists(importLnk .. "\\LoveRetroBasic") then
-		os.execute("mkdir " .. importLnk .. "\\LoveRetroBasic")
-		
-		if GetExtFolderExists(importLnk .. "\\LoveRetroBasic") then
-			msg = "Export folder created"
-		
-			return
-		end
-	end
+	msg = GetDriveValid(USBDrive)
+
+	if msg ~= nil then return end
 	
-	if GetExtFileExists(importLnk .. "\\LoveRetroBasic\\main.bas") then
-		CopyFile(importLnk .. "\\LoveRetroBasic\\main.bas", lnk .. "\\main.bas")
-				
+	if GetExtFileExists(USBDrive .. "main.bas") then
+		CopyFile(USBDrive .. "main.bas", lnk .. "\\main.bas")
+	
 		UI_Load()
-			
-		msg = "main.bas imported"
+
+		msg = "BASIC file imported"
 	else
-		msg = "main.bas not found"
+		msg = "BASIC file main.bas not found"
 	end
 	
 	return

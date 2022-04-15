@@ -1087,7 +1087,7 @@ function love.load()
 
 	InitKeyboard()
 	
-	-- current USB drive is
+	-- current USB drive is (TODO: replace me)
 	USBDrive = "e:/"
 	
 	-- initialiser l'application
