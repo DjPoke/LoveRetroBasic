@@ -1067,22 +1067,31 @@ function EvalExpression(t, tp, i, cs, maxpnum)
 			if t[i2].typ == "word" then
 				var = t[i2].sym
 				value = 0
+				
+				-- la variable existe-t-elle ?
+				vType = GetVarType(var)
 			elseif t[i2].typ == "integer" then
 				var = t[i2].sym
 				value = 0
+				
+				-- la variable existe-t-elle ?
+				vType = GetVarType(var)
 			elseif t[i2].typ == "float" then
 				var = t[i2].sym
 				value = 0.0
+				
+				-- la variable existe-t-elle ?
+				vType = GetVarType(var)
 			elseif t[i2].typ == "string" then
 				var = t[i2].sym
 				value = ""
+				
+				-- la variable existe-t-elle ?
+				vType = GetVarType(var)
 			end
 			
 			vStrType = t[i2].typ
-			
-			-- la variable existe-t-elle ?
-			vType = GetVarType(var)
-			
+						
 			-- si oui, on récupère sa valeur
 			if vType > 0 then value = GetVarValue(var, vType) end
 
@@ -1090,9 +1099,6 @@ function EvalExpression(t, tp, i, cs, maxpnum)
 			if vType == 0 then
 				table.insert(t2, t[i2])
 			else
-				-- supprimer les éventuels guillemets
-				value = Trim(value, "\"")
-				
 				table.insert(t2, {sym = value, typ = vStrType})
 			end
 					
