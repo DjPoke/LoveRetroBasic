@@ -34,15 +34,11 @@ function CreatePalette()
 		scnPal[x * 8][2] = x * 16
 	end
 	
-	-- ajuster pour les nouvelles versions de love2d
-	major, minor, revision, codename = love.getVersion()
-
-	if major == 11 and minor > 1 then
-		for i = 0, 63 do
-			scnPal[i][0] = scnPal[i][0] / 255
-			scnPal[i][1] = scnPal[i][1] / 255
-			scnPal[i][2] = scnPal[i][2] / 255
-		end
+	-- ajuster les couleurs
+	for i = 0, 63 do
+		scnPal[i][0] = scnPal[i][0] / 255
+		scnPal[i][1] = scnPal[i][1] / 255
+		scnPal[i][2] = scnPal[i][2] / 255
 	end
 	
 	scnPalNoAlpha = scnPalNoAlpha / 255
