@@ -998,6 +998,8 @@ setFullscreen = false
 screenScaleX = 1
 screenScaleY = 1
 
+currentOS = nil
+
 -- ==============================================================================================================================
 -- = fonctions principales =
 -- =========================
@@ -1088,7 +1090,17 @@ function love.load()
 	InitKeyboard()
 	
 	-- current USB drive is (TODO: replace me)
-	USBDrive = "e:/"
+	currentOS = love.system.getOS()
+	
+	if currentOS == "Windows" then
+		USBDrive = "e:/"
+	elseif currentOS == "Linux" then
+		USBDrive = "???"
+	else
+		USBDrive = ""
+		
+		msg = "USB pen can't be detected !"
+	end
 	
 	-- initialiser l'application
 	appStarted = true
@@ -1404,13 +1416,13 @@ function love.keypressed(key, scancode, isrepeat)
 			UI_Run()
 		elseif key == "f6" then
 			UI_Debug()
-		elseif key == "f7" then
+		elseif key == "s" and love.keyboard.isDown("lctrl", "rctrl") then
 			UI_Save()
-		elseif key == "f8" then
+		elseif key == "l" and love.keyboard.isDown("lctrl", "rctrl") then
 			UI_Load()
-		elseif key == "f9" then
+		elseif key == "i" and love.keyboard.isDown("lctrl", "rctrl") then
 			UI_Import()
-		elseif key == "f10" then
+		elseif key == "e" and love.keyboard.isDown("lctrl", "rctrl") then
 			UI_Export()
 		elseif key == "delete" and love.keyboard.isDown("lctrl", "rctrl") then
 			KillProgram()
