@@ -2,7 +2,7 @@
 function SaveBOB(filename, path, n)
 	if filename == nil or filename == "" then return end
 	if path == nil or path == "" then return end
-	if n < 0 or n > MAX_BOB then return end
+	if n < 0 or n > MAX_BOB - 1 then return end
 	if bob[n] == nil then return end
 	
 	-- mémoriser le chemin
@@ -37,7 +37,7 @@ end
 function LoadBOB(filename, path, n)
 	if filename == nil or filename == "" then return end
 	if path == nil or path == "" then return end
-	if n < 0 or n > MAX_BOB then return end
+	if n < 0 or n > MAX_BOB - 1 then return end
 
 	-- vérifier si le fichier existe
 	if not GetFileExists(path, filename) then return end
@@ -193,7 +193,7 @@ end
 
 -- afficher un BOB à l'écran
 function PasteBOB(n, x, y)
-	if n < 0 or n > MAX_BOB then return end
+	if n < 0 or n > MAX_BOB - 1 then return end
 	if bob[n] == nil then return end
 	
 	for yp = 0, bob[n][2] - 1 do
@@ -214,7 +214,7 @@ end
 
 -- supprimer un BOB
 function FreeBOB(n)
-	if n < 0 or n > MAX_BOB then return end
+	if n < 0 or n > MAX_BOB - 1 then return end
 
 	-- supprimer l'ancienne image
 	if bob[n] ~= nil then
