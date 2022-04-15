@@ -1,18 +1,20 @@
 # LoveRetroBasic
-Bonjour, je suis DjPoke.
+Hello, i'm DjPoke.
 
-LoveRetroBasic est (ou en tout cas devrait devenir) une ordinateur virtuel programmé avec Löve/Lua.
-Je le programme afin de m'occuper. Il permettra à terme de programmer ses propres jeux vidéo.
-Il s'inspire de diverses machines des années 80 et du début des années 90, tout en fournissant des outils comme diverses consoles fantaisies peuvent les fournir.
-En effet, il devrait bientôt fournir un éditeur de sprites, un éditeur de niveaux, un éditeur de sons et un tracker.
+LoveRetroBasic is (or should become) a virtual computer programmed with Löve/Lua.
+I program it to pass the time.
+It is inspired from old retro computers from the 80's and from beginning for 90's, also giving acces to a tools suite, like other fantasy consoles can give.
+It includes a sprite editor, a tracker (w.i.p) and will includes a level editor and a sounds editor.
 
-LoveRetroBasic fournit des sprites hardwares virtuels, et un mode de débogage.
+LoveRetroBasic gives virtual hardware sprites, bobs, palette adaptable images import, and a debug mode.
 
-Résolution graphique: 320x200 pixels
-Palette: 64 couleurs
-Sprites hardware: 32 (scalables)
+Graphic Modes: 320x200 pixels, 640x400 pixels and 160x100 pixels
+Palette: 64 colors
+Hardware sprites: 32 (scalables)
 Sprites images: 256
+Bobs: 1024
 
-Ce projet en est à ses balbutiements. Il faudra donc beaucoup de patience pour le mener à terme.
+This project is in work in progress. Please wait to see it finished.
 
+Enjoy,
 DjPoke
