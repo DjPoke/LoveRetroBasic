@@ -61,9 +61,7 @@ end
 -- afficher un caractère à l'écran avec la couleur du stylo texte
 function PrintChar(c, r)
 	-- retour si le caractère n'existe pas
-	if c == nil then
-		return ERR_OPERAND_MISSING
-	end
+	if c == nil then return ERR_OPERAND_MISSING end
 	
 	local x1 = (cursor[1] - 1) * 8
 	local y1 = (cursor[2] - 1) * 8
