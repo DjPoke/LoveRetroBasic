@@ -3,8 +3,7 @@ function love.conf(w)
 	
 	w.window.msaa = 0
 	
-	w.version = "11.3"
-	w.window.icon = "icons/LRB.png"
+	w.version = "11.4"
 	
 	w.console = true
 end

@@ -378,7 +378,6 @@ function AppendTextToRam(s)
 
 	-- annuler si la chaîne est vide
 	if s == nil then return end
-	
 
 	ShowCursor(false)
 	
