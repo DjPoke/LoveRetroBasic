@@ -514,7 +514,7 @@ function Execute(t, l)
 	local i = 1
 
 	if t[i].typ == "command" then
-		-- mémoriser la commande dans cs
+		-- mémoriser la 1ère commande dans cs
 		cs = t[i].sym
 		
 		-- mémoriser la commande courante pour usage futur
@@ -541,13 +541,15 @@ function Execute(t, l)
 		if i <= #t then
 			-- vérifier le type de paramètre admis par cette commande
 			if #cmd[cs].ptype > 1 then
+				-- si c'est une liste de paramètres...
 				maxpnum = #cmd[cs].ptype
 			else
+				-- si c'est une bloc chainé
 				maxpnum = cmd[cs].pmax
 			end
 
 			if maxpnum < 0 then
-				-- si l'expression est de type chaîne poly...
+				-- si l'expression est un bloc chainé...
 				e, lst = EvalExpression(t, tp, i, cs, maxpnum)
 				
 				if e ~= OK then return e end
@@ -712,7 +714,6 @@ function Execute(t, l)
 							-- TODO!
 							-- si oui...
 
-							
 							-- sinon...
 							if not loopMode then
 								iterator[row][column] = {it1, it2, 1, var}
@@ -808,7 +809,7 @@ function Execute(t, l)
 	-- variable éventuellement trouvée
 	elseif t[i].typ == "word" or t[i].typ == "integer" or t[i].typ == "float" or t[i].typ == "string" then
 		local var = t[i].sym
-				
+		
 		-- vérifier si la variable a un autre type qu'integer par défaut
 		-- afin de définir le type de variable
 		local vType = DEFAULT_VAR_TYPE
@@ -852,9 +853,27 @@ function Execute(t, l)
 		for j = i, #t do
 			s = s .. t[j].sym
 		end
-
+		
+		if vType == VAR_INTEGER then
+			local n, e = EvalInteger(s)
+			
+			if e ~= OK then return e end
+			
+			s = tostring(n)
+		elseif vType == VAR_FLOAT then
+			local n, e = EvalFloat(s)			
+			
+			if e ~= OK then return e end
+			
+			s = tostring(n)
+		else
+			s, e = EvalString(s)
+			
+			if e ~= OK then return e end
+		end
+		
 		-- assigner l'expression à la variable
-		local e = AssignToVar(var, vType, s)
+		local e = AssignToVar(var, vType, "\"" .. s .. "\"")
 		
 		return e
 	end

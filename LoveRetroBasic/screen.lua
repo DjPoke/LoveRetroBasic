@@ -196,12 +196,12 @@ end
 function DrawOval(x, y, w, h, f)
 	local md = "line"
 	
-	if f > 0 then md = "fill" end -- TODO!
+	if f > 0 then md = "fill" end
 	
 	SetCanvas(true)
 	
 	love.graphics.setColor(scnPal[gpen][0] / 255, scnPal[gpen][1] / 255, scnPal[gpen][2] / 255, 1)
-	love.graphics.ellipse(mode, x + 0.5, y + 0.5, w, h)
+	love.graphics.ellipse(md, x + 0.5, y + 0.5, w, h)
 
 	SetCanvas(false)
 end

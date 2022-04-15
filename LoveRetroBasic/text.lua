@@ -295,7 +295,7 @@ function PrintStringN(s)
 	LineFeed()
 end
 
--- récupérer une saisie de ligne de texte (TODO)
+-- récupérer une saisie de ligne de texte (TODO!)
 function GetTextInput()
 	return ""
 end
