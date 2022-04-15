@@ -12,7 +12,9 @@ Graphic Modes: 320x200 pixels, 640x400 pixels and 160x100 pixels
 Palette: 64 colors
 Hardware sprites: 32 (scalables)
 Sprites images: 256
+Sprite size: 16x16 pixels
 Bobs: 1024
+Bobs size: images limited
 
 This project is in work in progress. Please wait to see it finished.
 
