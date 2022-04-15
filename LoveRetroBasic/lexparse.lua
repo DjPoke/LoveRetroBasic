@@ -22,7 +22,9 @@ function Lexer(s)
 		{sym = "*", typ = "mult"}, -- multiplication
 		{sym = "/", typ = "div"}, -- division
 		{sym = "+", typ = "plus"}, -- addition
-		{sym = "-", typ = "minus"} -- soustraction
+		{sym = "-", typ = "minus"}, -- soustraction
+		{sym = "-", typ = "greater"}, -- plus grand que
+		{sym = "-", typ = "lower"} -- plus petit que
 	}
 
 	-- retourner la table tokenisée
