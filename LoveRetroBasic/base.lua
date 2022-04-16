@@ -2298,7 +2298,7 @@ end
 
 -- importer une banque de sprites
 function ImportSprites()
-	if currentDrive == nil then msg = "No drive found !"; return end
+	if currentDrive == nil then msg = "No USB drive found !"; return end
 
 	msg = DriveValid(currentDrive)
 	
@@ -2357,7 +2357,7 @@ end
 
 -- exporter une banque de sprites
 function ExportSprites()
-	if currentDrive == nil then msg = "No drive found !"; return end
+	if currentDrive == nil then msg = "No USB drive found !"; return end
 	
 	msg = DriveValid(currentDrive)
 
@@ -2627,7 +2627,7 @@ end
 
 -- exporter le programme
 function UI_Export()
-	if currentDrive == nil then msg = "No drive found !"; return end
+	if currentDrive == nil then msg = "No USB drive found !"; return end
 
 	-- remise à zéro d'un éventuel message texte
 	local lnk = love.filesystem.getSaveDirectory()
@@ -2645,7 +2645,7 @@ end
 
 -- importer le programme
 function UI_Import()
-	if currentDrive == nil then msg = "No drive found !"; return end
+	if currentDrive == nil then msg = "No USB drive found !"; return end
 
 	-- remise à zéro d'un éventuel message texte
 	local lnk = love.filesystem.getSaveDirectory()

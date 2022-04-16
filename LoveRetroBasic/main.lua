@@ -1054,7 +1054,7 @@ function love.load()
 	else
 		Reset()
 	end
-
+	
 	-- trouver le drive virtuel courant
 	driveFolder = love.filesystem.getIdentity()
 	
@@ -1076,6 +1076,9 @@ function love.load()
 
 	-- pointer sur le disque par défaut
 	love.filesystem.setIdentity(currentRelativeFolder)
+	
+	-- récupérer la configuration
+	GetConfiguration()
 
 	-- cacher le curseur
 	ShowCursor(false)
@@ -1083,9 +1086,6 @@ function love.load()
 	-- choisir le Disk0 comme disque par défaut
 	LoadDisc(currentRelativeFolder)
 	
-	-- récupérer le layout clavier mémorisé
-	GetKeyboardLayout()
-
 	-- préparer le clavier du tracker
 	for i = 1, 22 do
 		piano[i] = {img_kb[1], 8 + ((i - 1) * 12), 286, 0}
@@ -1100,11 +1100,11 @@ function love.load()
 
 	InitKeyboard()
 
-	-- récupérer le 1er drive potentiellement 'clé USB'
+	-- récupérer le 1er drive pour l'import/export étant potentiellement une clé USB
 	drivesList = GetUSBDrivesList()
 	
 	if drivesList == nil or #drivesList == 0 then
-		msg = "No drive found !"
+		msg = "No USB drive found !"
 	else
 		currentDriveNumber = #drivesList
 		currentDrive = drivesList[currentDriveNumber]
@@ -1512,10 +1512,6 @@ function love.keypressed(key, scancode, isrepeat)
 			RedrawCurrentSprite()
 
 			return
-		elseif key == "i" and love.keyboard.isDown("lctrl", "rctrl") then
-			ImportSprites()
-		elseif key == "e" and love.keyboard.isDown("lctrl", "rctrl") then
-			ExportSprites()
 		end
 	-- changer le layout clavier avec tab
 	elseif appState == TRACKER_MODE then
@@ -1526,7 +1522,7 @@ function love.keypressed(key, scancode, isrepeat)
 				keyboard = AZERTY
 			end
 			
-			UpdateKeyboardLayout()
+			UpdateConfiguration()
 			InitKeyboard()
 		end
 		
@@ -2916,42 +2912,45 @@ function love.draw()
 		local nfo = ""
 		
 		x = math.floor(mx / 8)
-		y = math.floor(my / 8)
-		
-		if y == 0 then
+		y = my
+
+		if y > -16 and y < -8 then
 			if x == 0 then
 				nfo = "Sprite Editor"
-				PrintInfosString(nfo, 2, "orange", 17)
+				PrintInfosString(nfo, 2, "orange", 25)
 			elseif x == 2 then
 				nfo = "Level Editor"
-				PrintInfosString(nfo, 2, "orange", 17)
+				PrintInfosString(nfo, 2, "orange", 25)
 			elseif x == 4 then
 				nfo = "Noise Editor"
-				PrintInfosString(nfo, 2, "orange", 17)
+				PrintInfosString(nfo, 2, "orange", 25)
 			elseif x == 6 then
 				nfo = "Tracker"
-				PrintInfosString(nfo, 2, "orange", 17)
+				PrintInfosString(nfo, 2, "orange", 25)
 			elseif x == 8 then
 				nfo = "Help"
-				PrintInfosString(nfo, 2, "green", 17)
+				PrintInfosString(nfo, 2, "green", 25)
 			elseif x == 11 then
 				nfo = "Run Program"
-				PrintInfosString(nfo, 2, "red", 17)
+				PrintInfosString(nfo, 2, "red", 25)
 			elseif x == 13 then
 				nfo = "Debug Program"
-				PrintInfosString(nfo, 2, "red", 17)
+				PrintInfosString(nfo, 2, "red", 25)
 			elseif x == 16 then
 				nfo = "Save Program"
-				PrintInfosString(nfo, 2, "black", 17)
+				PrintInfosString(nfo, 2, "black", 25)
 			elseif x == 18 then
 				nfo = "Load Program"
-				PrintInfosString(nfo, 2, "black", 17)
+				PrintInfosString(nfo, 2, "black", 25)
 			elseif x == 21 then
-				nfo = "Import/Export Program"
-				PrintInfosString(nfo, 2, "blue", 17)
-			elseif x == 24 then
+				nfo = "Import Program"
+				PrintInfosString(nfo, 2, "blue", 25)
+			elseif x == 23 then
+				nfo = "Export Program"
+				PrintInfosString(nfo, 2, "blue", 25)
+			elseif x == 26 then
 				nfo = "Delete Program"
-				PrintInfosString(nfo, 2, "red", 17)
+				PrintInfosString(nfo, 2, "red", 25)
 			end
 		end
 	end

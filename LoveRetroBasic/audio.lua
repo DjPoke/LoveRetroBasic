@@ -559,22 +559,24 @@ function GetKeyboardPlay(ch, delta)
 	return currentPianoNote
 end
 
--- récupérer le layout clavier
-function GetKeyboardLayout()
+-- récupérer la configuration de LoveRetroBasic
+function GetConfiguration()
 	f = driveFolder
 	
 	-- clavier par défaut
 	keyboard = QWERTY
 	
-	-- sauvegarder le mode QWERTY si aucun fichier de configuration n'est présent
+	-- sauvegarder la configuration par défaut (si aucun fichier de configuration n'est présent)
 	if not GetFileExists(f, "config.cfg") then
 		s = "QWERTY" .. Chr(LF)
+		
 		SaveFileString(s, f, "config.cfg")
 	end
 	
-	--	 dans tous les cas, tenter de charger le fichier de configuration
+	--	dans tous les cas, tenter de charger ensuite le fichier de configuration
 	if GetFileExists(f, "config.cfg") then
 		local ln = {}
+		
 		ln = LoadFileTable(ln, f, "config.cfg")
 		
 		if ln[1] == "AZERTY" then
@@ -586,7 +588,7 @@ function GetKeyboardLayout()
 end
 
 -- mettre à jouer le layout clavier
-function UpdateKeyboardLayout()
+function UpdateConfiguration()
 	f = driveFolder
 
 	local s = "QWERTY" .. Chr(LF)

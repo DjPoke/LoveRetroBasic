@@ -390,7 +390,7 @@ function GetFileExists(path, file)
 	return retValue
 end
 
--- sauvegarder une chaine de caractères dans un fichier
+-- sauvegarder une chaîne de caractères dans un fichier
 function SaveFileString(s, path, filename)
 	local cp = love.filesystem.getIdentity()
 	
@@ -419,23 +419,6 @@ function LoadFileTable(t, path, filename)
 	love.filesystem.setIdentity(cp)
 	
 	return t
-end
-
--- sBatchFile = .bat for windows, .sh for x
-function CallBatch(sBatchFile)
-    local b = package.cpath:match("%p[\\|/]?%p(%a+)")
-    if b == "dll" then 
-        -- windows
-        os.execute('start cmd /k call "'..sBatchFile..'"')
-    elseif b == "dylib" then
-        -- macos
-        os.execute('chmod +x "'..sBatchFile..'"')
-        os.execute('open -a Terminal.app "'..sBatchFile..'"')
-    elseif b == "so" then
-        -- Linux
-        os.execute('chmod +x "'..sBatchFile..'"')
-        os.execute('xterm -hold -e "'..sBatchFile..'" & ')
-    end 
 end
 
 -- copier un fichier d'un endroit à un autre
@@ -599,7 +582,7 @@ function ChangeDrive(value)
 	
 	-- si la configuration a changée...
 	if #drivesList == 0 then
-		msg = "No drive found !"
+		msg = "No USB drive found !"
 	elseif currentDriveNumber > #drivesList then
 		currentDriveNumber = #drivesList
 	else
