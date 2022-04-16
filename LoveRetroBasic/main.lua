@@ -996,15 +996,15 @@ musicPlaying = false
 mouseEnabled = true
 restoreMouseEnabled = true
 
-setFullscreen = false
-screenScaleX = 1
-screenScaleY = 1
-
 currentOS = nil
 
 drivesList = nil
 currentDrive = nil
 currentDriveNumber = 0
+
+setFullscreen = false
+screenScaleX = 1
+screenScaleY = 1
 
 -- ==============================================================================================================================
 -- = fonctions principales =
