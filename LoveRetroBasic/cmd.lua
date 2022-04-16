@@ -8,6 +8,13 @@ cmd["ASC"].fn = function(lst)
 	return OK, tostring(Asc(lst[1]))
 end
 
+-- commande 'BEEP'
+cmd["BEEP"].fn = function(lst)
+	Beep()
+	
+	return OK
+end
+
 -- commande 'BIN$'
 cmd["BIN$"].fn = function(lst)
 	return OK, "\"" .. Bin(lst[1]) .. "\""

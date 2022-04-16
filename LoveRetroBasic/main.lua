@@ -77,7 +77,7 @@ USED_BY_MULTICOMMAND = 2
 -- liste des noms de commandes
 commands = {
 			"ABS", "ASC",
-			"BIN$", "BORDER",
+			"BEEP", "BIN$", "BORDER",
 			"CASE", "CHR$", "CLS",
 			"DRAW", "DRAWR",
 			"ELSEIF", "ELSE", "END",
@@ -108,6 +108,7 @@ for i = 1, #commands do
 	-- pmin, pmax: nombre de paramètres min et max
 	-- ptype: type de paramètres (integer ou autres)
 	-- cmd: commande simple, multi-commande ou utilisé par une multi-commande
+	-- loopFn: fonction de boucle
 	cmd[commands[i]] = {fn = nil, ret = 0, pmin = 0, pmax = 0, pnext = 0, ptype = {VAR_INTEGER}, cmd = SIMPLE_COMMAND, loopFn = false}
 end
 
@@ -133,6 +134,7 @@ cmd["VAL"].ret = VAR_NUM
 -- définir le nombre minimal et maximal de paramètres d'entrée pour les instructions BASIC
 cmd["ABS"].pmin, cmd["ABS"].pmax = 1, 1
 cmd["ASC"].pmin, cmd["ASC"].pmax = 1, 1
+cmd["BEEP"].pmin, cmd["BEEP"].pmax = 0, 0
 cmd["BIN$"].pmin, cmd["BIN$"].pmax = 1, 1
 cmd["BORDER"].pmin, cmd["BORDER"].pmax = 1, 1
 cmd["CASE"].pmin, cmd["CASE"].pmax = 1, 1
