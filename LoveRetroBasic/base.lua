@@ -2636,7 +2636,7 @@ function UI_Export()
 	
 	if msg ~= nil then return end
 	
-	CopyFile(lnk .. "\\main.bas", currentDrive .. "main.bas")
+	CopyFile(lnk .. "/main.bas", currentDrive .. "main.bas")
 	
 	msg = "BASIC file exported"
 	
@@ -2655,7 +2655,7 @@ function UI_Import()
 	if msg ~= nil then return end
 	
 	if GetExtFileExists(currentDrive .. "main.bas") then
-		CopyFile(currentDrive .. "main.bas", lnk .. "\\main.bas")
+		CopyFile(currentDrive .. "main.bas", lnk .. "/main.bas")
 	
 		UI_Load()
 
