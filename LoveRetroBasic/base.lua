@@ -2729,14 +2729,14 @@ function JumpToIterator(cs, l, c, id)
 end
 
 -- fonction de split
-function Split(s, sep)
-	if sep == nil then sep = "%s" end
+function Split(s, delimiter)
+	if delimiter == nil then delimiter = "%s+" end
 
-	local t = {}
+    result = {}	
 	
-	for str in string.gmatch(s, sep) do
-		table.insert(t, str)
-	end
+    for match in (s..delimiter):gmatch("(.-)"..delimiter) do
+        table.insert(result, match)
+    end
 	
-	return t
+    return result
 end

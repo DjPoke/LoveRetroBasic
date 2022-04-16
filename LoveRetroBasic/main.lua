@@ -851,6 +851,9 @@ BTN_SND_ARP_3 = 30
 BTN_SND_ARP_4 = 31
 NO_BUTTONS = 100
 
+-- max drive size in megabytes
+MAX_DRIVE_SIZE = 128 * 1024
+
 -- layouts clavier
 QWERTY = 1
 AZERTY = 2
