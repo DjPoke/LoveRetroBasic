@@ -631,3 +631,21 @@ function Play(snd, loop)
 	snd:setLooping(loop)
 	love.audio.play(snd)
 end
+
+-- effacer la musique
+function ClearMusic()
+	for i = 1, 4 do
+		for j = 1, notesPerPattern do
+			for k = 1, MAX_PATTERNS do
+				pattern[i][j][k] = 0
+				vol[i][j][k] = DEFAULT_VOLUME
+			end
+		end
+	end
+	
+	for i = 1, MAX_MUSIC_LENGTH do
+		mus[i] = 1
+	end
+
+	currentPattern = 1
+end

@@ -1055,6 +1055,9 @@ function love.load()
 		Reset()
 	end
 	
+	-- établir le drive virtuel
+	love.filesystem.setIdentity("LoveRetroBasic")
+	
 	-- trouver le drive virtuel courant
 	driveFolder = love.filesystem.getIdentity()
 	

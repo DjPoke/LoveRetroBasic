@@ -98,7 +98,7 @@ function LoadSprites(filename)
 	if filename == nil then return end
 	
 	-- changer le répertoire courant
-	love.filesystem.setIdentity(currentRelativeFolder .. spriteFolder .. "/")
+	love.filesystem.setIdentity(WPath(PathAsm(currentRelativeFolder, spriteFolder)))
 	
 	local w = nil
 	local h = nil
@@ -113,7 +113,7 @@ function LoadSprites(filename)
 
 	-- ouvrir le fichier
 	local data = {}
-	data = LoadFileTable(data, currentRelativeFolder .. spriteFolder .. "/", filename)
+	data = LoadFileTable(data, WPath(PathAsm(currentRelativeFolder, spriteFolder)), filename)
 
 	i = 1
 	for j = 0, MAX_SPRITES_IMAGES - 1 do
@@ -144,7 +144,7 @@ function SaveSprites(filename)
 	if filename == nil then return end
 
 	-- changer le répertoire courant
-	love.filesystem.setIdentity(currentRelativeFolder .. spriteFolder .. "/")
+	love.filesystem.setIdentity(PathAsm(currentRelativeFolder, spriteFolder))
 	
 	local s = ""
 	
@@ -171,15 +171,15 @@ end
 function CreateDisk(path, folder)
 	-- le créer s'il n'existe pas
 	if GetFolderExists(path, folder) == nil then
-		local id = love.filesystem.getIdentity()
+		local p = love.filesystem.getIdentity()
 		
-		love.filesystem.setIdentity(path .. folder)
+		love.filesystem.setIdentity(PathAsm(path, folder))
 
 		if not love.filesystem.createDirectory(folder) then
 			RuntimeError("Can't create the disk folder !")
 		end
 
-		love.filesystem.setIdentity(id)
+		love.filesystem.setIdentity(p)
 	end
 end
 
@@ -187,11 +187,11 @@ end
 function LoadDisc(filename)
 	if filename == nil then return ERR_DISC_MISSING end
 
-	if GetFileExists(love.filesystem.getIdentity(), "main.bas") then
+	if GetFileExists(WPath(love.filesystem.getIdentity()), "main.bas") then
 		LoadProject("main.bas")
 			
 		if GetFolderExists(currentRelativeFolder, spriteFolder) then
-			if GetFileExists(currentRelativeFolder .. spriteFolder, "sprites.spr") then
+			if GetFileExists(WPath(PathAsm(currentRelativeFolder, spriteFolder)), "sprites.spr") then
 				LoadSprites("sprites.spr")
 
 				msg = "Project Loaded !"
@@ -206,32 +206,14 @@ function LoadDisc(filename)
 	return OK
 end
 
--- effacer la musique
-function ClearMusic()
-	for i = 1, 4 do
-		for j = 1, notesPerPattern do
-			for k = 1, MAX_PATTERNS do
-				pattern[i][j][k] = 0
-				vol[i][j][k] = DEFAULT_VOLUME
-			end
-		end
-	end
-	
-	for i = 1, MAX_MUSIC_LENGTH do
-		mus[i] = 1
-	end
-
-	currentPattern = 1
-end
-
 -- chargeur de musique
 function LoadMusic(filename)
 	if filename == nil then return end
 
 	-- changer le répertoire courant
-	love.filesystem.setIdentity(currentRelativeFolder .. musicFolder .. "/")
+	love.filesystem.setIdentity(PathAsm(currentRelativeFolder, musicFolder))
 
-	if not GetFileExists(currentRelativeFolder .. musicFolder, filename) then
+	if not GetFileExists(WPath(PathAsm(currentRelativeFolder, musicFolder)), filename) then
 		-- rétablir le répertoire courant
 		love.filesystem.setIdentity(currentRelativeFolder)
 		
@@ -240,7 +222,7 @@ function LoadMusic(filename)
 
 	-- charger la musique
 	local m = {}
-	m = LoadFileTable(m, currentRelativeFolder .. musicFolder .. "/", filename)
+	m = LoadFileTable(m, PathAsm(currentRelativeFolder, musicFolder), filename)
 
 	local cpt = 1
 	-- lire les BPM
@@ -305,7 +287,7 @@ function SaveMusic(filename)
 	if filename == nil then return end
 
 	-- changer le répertoire courant
-	love.filesystem.setIdentity(currentRelativeFolder .. musicFolder .. "/")
+	love.filesystem.setIdentity(PathAsm(currentRelativeFolder, musicFolder))
 
 	-- écrire les BPM
 	s = tostring(BPM) .. Chr(LF)
@@ -353,7 +335,7 @@ end
 -- récupérer les chemins vers le disque
 function GetCurrentFolder()
 	-- créer un chemin direct pour accéder au disque
-	currentRelativeFolder = driveFolder .. "/" .. diskFolder .. "/"
+	currentRelativeFolder = WPath(PathAsm(driveFolder, diskFolder))
 end
 
 -- vérifier si un dossier existe
@@ -392,7 +374,7 @@ end
 
 -- sauvegarder une chaîne de caractères dans un fichier
 function SaveFileString(s, path, filename)
-	local cp = love.filesystem.getIdentity()
+	local memPath = love.filesystem.getIdentity()
 	
 	-- changer le répertoire courant
 	love.filesystem.setIdentity(path)
@@ -401,13 +383,13 @@ function SaveFileString(s, path, filename)
 	love.filesystem.write(filename, data)
 
 	-- changer le répertoire courant
-	love.filesystem.setIdentity(cp)
+	love.filesystem.setIdentity(memPath)
 end
 
 -- charger un fichier dans un tableau et retourner le tableau
 function LoadFileTable(t, path, filename)
-	local cp = love.filesystem.getIdentity()
-
+	local memPath = love.filesystem.getIdentity()
+	
 	-- changer le répertoire courant
 	love.filesystem.setIdentity(path)
 
@@ -416,7 +398,7 @@ function LoadFileTable(t, path, filename)
 	end
 
 	-- changer le répertoire courant
-	love.filesystem.setIdentity(cp)
+	love.filesystem.setIdentity(memPath)
 	
 	return t
 end
@@ -426,20 +408,26 @@ function CopyFile(old_path, new_path)
   local old_file = io.open(old_path, "rb")
   local new_file = io.open(new_path, "wb")
   local old_file_sz, new_file_sz = 0, 0
+  
   if not old_file or not new_file then
-    return false
+	return false
   end
+  
   while true do
-    local block = old_file:read(2^13)
+	local block = old_file:read(2^13)
+	
     if not block then 
-      old_file_sz = old_file:seek( "end" )
+      old_file_sz = old_file:seek("end")
       break
     end
+	
     new_file:write(block)
   end
+  
   old_file:close()
-  new_file_sz = new_file:seek( "end" )
+  new_file_sz = new_file:seek("end")
   new_file:close()
+  
   return new_file_sz == old_file_sz
 end
 
@@ -652,14 +640,38 @@ function GetDriveSize(driveLetter)
 end
 
 -- créer un dossier
-function CreateFolder(currentDrive, folder)
+function CreateFolder(folder)
 	local currentOS = love.system.getOS()
 	
 	if currentOS == "Windows" then
-		local drv = currentDrive:gsub("/", "\\")
+		local drv = WPath(currentDrive)
 
 		os.execute("mkdir " .. drv .. folder)
 	elseif currentOS == "Linux" then
-		os.execute("mkdir(" .. currentDrive .. folder .. ",0777);")
+		os.execute("mkdir(" .. WPath(PathAsm(currentDrive, folder)) .. ",0777);")
 	end
+end
+
+-- fonction qui retourne un chemin compatible windows (si l'o.s est bien windows)
+function WPath(p)
+	local currentOS = love.system.getOS()
+	
+	if currentOS == "Windows" then
+		p = p:gsub("/", "\\")
+	elseif currentOS == "Linux" then
+		p = p:gsub("\\", "/")	
+	end
+	
+	return p
+end
+
+-- assemble un path
+function PathAsm(p1, p2)
+	if string.sub(p1, #p1, #p1) ~= "/" and string.sub(p1, #p1, #p1) ~= "\\" then p1 = p1 .. "/" end
+
+	if string.find(p2, ".") == nil then
+		if string.sub(p2, #p2, #p2) ~= "/" and string.sub(p2, #p2, #p2) ~= "\\" then p2 = p2 .. "/" end
+	end
+	
+	return p1 .. p2
 end
