@@ -538,7 +538,7 @@ function GetUSBDrivesList()
 					local w = string.upper(string.sub(size, #size, #size))
 					size = string.sub(size, 1, -2)
 					size = size:gsub(",", ".")
-					local sz = 1
+					local sz = 0 -- taille 0 (périphérique refusé) par défaut
 				
 					if w == "G" then
 						sz = Val(size) * 1024
