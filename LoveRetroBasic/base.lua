@@ -2300,10 +2300,6 @@ end
 function ImportSprites()
 	if currentDrive == nil then msg = "No USB drive found !"; return end
 
-	msg = DriveValid(currentDrive)
-	
-	if msg ~= nil then return end
-	
 	-- importer la banque de sprites
 	local w = nil
 	local h = nil
@@ -2321,7 +2317,7 @@ function ImportSprites()
 	local filename = "sprites.spr"
 	local line = {}
 	
-	for line in io.lines(currentDrive .. filename) do
+	for line in io.lines(currentDrive .. "Sprites/" .. filename) do
 		table.insert(data, line)
 	end
 
@@ -2344,29 +2340,18 @@ function ImportSprites()
 	
 	-- créer un sprite vide
 	sprImgNumber = 0	
-	
-	-- rafraîchir l'affichage des sprites
-	RedrawEditedSprite()
-	RedrawSpritesLine()
-	RedrawCurrentSprite()
-
-	msg = "Sprite file imported..."
-	
+		
 	return
 end
 
 -- exporter une banque de sprites
 function ExportSprites()
 	if currentDrive == nil then msg = "No USB drive found !"; return end
-	
-	msg = DriveValid(currentDrive)
 
-	if msg ~= nil then return end
-	
 	-- export sprite bank
 	local filename = "sprites.spr"
 	
-	local file = io.open(currentDrive .. filename, "w")
+	local file = io.open(currentDrive .. "Sprites/" .. filename, "w")
 	
 	if file == nil then return false end
 	
@@ -2388,8 +2373,6 @@ function ExportSprites()
 	end
 	
 	io.close(file)
-	
-	msg = "Sprite file exported..."
 	
 	return
 end
@@ -2638,7 +2621,16 @@ function UI_Export()
 	
 	CopyFile(lnk .. "/main.bas", currentDrive .. "main.bas")
 	
-	msg = "BASIC file exported"
+	-- exporter les sprites dans leur dossier d'origine
+	if not GetExtFolderExists(currentDrive .. "Sprites") then
+		CreateFolder(currentDrive, "Sprites")
+	end
+
+	if GetExtFolderExists(currentDrive .. "Sprites") then
+		ExportSprites()
+	end
+	
+	msg = "Program exported"
 	
 	return
 end
@@ -2658,8 +2650,13 @@ function UI_Import()
 		CopyFile(currentDrive .. "main.bas", lnk .. "/main.bas")
 	
 		UI_Load()
+		
+		-- importer les sprites
+		if GetExtFolderExists(currentDrive .. "Sprites") then
+			ImportSprites()
+		end
 
-		msg = "BASIC file imported"
+		msg = "Program imported"
 	else
 		msg = "BASIC file main.bas not found"
 	end

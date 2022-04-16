@@ -650,3 +650,16 @@ function GetDriveSize(driveLetter)
 
 	return Val(string.sub(ret, 1, -7))
 end
+
+-- créer un dossier
+function CreateFolder(currentDrive, folder)
+	local currentOS = love.system.getOS()
+	
+	if currentOS == "Windows" then
+		local drv = currentDrive:gsub("/", "\\")
+
+		os.execute("mkdir " .. drv .. folder)
+	elseif currentOS == "Linux" then
+		os.execute("mkdir(" .. currentDrive .. folder .. ",0777);")
+	end
+end
