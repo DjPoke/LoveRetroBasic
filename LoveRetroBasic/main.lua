@@ -1734,13 +1734,11 @@ end
 
 function love.textinput(t)
 	if appState == EDIT_MODE or appState == RUN_MODE then
-		local a = Asc(string.sub(t, -1))
+		local a = bit.band(Asc(string.sub(utf8.offset(t, 1), -1)), 127)
 
-		if a < 128 then
-			-- récupérer les caractères pressés
-			if #kb_buffer < 256 then
-				kb_buffer = kb_buffer .. t
-			end
+		-- récupérer les caractères pressés
+		if #kb_buffer < 256 then
+			kb_buffer = kb_buffer .. t
 		end
 	end
 end
