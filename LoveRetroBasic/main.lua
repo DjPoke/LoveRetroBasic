@@ -1102,7 +1102,7 @@ function love.load()
 
 	-- récupérer le 1er drive potentiellement 'clé USB'
 	drivesList = GetUSBDrivesList()
-
+	
 	if drivesList == nil or #drivesList == 0 then
 		msg = "No drive found !"
 	else

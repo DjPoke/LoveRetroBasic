@@ -584,6 +584,8 @@ function GetUSBDrivesList()
 				break
 			end
 		end
+				
+		return driveList
 	else	
 		msg = "Operating System not handled !"
 	end
