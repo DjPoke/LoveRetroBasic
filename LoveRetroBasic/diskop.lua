@@ -499,60 +499,68 @@ function GetUSBDrivesList()
 		end
 		
 		-- impossible de trouver une clé USB connectée...
-		if string.find(text, "sdb1") == nil then return nil end
+		if string.find(text, "media") == nil then return nil end
 		
-		-- on cherche la première clé
-		local i, j = string.find(text, "sdb1")
+		-- on cherche la première partition
+		local i, j = string.find(text, "sda1")
 		local t	= {}
 		
 		text = Trim(string.sub(text, i, #text))
 
+		-- on sépare les lignes
 		for line in text:gmatch("([^\n]*)\n?") do
 			table.insert(t, line)
 		end
 		
 		-- puis on les cherche toutes
 		local d = 1
+		local p = 1
 		
 		for i = 1, #t do
-			local j, k = string.find(t[i], "sdb" .. Chr(d + 48))
-			
-			if j ~= nil and k ~= nil then
-				local p = string.sub(t[i], j, k)
+			while p <= 26 do
+				-- chercher partion sd'p' numéro 'd'
+				local j, k = string.find(t[i], "sd" .. Chr(p + 96) .. Chr(d + 48))
 				
-				j2, k2 = string.find(t[i], " part ")
+				if j ~= nil and k ~= nil then
+					local p = string.sub(t[i], j, k)
+					
+					j2, k2 = string.find(t[i], " part ")
+					
+					local size = Trim(string.sub(t[i], k + 1, j2 - 1))
+					local drv = Trim(string.sub(t[i], k2 + 1, #t[i]))
+					
+					local t = {}
+					
+					t = Split(size)
+					
+					size = t[3]
 				
-				local size = Trim(string.sub(t[i], k + 1, j2 - 1))
-				local drv = Trim(string.sub(t[i], k2 + 1, #t[i]))
+					local w = string.upper(string.sub(size, #size, #size))
+					size = string.sub(size, 1, -2)
+					size = size:gsub(",", ".")
+					local sz = 1
 				
-				local t = {}
-				
-				t = Split(size)
-				
-				size = t[3]
-				
-				local w = string.upper(string.sub(size, #size, #size))
-				size = string.sub(size, 1, -2)
-				size = size:gsub(",", ".")
-				local sz = 1
-				
-				if w == "G" then
-					sz = Val(size) * 1024
-				elseif w == "M" then
-					sz = Val(size)
-				end
-				
-				if DriveValid(drv .. "/") == nil then
-					if sz > 0 and sz <= MAX_DRIVE_SIZE then
-						table.insert(driveList, drv .. "/")
+					if w == "G" then
+						sz = Val(size) * 1024
+					elseif w == "M" then
+						sz = Val(size)
 					end
+				
+					if DriveValid(drv .. "/") == nil then
+						if sz > 0 and sz <= MAX_DRIVE_SIZE then
+							table.insert(driveList, drv .. "/")
+						end
+					end
+					
+					d = d + 1
+					
+					if d > 9 then break end
+				else
+					break
 				end
 				
-				d = d + 1
-				
-				if d > 9 then break end
-			else
-				break
+				p = p + 1
+				d = 1
 			end
 		end
 				
