@@ -474,20 +474,20 @@ end
 -- vérifier si un périphérique de stockage existe
 function DriveValid(drive)
 	-- écrire un fichier temporaire
-	local f = io.open(drive .. "LRB.tst", "w")
+	local f = io.open(drive .. "LRB.tmp", "w")
 
 	if f == nil then return "Disk error !" end
 	
 	io.close(f)
 	
 	-- supprimer le fichier créé
-	os.remove(drive .. "LRB.tst")
+	os.remove(drive .. "LRB.tmp")
 	
 	return nil
 end
 
--- obtenir la liste des périphériques de stockage accessibles
-function GetDrivesList()
+-- obtenir la liste des périphériques de stockage USB accessibles
+function GetUSBDrivesList()
 	local driveList = {}
 	local currentOS = love.system.getOS()
 	
@@ -496,7 +496,9 @@ function GetDrivesList()
 			local drv = Chr(i) .. ":/"
 
 			if DriveValid(drv) == nil then
-				table.insert(driveList, drv)
+				if GetDriveSize(string.upper(Chr(i))) > 0 then
+					table.insert(driveList, drv)
+				end
 			end
 		end
 
@@ -516,11 +518,11 @@ end
 
 function ChangeDrive(value)
 	-- on recharge l'affichage les disques
-	GetDrivesList()
+	GetUSBDrivesList()
 	
 	-- si la configuration a changée...
 	if #drivesList == 0 then
-		msg = "No drives found !"
+		msg = "No drive found !"
 	elseif currentDriveNumber > #drivesList then
 		currentDriveNumber = #drivesList
 	else
@@ -532,4 +534,59 @@ function ChangeDrive(value)
 		currentDrive = drivesList[currentDriveNumber]
 		msg = "Current drive: " .. currentDrive
 	end
+end
+
+-- obtenir la taille des périphériques externes (USB)
+function GetDriveSize(driveLetter)
+	local text = ""
+	local ret = ""
+	local script = [[ Get-WmiObject -Class win32_logicaldisk -Filter "DriveType = '2'" | Select-Object -Property DeviceID,Size ]]
+		
+	local sd = love.filesystem.getAppdataDirectory() .. "/LOVE/LRB.tmp"
+
+	local p = io.popen("powershell -command - >" .. sd, "w")
+	p:write(script)
+	p:close()
+	
+	if GetExtFileExists(sd) then
+		file = io.open(sd, "rb")
+		local text = file:read("*a")
+		file:close()
+
+		local l = utf8.len(text)		
+		
+		for i = 1, l do
+			local c = string.sub(text, utf8.offset(text, i), utf8.offset(text, i))
+			local a = bit.band(c:byte(), 127)
+
+			-- la lettre du drive a été trouvée
+			if a == Asc(driveLetter) then
+				if i < l then
+					c = string.sub(text, utf8.offset(text, i + 1), utf8.offset(text, i + 1))
+					a = bit.band(c:byte(), 127)
+					
+					if Chr(a) == ":" then
+						for j = i + 2, l do
+							c = string.sub(text, utf8.offset(text, j), utf8.offset(text, j))
+							a = bit.band(c:byte(), 127)
+							
+							if (a >= 48 and a <= 57) then
+								ret = ret .. Chr(a)
+							elseif a ~= 32 then
+								break
+							end
+						end
+					end
+					
+					if ret ~= "" then break end
+				end
+			end
+		end
+		
+		os.remove(sd)
+	else
+		return ""
+	end
+
+	return Val(ret)
 end

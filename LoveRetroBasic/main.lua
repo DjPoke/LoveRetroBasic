@@ -5,7 +5,7 @@
 -- ===============================
 -- - import de la librairie UTF8 =
 -- ===============================
-local utf8 = require("utf8")
+utf8 = require("utf8")
 
 -- =======================================
 -- - vérifier si la souris est supportée =
@@ -1096,10 +1096,10 @@ function love.load()
 	InitKeyboard()
 	
 	-- récupérer le 1er drive potentiellement 'clé USB'
-	drivesList = GetDrivesList()
+	drivesList = GetUSBDrivesList()
 
 	if drivesList == nil or #drivesList == 0 then
-		msg = "No drives found !"
+		msg = "No drive found !"
 	else
 		currentDriveNumber = #drivesList
 		currentDrive = drivesList[currentDriveNumber]
