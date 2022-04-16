@@ -1,4 +1,6 @@
 function HelpManager()
+	msg = nil
+	
 	-- afficher l'entête
 	SetPenColor(EDITOR_PEN)
 	SetPaperColor(EDITOR_PAPER)
@@ -53,9 +55,9 @@ function HelpManager()
 		Locate(4, 10)
 		PrintString("Ctrl-S: Save - Ctrl-L: Load")
 		Locate(4, 11)
-		PrintString("Ctrl-I: Import")
+		PrintString("Ctrl-I: Import to USB")
 		Locate(4, 12)
-		PrintString("Ctrl-E: Export")
+		PrintString("Ctrl-E: Export to USB")
 		Locate(4, 13)
 		PrintString("Ctrl-D: Change export drive")
 		Locate(4, 14)
@@ -67,6 +69,8 @@ function HelpManager()
 end
 
 function SpriteEditor()
+	msg = nil
+	
 	-- afficher l'entête
 	SetPenColor(EDITOR_PEN)
 	SetPaperColor(EDITOR_PAPER)
@@ -87,7 +91,7 @@ function SpriteEditor()
 	PrintStringN("   Keybard Shortcuts:")
 	SetPenColor(EDITOR_UI)
 	Locate(13, 21)
-	PrintStringN("Ctrl-X/C/V/S/I/E DEL ESC")
+	PrintStringN("Ctrl-X/C/V/S     DEL ESC")
 	Locate(1, 21)
 	SetPenColor(EDITOR_UI)
 	PrintString(Chr(159) .."-S-" .. Chr(160) .. " " .. Chr(159) .. "-P-" .. Chr(160))
@@ -125,6 +129,8 @@ function SpriteEditor()
 end
 
 function LevelEditor()
+	msg = nil
+	
 	-- afficher l'entête
 	SetPenColor(EDITOR_PEN)
 	SetPaperColor(EDITOR_PAPER)
@@ -139,6 +145,8 @@ function LevelEditor()
 end
 
 function NoiseEditor()
+	msg = nil
+	
 	-- afficher l'entête
 	SetPenColor(EDITOR_PEN)
 	SetPaperColor(EDITOR_PAPER)
@@ -153,6 +161,8 @@ function NoiseEditor()
 end
 
 function Tracker()
+	msg = nil
+	
 	-- afficher l'entête
 	SetPaperColor(EDITOR_PAPER)
 	SetBorderColor(EDITOR_BORDER)

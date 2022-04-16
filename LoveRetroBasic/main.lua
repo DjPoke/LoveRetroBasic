@@ -1446,7 +1446,10 @@ function love.keypressed(key, scancode, isrepeat)
 	elseif appState == SPRITE_MODE then	
 		if key == "s" and love.keyboard.isDown("lctrl", "rctrl") then
 			-- sauvegarder tous les sprites existants
-			SaveSprites("sprites.spr")
+			SaveSprites("sprites.spr")			
+
+			msg = "Sprites saved !"
+			msgblink = BLINK_TIME
 
 			return
 		elseif key == "x" and love.keyboard.isDown("lctrl", "rctrl") then
@@ -1745,9 +1748,6 @@ function love.textinput(t)
 end
 
 function love.mousepressed(x, y, button)
-	-- activer éventuellement un clignottement
-	msgblink = BLINK_TIME
-	
 	-- gestion des boites de dialogue
 	if button == 1 and msgboxRenderer then
 		for i = 1, #msgboxButtons do
@@ -1772,7 +1772,7 @@ function love.update(dt)
 	-- initialiser countTime
 	if appStarted then
 		countTime = 0
-		appStarted = false		
+		appStarted = false
 	end
 	
 	-- mettre à jour la position de la souris
@@ -1833,7 +1833,7 @@ function love.update(dt)
 					appState = SPRITE_MODE
 					
 					SpriteEditor()
-
+					
 					return
 				elseif x == 2 then -- lancer l'éditeur de niveaux
 					-- remise à zéro d'un éventuel message texte
@@ -1881,23 +1881,41 @@ function love.update(dt)
 					return
 				elseif x == 8 then -- lancer l'aide
 					UI_Help()
+
+					msgblink = BLINK_TIME
 				elseif x >= 11 and x <= 11 then -- executer le programme
 					UI_Run()
+
+					msgblink = BLINK_TIME
 				elseif x >= 13 and x <= 13 then -- déboguer le programme
 					UI_Debug()
+
+					msgblink = BLINK_TIME
 				elseif x >= 16 and x <= 16 then -- sauvegarder le programme
 					UI_Save()
+
+					msgblink = BLINK_TIME
 				elseif x >= 18 and x <= 18 then -- charger le programme
 					UI_Load()
+
+					msgblink = BLINK_TIME
 				elseif x >= 21 and x <= 21 then -- importer un programme
 					UI_Import()
+
+					msgblink = BLINK_TIME
 				elseif x >= 23 and x <= 23 then -- exporter un programme
 					UI_Export()
+
+					msgblink = BLINK_TIME
 				elseif x >= 26 and x <= 26 then -- effacer le programme
 					KillProgram()
+
+					msgblink = BLINK_TIME
 				elseif x == 39 then
 					CloseProgram()
-				end
+
+					msgblink = BLINK_TIME
+				end				
 			end
 		end
 		
@@ -2014,13 +2032,16 @@ function love.update(dt)
 					-- effacer la zone de dessin de sprite
 					SetGraphicPenColor(0)
 					DrawRectangle(128, 0, SPRITE_WIDTH * 8, SPRITE_HEIGHT * 8, 1)
+					
 					-- passer au sprite précédent
 					if sprImgNumber > 0 then sprImgNumber = sprImgNumber - 1 end
 					sprImgPage = math.floor(sprImgNumber / (SPRITE_LINE_WIDTH * SPRITE_LINE_HEIGHT))
+					
 					-- afficher le sprite si possible
 					RedrawEditedSprite()
 					RedrawSpritesLine()
 					RedrawCurrentSprite()
+					
 					-- mettre à jour le numéro de sprite
 					Locate(1, 4)
 					SetPenColor(1)
@@ -2030,13 +2051,16 @@ function love.update(dt)
 					-- effacer la zone de dessin de sprite
 					SetGraphicPenColor(0)
 					DrawRectangle(128, 0, SPRITE_WIDTH * 8, SPRITE_HEIGHT * 8, 1)
+					
 					-- passer au sprite suivant
 					if sprImgNumber < MAX_SPRITES_IMAGES - 1 then sprImgNumber = sprImgNumber + 1 end
 					sprImgPage = math.floor(sprImgNumber / (SPRITE_LINE_WIDTH * SPRITE_LINE_HEIGHT))
+					
 					-- afficher le sprite si possible
 					RedrawEditedSprite()
 					RedrawSpritesLine()
 					RedrawCurrentSprite()
+					
 					-- mettre à jour le numéro de sprite
 					Locate(1, 4)
 					SetPenColor(1)
@@ -2046,13 +2070,16 @@ function love.update(dt)
 					-- effacer la zone de dessin de sprite
 					SetGraphicPenColor(0)
 					DrawRectangle(128, 0, SPRITE_WIDTH * 8, SPRITE_HEIGHT * 8, 1)
+					
 					-- passer au sprite précédent
 					if sprImgPage > 0 then sprImgPage = sprImgPage - 1 end
 					sprImgNumber = (sprImgNumber % (SPRITE_LINE_WIDTH * SPRITE_LINE_HEIGHT)) + (sprImgPage * (SPRITE_LINE_WIDTH * SPRITE_LINE_HEIGHT))
+					
 					-- afficher le sprite si possible
 					RedrawEditedSprite()
 					RedrawSpritesLine()
 					RedrawCurrentSprite()
+					
 					-- mettre à jour le numéro de sprite
 					Locate(1, 4)
 					SetPenColor(1)
@@ -2063,19 +2090,22 @@ function love.update(dt)
 					-- effacer la zone de dessin de sprite
 					SetGraphicPenColor(0)
 					DrawRectangle(128, 0, SPRITE_WIDTH * 8, SPRITE_HEIGHT * 8, 1)
+					
 					-- passer au sprite suivant
 					if sprImgPage < (MAX_SPRITES_IMAGES / (SPRITE_LINE_WIDTH * SPRITE_LINE_HEIGHT)) - 1 then sprImgPage = sprImgPage + 1 end
 					sprImgNumber = (sprImgNumber % (SPRITE_LINE_WIDTH * SPRITE_LINE_HEIGHT)) + (sprImgPage * (SPRITE_LINE_WIDTH * SPRITE_LINE_HEIGHT))
+					
 					-- afficher le sprite si possible
 					RedrawEditedSprite()
 					RedrawSpritesLine()
 					RedrawCurrentSprite()
+					
 					-- mettre à jour le numéro de sprite
 					Locate(1, 4)
 					SetPenColor(1)
 					PrintStringN("Sprite:" .. tostring(sprImgNumber) .. "   ")					
 					PrintString("Page  :" .. tostring(sprImgPage) .. "   ")					
-					love.timer.sleep(1/5)
+					love.timer.sleep(1 / 5)
 				end
 			elseif y > 20 then
 				if mpx < SPRITE_LINE_WIDTH * SPRITE_WIDTH then
@@ -2976,10 +3006,6 @@ function love.draw()
 				PrintInfosString("Paste Sprite", 2, "black")
 			elseif xn == 23 then
 				PrintInfosString("Save Sprites", 2, "black")
-			elseif xn == 25 then
-				PrintInfosString("Import Sprites", 2, "black")
-			elseif xn == 27 then
-				PrintInfosString("Export Sprites", 2, "black")
 			end
 		end
 	elseif appState == TRACKER_MODE then
@@ -3132,6 +3158,7 @@ function love.draw()
 		else
 			DrawButton(480 - 32, 285, 16, 16, 2, 9, 1, 0)
 		end
+		
 		Text("S", 480 - 32 + 9, 293, 25, true)
 		
 		-- boutons de formes d'ondes
@@ -3302,7 +3329,7 @@ function love.draw()
 	end
 
 	-- afficher les erreurs
-	if msg == nil or msg == "" then
+	if msg == nil then
 		msgblink = BLINK_TIME
 	elseif msgblink > 0 then
 		msgblink = msgblink - 0.2
