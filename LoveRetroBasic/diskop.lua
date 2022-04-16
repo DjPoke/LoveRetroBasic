@@ -492,11 +492,11 @@ function GetUSBDrivesList()
 	local currentOS = love.system.getOS()
 	
 	if currentOS == "Windows" then
-		for i = Asc("a"), Asc("z") do
+		for i = Asc("A"), Asc("Z") do
 			local drv = Chr(i) .. ":/"
 
 			if DriveValid(drv) == nil then
-				if GetDriveSize(string.upper(Chr(i))) > 0 then
+				if GetDriveSize(Chr(i)) > 0 then
 					table.insert(driveList, drv)
 				end
 			end
@@ -504,6 +504,7 @@ function GetUSBDrivesList()
 
 		return driveList
 	elseif currentOS == "Linux" then
+		
 		for i = 1, 26  do
 			local drv = "/dev/sdb" .. tostring(i) .. "/"
 			

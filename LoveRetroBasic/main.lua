@@ -1096,7 +1096,7 @@ function love.load()
 	end
 
 	InitKeyboard()
-	
+
 	-- récupérer le 1er drive potentiellement 'clé USB'
 	drivesList = GetUSBDrivesList()
 
