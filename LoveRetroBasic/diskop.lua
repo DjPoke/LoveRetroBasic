@@ -504,14 +504,28 @@ function GetUSBDrivesList()
 
 		return driveList
 	elseif currentOS == "Linux" then
+		-- récupérer le 'user' de Linux
+		local f = io.popen("echo $USER","r" )
+		local usr = f:read("*a")
+		f:close()
 		
-		for i = 1, 26  do
-			local drv = "/dev/sdb" .. tostring(i) .. "/"
-			
-			if DriveValid(drv) == nil then
-				table.insert(driveList, drv)
-			end
-		end
+		local folder = "/media/" .. usr .. "/"
+		
+		print(folder)
+		
+		-- récupérer les noms stockés dans le répertoire
+		--TODO! problème d'accès avec 'ls' !
+		local f = io.popen("ls " .. folder ,"r" )
+		local drvs = f:read("*a")
+		f:close()
+		
+		--print(#drvs)
+		
+		-- local drv = drvs[...]
+		
+		--if DriveValid(drv) == nil then
+			--table.insert(driveList, drv)
+		--end
 	else	
 		msg = "Operating System not handled !"
 	end
