@@ -8,9 +8,9 @@ It includes a sprite editor, a tracker (w.i.p) and will includes a level editor 
 
 With LoveRetroBasic, you get virtual hardware sprites, bobs, palette adaptable images import, and a debug mode.
 
-![Editor](url "Screenshots/1.jpg")
-![Sprites](url "Screenshots/2.jpg")
-![Tracker](url "Screenshots/3.jpg")
+![Editor]("Screenshots/1.jpg")
+![Sprites]("Screenshots/2.jpg")
+![Tracker]("Screenshots/3.jpg")
 
 Graphic Mode 0: 160x100 pixels
 
