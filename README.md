@@ -6,8 +6,11 @@ I program it to pass the time.
 It is inspired from old retro computers from the 80's and from beginning for 90's, also giving acces to a tools suite, like other fantasy consoles can give.
 It includes a sprite editor, a tracker (w.i.p) and will includes a level editor and a sounds editor.
 
-LoveRetroBasic gives virtual hardware sprites, bobs, palette adaptable images import, and a debug mode.
+With LoveRetroBasic, you get virtual hardware sprites, bobs, palette adaptable images import, and a debug mode.
 
+![Editor](url "Screenshots/1.jpg")
+![Sprites](url "Screenshots/2.jpg")
+![Tracker](url "Screenshots/3.jpg")
 
 Graphic Mode 0: 160x100 pixels
 
