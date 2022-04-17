@@ -31,7 +31,7 @@ Bobs: 1024
 Bobs size: images limited
 
 
-This project is in work in progress. Please wait to see it finished.
+This project is in work in progress state. Please wait to see it finished.
 
 Enjoy,
 DjPoke
